@@ -1,3 +1,5 @@
 {
-  "DROP": "Drop or click here to upload a PDF file"
+  "DROP": "Drop or click here to upload a PDF file",
+  "DROP_ACCEPT": "File will be uploaded to the server and converted to a magic reader format",
+  "DROP_REJECT": "File is not a PDF file"
 }

@@ -12,14 +12,25 @@ function DropPDF() {
   }, []);
 
   return (
-    <Dropzone onDrop={handleDrop}>
-      {({ getRootProps, getInputProps }) => (
-        <div className="drop-zone-wrapper">
+    <Dropzone
+      onDrop={handleDrop}
+      accept={{ "application/pdf": ["application/pdf"] }}
+    >
+      {({
+        getRootProps,
+        getInputProps,
+        isDragAccept,
+        isDragReject,
+        isDragActive,
+      }) => (
+        <div {...getRootProps()} className="drop-zone-wrapper">
           <section>
-            <div {...getRootProps()}>
-              <input {...getInputProps()} />
-              <p className="drop-zone-text">{t("DROP")}</p>
-            </div>
+            <input {...getInputProps()} />
+            <p className="drop-zone-text">
+              {isDragAccept && t("DROP_ACCEPT")}
+              {isDragReject && t("DROP_REJECT")}
+              {!isDragActive && t("DROP")}
+            </p>
           </section>
         </div>
       )}

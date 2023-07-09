@@ -26,7 +26,7 @@
 }
 
 .drop-zone-wrapper:hover {
-  background-color: var(--contrast-0_5);
+  background-color: var(--contrast-0_1);
   transform: scale(1.01);
 }
 
