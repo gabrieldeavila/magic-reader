@@ -1,7 +1,7 @@
 import { Suspense, lazy } from "react";
 import { Route, Routes } from "react-router-dom";
 
-const Home = lazy(async () => await import("./Pages/Reader/Reader.tsx"));
+const Home = lazy(async () => await import("./Pages/Home/Home.tsx"));
 
 const Reader = lazy(async () => await import("./Pages/Reader/Reader.tsx"));
 
