@@ -2,13 +2,27 @@ import Dropzone from "react-dropzone";
 import { useCallback } from "react";
 import "./style.css";
 import { useTranslation } from "react-i18next";
+import apiReader from "../../Axios/apiReader";
 
 function DropPDF() {
   // @ts-expect-error idk
   const { t } = useTranslation();
 
   const handleDrop = useCallback((acceptedFiles: any) => {
-    console.log(acceptedFiles);
+    void (async () => {
+      const formData = new FormData();
+      formData.append("pdf", acceptedFiles[0]);
+      console.log(formData);
+
+      await apiReader
+        .post("/reader/pdf-to-array", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((res) => console.log(res))
+        .catch((err) => console.log(err));
+    })();
   }, []);
 
   return (
