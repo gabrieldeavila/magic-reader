@@ -1,5 +1,8 @@
 {
-  "DROP": "Solte ou clique para enviar PDF",
+  "DROP": "Solte ou arraste um PDF para começar a experiência",
   "DROP_ACCEPT": "O PDF será convertido em um arquivo mágico",
-  "DROP_REJECT": "Apenas arquivos PDF são aceitos"
+  "DROP_REJECT": "Apenas arquivos PDF são aceitos",
+
+  "TITLE": "Desperte seu Potencial de Leitura",
+  "SUBTITLE": "Leia em Velocidade Máxima"
 }

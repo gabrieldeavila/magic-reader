@@ -1,12 +1,11 @@
 import Dropzone from "react-dropzone";
 import { useCallback } from "react";
 import "./style.css";
-import { useTranslation } from "react-i18next";
 import apiReader from "../../Axios/apiReader";
+import useTranslate from "../Translate/useTranslate";
 
 function DropPDF() {
-  // @ts-expect-error idk
-  const { t } = useTranslation();
+  const t = useTranslate();
 
   const handleDrop = useCallback((acceptedFiles: any) => {
     void (async () => {
