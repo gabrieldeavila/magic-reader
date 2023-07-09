@@ -1,10 +1,10 @@
-import { GTBasic, GTNavbar } from "@geavila/gt-design";
-import { BrowserRouter } from "react-router-dom";
-import RoutesWrapper from "./Routes";
+import { GTBasic, Loading } from "@geavila/gt-design";
 import { I18nextProvider } from "react-i18next";
-import i18n from "./Components/Translate/Translate";
-import "./global.css";
+import { BrowserRouter } from "react-router-dom";
 import Nav from "./Components/Nav/Nav";
+import i18n from "./Components/Translate/Translate";
+import RoutesWrapper from "./Routes";
+import "./global.css";
 
 function App() {
   return (

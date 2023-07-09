@@ -1,3 +1,4 @@
+import { Loading } from "@geavila/gt-design";
 import { Suspense, lazy } from "react";
 import { Route, Routes } from "react-router-dom";
 
@@ -7,7 +8,7 @@ const Reader = lazy(async () => await import("./Pages/Reader/Reader.tsx"));
 
 function RoutesWrapper() {
   return (
-    <Suspense fallback={"..."}>
+    <Suspense fallback={<Loading show />}>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
