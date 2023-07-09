@@ -1,4 +1,4 @@
-import { GTBasic, Loading } from "@geavila/gt-design";
+import { GTBasic } from "@geavila/gt-design";
 import { I18nextProvider } from "react-i18next";
 import { BrowserRouter } from "react-router-dom";
 import Nav from "./Components/Nav/Nav";
