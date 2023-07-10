@@ -5,10 +5,13 @@ import "./style.css";
 import apiReader from "../../Axios/apiReader";
 import useTranslate from "../Translate/useTranslate";
 import { Loader, Loading } from "@geavila/gt-design";
+import { useNavigate } from "react-router-dom";
+import { stateStorage } from "react-trigger-state";
 
 function DropPDF() {
   const t = useTranslate();
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleDrop = useCallback((acceptedFiles: any) => {
     void (async () => {
@@ -22,11 +25,14 @@ function DropPDF() {
             "Content-Type": "multipart/form-data",
           },
         })
-        .then((res) => console.log(res))
+        .then((res) => {
+          stateStorage.set("pdf", res.data);
+          navigate("/reader");
+        })
         .catch((err) => console.log(err))
         .finally(() => setLoading(false));
     })();
-  }, []);
+  }, [navigate]);
 
   return (
     <>

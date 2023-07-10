@@ -1,4 +1,4 @@
-import { GTBasic } from "@geavila/gt-design";
+import { GTBasic, Space } from "@geavila/gt-design";
 import { I18nextProvider } from "react-i18next";
 import { BrowserRouter } from "react-router-dom";
 import Nav from "./Components/Nav/Nav";
@@ -11,8 +11,10 @@ function App() {
     <GTBasic>
       <BrowserRouter>
         <Nav />
-        <RoutesWrapper />
-        <I18nextProvider i18n={i18n} />
+        <Space.Main flexDirection="column">
+          <RoutesWrapper />
+          <I18nextProvider i18n={i18n} />
+        </Space.Main>
       </BrowserRouter>
     </GTBasic>
   );
