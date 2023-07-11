@@ -1,7 +1,6 @@
 import { Kanit } from "next/font/google";
 import GTWrapper from "./gtWrapper";
 import StyledComponentsRegistry from "./registry";
-import "./style.css";
 import { getDictionary } from "../../get-dictionary";
 
 const kanit = Kanit({
