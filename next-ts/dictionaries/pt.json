@@ -1,8 +1,4 @@
 {
-  "DROP": "Solte ou arraste um PDF para começar a experiência",
-  "DROP_ACCEPT": "O PDF será convertido em um arquivo mágico",
-  "DROP_REJECT": "Apenas arquivos PDF são aceitos",
-
   "TITLE": "Desperte seu Potencial de Leitura",
   "SUBTITLE": "Leia em Velocidade Máxima",
 
@@ -34,5 +30,13 @@
     "FOOTER": {
       "DESCRIPTION": "© 2023 Dissolutus"
     }
+  },
+
+  "LEGERE": {
+    "UNTITLED": "Sem título",
+    "START": "Experimente o Poder da Leitura Sônica",
+    "DROP": "Solte ou arraste um PDF para transformá-lo em um arquivo mágico",
+    "DROP_ACCEPT": "O PDF será convertido em um arquivo mágico",
+    "DROP_REJECT": "Apenas arquivos PDF são aceitos"
   }
 }

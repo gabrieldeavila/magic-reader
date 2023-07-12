@@ -1,12 +1,9 @@
 {
-  "DROP": "Click or drop a PDF to start the experience",
-  "DROP_ACCEPT": "File will be uploaded to the server and converted to a magic reader format",
-  "DROP_REJECT": "File is not a PDF file",
-
   "TITLE": "Unleash Your Reading Potential",
   "SUBTITLE": "Absorb Knowledge at Warp Speed",
 
   "LOADING": "Loading your experience...",
+
   "LANDING_PAGE": {
     "LOG_IN": "Start",
     "DESCRIPTION": "Ignite Your Potential: Where Dreams Take Flight",
@@ -33,5 +30,13 @@
     "FOOTER": {
       "DESCRIPTION": "© 2023 Dissolutus"
     }
+  },
+
+  "LEGERE": {
+    "UNTITLED": "Untitled",
+    "START": "Start Experiencing the Power of Sonic Reading",
+    "DROP": "Click or drop a PDF to start the magic",
+    "DROP_ACCEPT": "File will be uploaded to the server and converted to a magic reader format",
+    "DROP_REJECT": "File is not a PDF file"
   }
 }

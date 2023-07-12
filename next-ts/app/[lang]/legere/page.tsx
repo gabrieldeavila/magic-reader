@@ -8,7 +8,7 @@ import DropPDF from "../../components/Drop/DropPDF";
 function page() {
   return (
     <Space.Horizontal>
-      <SectionContainer title="WELCOME" subtitle="LOGGED_IN" />
+      <SectionContainer title="Dissolutus Legere" subtitle="LEGERE.START" />
 
       <DropPDF />
     </Space.Horizontal>

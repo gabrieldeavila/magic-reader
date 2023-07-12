@@ -6,6 +6,7 @@ import { Loader, Text, useGTTranslate } from "@geavila/gt-design";
 import { useNavigate } from "react-router-dom";
 import { stateStorage, useTriggerState } from "react-trigger-state";
 import { getFileInfo } from "../../actions/drop/getFileInfo";
+import { db } from "../Dexie/Dexie";
 
 function DropPDF() {
   const [loading, setLoading] = useState(false);
@@ -20,7 +21,15 @@ function DropPDF() {
       formData.append("pdf", acceptedFiles[0]);
       // startTransition(async () => {
       const { data } = await getFileInfo({ formData });
-      console.log(data);
+
+      db.pdfs.add({
+        name: data.fileName,
+        lines: data.lines,
+        numOfPages: data.pages,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
       setLoading(false);
       // });
     })();
@@ -48,9 +57,9 @@ function DropPDF() {
                   <Loader.Simple color="var(--primary)" />
                 ) : (
                   <>
-                    {isDragAccept && translateThis("DROP_ACCEPT")}
-                    {isDragReject && translateThis("DROP_REJECT")}
-                    {!isDragActive && translateThis("DROP")}
+                    {isDragAccept && translateThis("LEGERE.DROP_ACCEPT")}
+                    {isDragReject && translateThis("LEGERE.DROP_REJECT")}
+                    {!isDragActive && translateThis("LEGERE.DROP")}
                   </>
                 )}
               </Text.P>
