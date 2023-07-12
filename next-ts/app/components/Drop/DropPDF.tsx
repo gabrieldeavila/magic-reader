@@ -2,15 +2,15 @@
 import Dropzone from "react-dropzone";
 import { useCallback, useState, useTransition } from "react";
 import "./style.css";
-import { Loader, Loading } from "@geavila/gt-design";
+import { Loader, Text, useGTTranslate } from "@geavila/gt-design";
 import { useNavigate } from "react-router-dom";
-import { stateStorage } from "react-trigger-state";
-import apiReader from "../../../Axios/apiReader";
-import { getFileInfo } from "../../../actions/drop/getFileInfo";
+import { stateStorage, useTriggerState } from "react-trigger-state";
+import { getFileInfo } from "../../actions/drop/getFileInfo";
 
 function DropPDF() {
   const [loading, setLoading] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const { translateThis } = useGTTranslate();
+  const [font] = useTriggerState({ name: "font" });
 
   const handleDrop = useCallback((acceptedFiles: any) => {
     void (async () => {
@@ -43,18 +43,17 @@ function DropPDF() {
           <div {...getRootProps()} className="drop-zone-wrapper">
             <section>
               <input {...getInputProps()} />
-              <p className="drop-zone-text">
+              <Text.P color="var(--primary)" className={font}>
                 {loading ? (
                   <Loader.Simple color="var(--primary)" />
                 ) : (
                   <>
-                    {/* {isDragAccept && t("DROP_ACCEPT")}
-                    {isDragReject && t("DROP_REJECT")}
-                    {!isDragActive && t("DROP")} */}
-                    aaa
+                    {isDragAccept && translateThis("DROP_ACCEPT")}
+                    {isDragReject && translateThis("DROP_REJECT")}
+                    {!isDragActive && translateThis("DROP")}
                   </>
                 )}
-              </p>
+              </Text.P>
             </section>
           </div>
         )}

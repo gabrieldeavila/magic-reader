@@ -1,7 +1,8 @@
 import { Kanit } from "next/font/google";
+import { globalState } from "react-trigger-state";
+import { getDictionary } from "../../get-dictionary";
 import GTWrapper from "./gtWrapper";
 import StyledComponentsRegistry from "./registry";
-import { getDictionary } from "../../get-dictionary";
 
 const kanit = Kanit({
   weight: ["100", "200", "300", "400", "500", "600", "700", "900"],
@@ -35,7 +36,7 @@ export default async function RootLayout({
     <StyledComponentsRegistry>
       <html lang={params.lang} className={kanit.className}>
         <body>
-          <GTWrapper serverTranslation={dict} lang={params.lang}>
+          <GTWrapper kanit={kanit} serverTranslation={dict} lang={params.lang}>
             {children}
           </GTWrapper>
         </body>

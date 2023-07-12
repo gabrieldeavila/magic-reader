@@ -29,7 +29,7 @@ export default function LandingPage({
     logo: "DL",
     button: {
       description: "LANDING_PAGE.LOG_IN",
-      onClick: () => router.push(`${lang}/login`),
+      onClick: () => router.push(`${lang}/legere`),
     },
     options: [],
   };
@@ -38,7 +38,7 @@ export default function LandingPage({
     title: "LANDING_PAGE.ACTION.TITLE",
     description: "LANDING_PAGE.ACTION.DESCRIPTION",
     button: {
-      onClick: () => router.push(`${lang}/login`),
+      onClick: () => router.push(`${lang}/legere`),
       title: "LANDING_PAGE.ACTION.GET_STARTED",
     },
   };

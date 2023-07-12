@@ -3,7 +3,7 @@
 import { Button, SectionContainer, Space, Text } from "@geavila/gt-design";
 import { signOut } from "next-auth/react";
 import React from "react";
-import DropPDF from "../components/Drop/DropPDF";
+import DropPDF from "../../components/Drop/DropPDF";
 
 function page() {
   return (
