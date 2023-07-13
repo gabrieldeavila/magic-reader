@@ -10,6 +10,7 @@ export interface Pdfs {
   lines: string[];
   createdAt: Date;
   updatedAt: Date;
+  currPage?: number;
 }
 
 export class DissolutusDexie extends Dexie {
@@ -20,7 +21,7 @@ export class DissolutusDexie extends Dexie {
 
     // DATABASE SCHEMA
     this.version(CURRENT_VERSION).stores({
-      pdfs: "++id, name, numOfPages, lines, createdAt, updatedAt",
+      pdfs: "++id, name, numOfPages, lines, currPage, createdAt, updatedAt",
     });
   }
 }

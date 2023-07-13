@@ -1,9 +1,9 @@
 "use client";
 
-import { Button, SectionContainer, Space, Text } from "@geavila/gt-design";
-import { signOut } from "next-auth/react";
+import { SectionContainer, Space, Text } from "@geavila/gt-design";
 import React from "react";
 import DropPDF from "../../components/Drop/DropPDF";
+import Books from "../../components/Books/Books";
 
 function page() {
   return (
@@ -11,6 +11,8 @@ function page() {
       <SectionContainer title="Dissolutus Legere" subtitle="LEGERE.START" />
 
       <DropPDF />
+
+      <Books />
     </Space.Horizontal>
   );
 }

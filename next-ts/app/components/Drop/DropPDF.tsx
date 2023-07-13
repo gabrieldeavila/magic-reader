@@ -52,9 +52,9 @@ function DropPDF() {
           <div {...getRootProps()} className="drop-zone-wrapper">
             <section>
               <input {...getInputProps()} />
-              <Text.P color="var(--primary)" className={font}>
+              <Text.P className={font}>
                 {loading ? (
-                  <Loader.Simple color="var(--primary)" />
+                  <Loader.Simple />
                 ) : (
                   <>
                     {isDragAccept && translateThis("LEGERE.DROP_ACCEPT")}
