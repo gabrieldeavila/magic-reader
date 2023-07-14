@@ -37,6 +37,7 @@
     "START": "Start Experiencing the Power of Sonic Reading",
     "DROP": "Click or drop a PDF to start the magic",
     "DROP_ACCEPT": "File will be uploaded to the server and converted to a magic reader format",
-    "DROP_REJECT": "File is not a PDF file"
+    "DROP_REJECT": "File is not a PDF file",
+    "READ_BOOK": "Click to read"
   }
 }

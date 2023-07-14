@@ -1,5 +1,4 @@
-import { Kanit } from "next/font/google";
-import { globalState } from "react-trigger-state";
+import { Kanit, Space_Grotesk } from "next/font/google";
 import { getDictionary } from "../../get-dictionary";
 import GTWrapper from "./gtWrapper";
 import StyledComponentsRegistry from "./registry";

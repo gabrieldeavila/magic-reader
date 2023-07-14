@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { memo, useCallback, useEffect } from "react";
 import { useTriggerState } from "react-trigger-state";
 import { db } from "../Dexie/Dexie";
 import { Box, MotionBox, Space, Text, Zinc } from "@geavila/gt-design";
@@ -17,11 +17,7 @@ function Books() {
     <Space.Modifiers mt="1rem" display="grid">
       <Box.Column>
         {books.map((book) => (
-          <MotionBox title="red" key={book}>
-            <Space.MiddleCenter>
-              <Text.P>{book.name}</Text.P>
-            </Space.MiddleCenter>
-          </MotionBox>
+          <Book book={book} />
         ))}
       </Box.Column>
     </Space.Modifiers>
@@ -29,3 +25,19 @@ function Books() {
 }
 
 export default Books;
+
+const Book = memo(({ book }: { book: any }) => {
+  const [font] = useTriggerState({ name: "font" });
+
+  const handleClick = useCallback(() => {
+    console.log("click");
+  }, []);
+
+  return (
+    <MotionBox onClick={handleClick} title="LEGERE.READ_BOOK" key={book}>
+      <Space.MiddleCenter>
+        <Text.P className={font}>{book.name}</Text.P>
+      </Space.MiddleCenter>
+    </MotionBox>
+  );
+});

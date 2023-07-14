@@ -37,6 +37,7 @@
     "START": "Experimente o Poder da Leitura Sônica",
     "DROP": "Solte ou arraste um PDF para transformá-lo em um arquivo mágico",
     "DROP_ACCEPT": "O PDF será convertido em um arquivo mágico",
-    "DROP_REJECT": "Apenas arquivos PDF são aceitos"
+    "DROP_REJECT": "Apenas arquivos PDF são aceitos",
+    "READ_BOOK": "Clique para ler"
   }
 }
