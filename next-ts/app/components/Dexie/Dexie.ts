@@ -7,7 +7,8 @@ export interface Pdfs {
   id?: number;
   name: string;
   numOfPages: number;
-  lines: string[];
+  // TODO: ADD TYPE
+  pages: any;
   createdAt: Date;
   updatedAt: Date;
   currPage?: number;
@@ -21,7 +22,7 @@ export class DissolutusDexie extends Dexie {
 
     // DATABASE SCHEMA
     this.version(CURRENT_VERSION).stores({
-      pdfs: "++id, name, numOfPages, lines, currPage, createdAt, updatedAt",
+      pdfs: "++id, name, numOfPages, pages, currPage, createdAt, updatedAt",
     });
   }
 }

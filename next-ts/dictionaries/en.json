@@ -38,6 +38,8 @@
     "DROP": "Click or drop a PDF to start the magic",
     "DROP_ACCEPT": "File will be uploaded to the server and converted to a magic reader format",
     "DROP_REJECT": "File is not a PDF file",
-    "READ_BOOK": "Click to read"
+    "READ_BOOK": "Click to read",
+    "BOOKS": "Your Books",
+    "NUM_OF_PAGES": "{{PAGES}} pages"
   }
 }

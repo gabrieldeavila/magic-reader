@@ -38,6 +38,8 @@
     "DROP": "Solte ou arraste um PDF para transformá-lo em um arquivo mágico",
     "DROP_ACCEPT": "O PDF será convertido em um arquivo mágico",
     "DROP_REJECT": "Apenas arquivos PDF são aceitos",
-    "READ_BOOK": "Clique para ler"
+    "READ_BOOK": "Clique para ler",
+    "BOOKS": "Seus Livros",
+    "NUM_OF_PAGES": "{{PAGES}} páginas"
   }
 }

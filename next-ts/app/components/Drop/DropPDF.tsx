@@ -21,11 +21,12 @@ function DropPDF() {
       formData.append("pdf", acceptedFiles[0]);
       // startTransition(async () => {
       const { data } = await getFileInfo({ formData });
+      const { name, pages, numOfPages } = data;
 
       db.pdfs.add({
-        name: data.fileName,
-        lines: data.lines,
-        numOfPages: data.pages,
+        name,
+        pages,
+        numOfPages,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
