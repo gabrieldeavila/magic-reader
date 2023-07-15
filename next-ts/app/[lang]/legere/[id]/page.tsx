@@ -6,12 +6,17 @@ import { stateStorage } from "react-trigger-state";
 import Reader from "../../../components/Reader/Reader";
 
 function edit({ params: { id } }) {
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     if (!id) return;
     db.pdfs.get({ id: parseInt(id) }).then((book) => {
+      setLoading(false);
       stateStorage.set("reading_book", book);
     });
   }, [id]);
+
+  if (loading) return null;
 
   return <Reader />;
 }

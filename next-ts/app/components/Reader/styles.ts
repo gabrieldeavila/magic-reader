@@ -4,8 +4,8 @@ import styled from "styled-components";
 export const ReadContent = styled(Space.Modifiers)`
   display: initial;
   padding: 1rem;
-  background-color: var(--secondary);
+  background-color: var(--secondary-0_5);
   border-radius: 5px;
-  ${shadows.basic};
+  ${shadows.simple};
   ${scrolls.default};
 `;

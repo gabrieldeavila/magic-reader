@@ -26,6 +26,7 @@ function Phrase({ phrase, index }: { phrase: string; index: number }) {
       alignItems="center"
       gridGap="0 0.5rem"
       width={width}
+      maxWidth="500px"
       flexWrap="wrap"
     >
       {words.map((word, index) => (

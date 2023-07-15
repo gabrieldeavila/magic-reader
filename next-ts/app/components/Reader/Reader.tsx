@@ -11,12 +11,35 @@ import {
   useState,
 } from "react";
 import { ReadContent } from "./styles";
+import { db } from "../Dexie/Dexie";
 
 function Reader() {
   const [readingBook] = useTriggerState({ name: "reading_book", initial: {} });
-  const [currPage, setCurrPage] = useState(0);
+
+  const [currPage, setCurrPage] = useState(readingBook.currPage || 0);
   const readerRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
+
+  const changePage = useCallback(() => {
+    // changes the currentPage of the readingBook in the database
+    try {
+      db?.pdfs?.update?.(parseInt(readingBook.id), {
+        currPage,
+        updatedAt: new Date(),
+      });
+    } catch {}
+  }, [currPage]);
+
+  const firstRender = useRef(true);
+
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+
+    changePage();
+  }, [changePage]);
 
   const lines = useMemo(() => {
     if (!readingBook.pages) return [];
@@ -39,7 +62,6 @@ function Reader() {
   useEffect(() => {
     const handleResize = () => {
       if (!readerRef.current) return;
-      console.dir(readerRef.current);
 
       const navHeight = navRef.current?.clientHeight || 0;
       const readerHeight = window.innerHeight - navHeight * 2 - 32;
