@@ -160,7 +160,7 @@ export const ReaderModal = memo(() => {
 
   const handleGoBack = useCallback(() => {
     const lang = stateStorage.get("lang");
-    router.push(`${lang}/legere`);
+    router.push(`/${lang}/legere`);
     setShowModalBasic(false);
   }, []);
 
