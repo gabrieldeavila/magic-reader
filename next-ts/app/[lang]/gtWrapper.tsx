@@ -5,7 +5,6 @@
 */
 
 import { GTBasic } from "@geavila/gt-design";
-import { SessionProvider } from "next-auth/react";
 import { globalState } from "react-trigger-state";
 
 function GTWrapper({

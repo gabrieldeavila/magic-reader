@@ -11,6 +11,7 @@ import {
 } from "@geavila/gt-design";
 import useBookName from "../../hooks/useBookName";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 function Books() {
   const { translateThis } = useGTTranslate();
@@ -40,31 +41,27 @@ export default Books;
 
 const Book = memo(({ book }: { book: any }) => {
   const [font] = useTriggerState({ name: "font" });
+  const [page] = useTriggerState({ name: "lang" });
   const { translateThis } = useGTTranslate();
   const { convertName } = useBookName();
-  const router = useRouter();
-
-  const handleClick = useCallback(() => {
-    const page = stateStorage.get("lang");
-
-    router.push(`${page}/legere/${book.id}/`);
-  }, []);
 
   const convertedName = useMemo(
     () => convertName({ name: book.name }),
     [book.name]
   );
-
+  console.log(page);
   return (
-    <MotionBox onClick={handleClick} title="LEGERE.READ_BOOK" key={book}>
-      <Space.MiddleCenter>
-        <Text.P textAlign="center" className={font}>
-          {convertedName}
-        </Text.P>
-        <Text.P className={font}>
-          {translateThis("LEGERE.NUM_OF_PAGES", { PAGES: book.numOfPages })}
-        </Text.P>
-      </Space.MiddleCenter>
-    </MotionBox>
+    <Link href={`/${page}/legere/${book.id}/`}>
+      <MotionBox title="LEGERE.READ_BOOK" key={book}>
+        <Space.MiddleCenter>
+          <Text.P textAlign="center" className={font}>
+            {convertedName}
+          </Text.P>
+          <Text.P className={font}>
+            {translateThis("LEGERE.NUM_OF_PAGES", { PAGES: book.numOfPages })}
+          </Text.P>
+        </Space.MiddleCenter>
+      </MotionBox>
+    </Link>
   );
 });
