@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import Letter from "./Letter";
+import { Space } from "@geavila/gt-design";
 
 function Word({ word }: { word: string }) {
   const letters = useMemo(() => word.split(""), [word]);
@@ -20,7 +21,7 @@ function Word({ word }: { word: string }) {
   }, [letters]);
 
   return (
-    <div>
+    <div style={{ whiteSpace: "nowrap" }}>
       {letters.map((letter, index) => (
         <Letter
           key={index}
