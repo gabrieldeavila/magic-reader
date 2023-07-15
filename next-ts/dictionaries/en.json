@@ -40,6 +40,10 @@
     "DROP_REJECT": "File is not a PDF file",
     "READ_BOOK": "Click to read",
     "BOOKS": "Your Books",
-    "NUM_OF_PAGES": "{{PAGES}} pages"
+    "NUM_OF_PAGES": "{{PAGES}} pages",
+    "SETTINGS": "Settings",
+    "GO_BACK": "Go Back to Main Menu",
+    "PREV": "Previous",
+    "NEXT": "Next"
   }
 }

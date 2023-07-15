@@ -40,6 +40,10 @@
     "DROP_REJECT": "Apenas arquivos PDF são aceitos",
     "READ_BOOK": "Clique para ler",
     "BOOKS": "Seus Livros",
-    "NUM_OF_PAGES": "{{PAGES}} páginas"
+    "NUM_OF_PAGES": "{{PAGES}} páginas",
+    "SETTINGS": "Configurações",
+    "GO_BACK": "Voltar para menu principal",
+    "PREV": "Anterior",
+    "NEXT": "Próxima"
   }
 }

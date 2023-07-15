@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { db } from "../../../components/Dexie/Dexie";
 import { stateStorage } from "react-trigger-state";
-import Reader from "../../../components/Reader/Reader";
+import Reader, { ReaderModal } from "../../../components/Reader/Reader";
 
 function edit({ params: { id } }) {
   const [loading, setLoading] = useState(true);
@@ -18,7 +18,12 @@ function edit({ params: { id } }) {
 
   if (loading) return null;
 
-  return <Reader />;
+  return (
+    <>
+      <Reader />
+      <ReaderModal />
+    </>
+  );
 }
 
 export default edit;

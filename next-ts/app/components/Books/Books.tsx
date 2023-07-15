@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo } from "react";
-import { useTriggerState } from "react-trigger-state";
+import { stateStorage, useTriggerState } from "react-trigger-state";
 import { db } from "../Dexie/Dexie";
 import {
   Box,
@@ -45,7 +45,9 @@ const Book = memo(({ book }: { book: any }) => {
   const router = useRouter();
 
   const handleClick = useCallback(() => {
-    router.push(`en/legere/${book.id}/`);
+    const page = stateStorage.get("lang");
+
+    router.push(`${page}/legere/${book.id}/`);
   }, []);
 
   const convertedName = useMemo(

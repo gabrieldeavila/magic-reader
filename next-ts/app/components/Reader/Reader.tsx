@@ -1,5 +1,5 @@
-import { Button, Space } from "@geavila/gt-design";
-import { useTriggerState } from "react-trigger-state";
+import { Button, GTModal, Space, useGTTranslate } from "@geavila/gt-design";
+import { stateStorage, useTriggerState } from "react-trigger-state";
 import Phrase from "./Phrase";
 import {
   forwardRef,
@@ -11,7 +11,10 @@ import {
   useState,
 } from "react";
 import { ReadContent } from "./styles";
+import * as Icon from "react-feather";
 import { db } from "../Dexie/Dexie";
+import { IModalData } from "./interface";
+import { useRouter } from "next/navigation";
 
 function Reader() {
   const [readingBook] = useTriggerState({ name: "reading_book", initial: {} });
@@ -107,14 +110,67 @@ const ReaderNav = memo(
         handlePrev: () => void;
         handleNext: () => void;
       },
-      ref
+      ref: any
     ) => {
+      const { translateThis } = useGTTranslate();
+
+      const handleSettings = useCallback(() => {
+        console.log("ggtrr");
+        stateStorage.set("show_modal_reader", true);
+      }, []);
+
       return (
         <Space.Modifiers ref={ref} gridGap="1rem">
-          <Button.Normal onClick={handlePrev}>Prev</Button.Normal>
-          <Button.Contrast onClick={handleNext}>Next</Button.Contrast>
+          <Button.Normal onClick={handlePrev}>
+            {translateThis("LEGERE.PREV")}
+          </Button.Normal>
+          <Space.Center
+            onClick={handleSettings}
+            width="auto"
+            style={{ cursor: "pointer" }}
+          >
+            <Icon.Settings />
+          </Space.Center>
+          <Button.Contrast onClick={handleNext}>
+            {translateThis("LEGERE.NEXT")}
+          </Button.Contrast>
         </Space.Modifiers>
       );
     }
   )
 );
+
+export const ReaderModal = memo(() => {
+  const [showModalBasic, setShowModalBasic] = useTriggerState({
+    name: "show_modal_reader",
+    initial: false,
+  });
+
+  const modalData = useRef<IModalData>({
+    title: "LEGERE.SETTINGS",
+    orientationY: "center",
+    orientationX: "center",
+  });
+
+  const { translateThis } = useGTTranslate();
+
+  const router = useRouter();
+
+  const handleGoBack = useCallback(() => {
+    const lang = stateStorage.get("lang");
+    router.push(`${lang}/legere`);
+    setShowModalBasic(false);
+  }, []);
+
+  return (
+    <GTModal
+      data={modalData.current}
+      show={showModalBasic}
+      setShow={setShowModalBasic}
+    >
+      <Button.Contrast onClick={handleGoBack}>
+        {translateThis("LEGERE.GO_BACK")}
+      </Button.Contrast>
+    </GTModal>
+  );
+});

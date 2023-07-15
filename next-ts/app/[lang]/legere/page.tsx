@@ -4,6 +4,7 @@ import { SectionContainer, Space, Text } from "@geavila/gt-design";
 import React from "react";
 import DropPDF from "../../components/Drop/DropPDF";
 import Books from "../../components/Books/Books";
+import { ReaderModal } from "../../components/Reader/Reader";
 
 function page() {
   return (
