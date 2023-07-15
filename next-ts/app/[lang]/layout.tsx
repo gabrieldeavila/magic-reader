@@ -1,13 +1,15 @@
-import { Kanit, Space_Grotesk } from "next/font/google";
+import { Kanit } from "next/font/google";
 import { getDictionary } from "../../get-dictionary";
 import GTWrapper from "./gtWrapper";
 import StyledComponentsRegistry from "./registry";
+import "../global.css"
 
 const kanit = Kanit({
   weight: ["100", "200", "300", "400", "500", "600", "700", "900"],
   style: ["italic", "normal"],
   subsets: ["latin-ext"],
   display: "swap",
+  variable: "--font-kanit",
 });
 
 export const metadata = {

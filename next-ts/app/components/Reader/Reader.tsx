@@ -21,6 +21,7 @@ function Reader() {
 
   const [currPage, setCurrPage] = useState(readingBook.currPage || 0);
   const readerRef = useRef<HTMLDivElement>(null);
+  const pageRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
 
   const changePage = useCallback(() => {
@@ -30,6 +31,8 @@ function Reader() {
         currPage,
         updatedAt: new Date(),
       });
+      // puts the scroll to the top of the page 
+      pageRef.current?.scrollTo(0, 0);
     } catch {}
   }, [currPage]);
 
@@ -84,7 +87,7 @@ function Reader() {
       <ReaderNav handlePrev={handlePrev} handleNext={handleNext} />
 
       <Space.Modifiers justifyContent="center" ref={readerRef}>
-        <ReadContent my="1rem" overflowX="hidden" overflowY="auto">
+        <ReadContent ref={pageRef} my="1rem" overflowX="hidden" overflowY="auto">
           <Space.Modifiers flexDirection="column">
             {lines.map((phrase: string, index: number) => (
               <Phrase key={index} index={index} phrase={phrase} />
@@ -115,7 +118,6 @@ const ReaderNav = memo(
       const { translateThis } = useGTTranslate();
 
       const handleSettings = useCallback(() => {
-        console.log("ggtrr");
         stateStorage.set("show_modal_reader", true);
       }, []);
 
