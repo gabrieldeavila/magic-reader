@@ -51,8 +51,8 @@ const Book = memo(({ book }: { book: any }) => {
   );
 
   return (
-    <Link href={`/${page}/legere/${book.id}/`}>
-      <MotionBox title="LEGERE.READ_BOOK" key={book}>
+    <MotionBox title="LEGERE.READ_BOOK" key={book}>
+      <Link style={{ height: "100%" }} href={`/${page}/legere/${book.id}/`}>
         <Space.MiddleCenter>
           <Text.P textAlign="center" className={font}>
             {convertedName}
@@ -61,7 +61,7 @@ const Book = memo(({ book }: { book: any }) => {
             {translateThis("LEGERE.NUM_OF_PAGES", { PAGES: book.numOfPages })}
           </Text.P>
         </Space.MiddleCenter>
-      </MotionBox>
-    </Link>
+      </Link>
+    </MotionBox>
   );
 });
