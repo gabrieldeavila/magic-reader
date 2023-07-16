@@ -4,14 +4,10 @@ import { useEffect } from "react";
 import { stateStorage } from "react-trigger-state";
 import LandingPage from "./[lang]/components/landingPage";
 
-export default function Page({
-  params,
-}: {
-  params: { lang: "pt-BR" | "en" | null };
-}) {
+export default function Page() {
   useEffect(() => {
-    stateStorage.set("lang", params.lang);
-  }, [params]);
+    stateStorage.set("lang", "en");
+  }, []);
 
-  return <LandingPage params={params} />;
+  return <LandingPage params={{ lang: "en" }} />;
 }

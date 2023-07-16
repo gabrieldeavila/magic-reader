@@ -31,7 +31,7 @@ function Reader() {
         currPage,
         updatedAt: new Date(),
       });
-      // puts the scroll to the top of the page 
+      // puts the scroll to the top of the page
       pageRef.current?.scrollTo(0, 0);
     } catch {}
   }, [currPage]);
@@ -42,7 +42,7 @@ function Reader() {
     if (firstRender.current) {
       firstRender.current = false;
       return;
-    }0
+    }
 
     changePage();
   }, [changePage]);
@@ -87,7 +87,12 @@ function Reader() {
       <ReaderNav handlePrev={handlePrev} handleNext={handleNext} />
 
       <Space.Modifiers justifyContent="center" ref={readerRef}>
-        <ReadContent ref={pageRef} my="1rem" overflowX="hidden" overflowY="auto">
+        <ReadContent
+          ref={pageRef}
+          my="1rem"
+          overflowX="hidden"
+          overflowY="auto"
+        >
           <Space.Modifiers flexDirection="column">
             {lines.map((phrase: string, index: number) => (
               <Phrase key={index} index={index} phrase={phrase} />
