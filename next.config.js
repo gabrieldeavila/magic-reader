@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  trailingSlash: true,
   experimental: {
     appDir: true,
     serverActions: true,
@@ -7,7 +8,7 @@ const nextConfig = {
   i18n: {
     locales: ["en", "pt-BR"],
     defaultLocale: "en",
-    localeDetection: true,
+    localeDetection: false,
   },
 };
 
