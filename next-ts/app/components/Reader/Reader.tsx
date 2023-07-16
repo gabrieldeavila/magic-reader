@@ -42,7 +42,7 @@ function Reader() {
     if (firstRender.current) {
       firstRender.current = false;
       return;
-    }
+    }0
 
     changePage();
   }, [changePage]);

@@ -1,14 +1,12 @@
 /* eslint-disable multiline-ternary */
-import Dropzone from "react-dropzone";
-import { useCallback, useState, useTransition } from "react";
-import "./style.css";
 import { Loader, Text, useGTTranslate } from "@geavila/gt-design";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useState } from "react";
+import Dropzone from "react-dropzone";
 import { stateStorage, useTriggerState } from "react-trigger-state";
-import { getFileInfo } from "../../actions/drop/getFileInfo";
 import { db } from "../Dexie/Dexie";
+import "./style.css";
 
-function DropPDF() {
+function DropPDF({ uploadFile }) {
   const [loading, setLoading] = useState(false);
   const { translateThis } = useGTTranslate();
   const [font] = useTriggerState({ name: "font" });
@@ -19,20 +17,23 @@ function DropPDF() {
 
       const formData = new FormData();
       formData.append("pdf", acceptedFiles[0]);
-      // startTransition(async () => {
-      const { data } = await getFileInfo({ formData });
-      const { name, pages, numOfPages } = data;
 
-      db.pdfs.add({
+      const data = await uploadFile?.(formData);
+
+      const { name, pages, numOfPages } = data;
+      const newBook = {
         name,
         pages,
         numOfPages,
         createdAt: new Date(),
         updatedAt: new Date(),
-      });
+      };
 
+      db.pdfs.add(newBook);
+      const allBooks = stateStorage.get("books");
+
+      stateStorage.set("books", [...allBooks, newBook]);
       setLoading(false);
-      // });
     })();
   }, []);
 

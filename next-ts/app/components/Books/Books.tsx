@@ -49,7 +49,7 @@ const Book = memo(({ book }: { book: any }) => {
     () => convertName({ name: book.name }),
     [book.name]
   );
-  console.log(page);
+
   return (
     <Link href={`/${page}/legere/${book.id}/`}>
       <MotionBox title="LEGERE.READ_BOOK" key={book}>
