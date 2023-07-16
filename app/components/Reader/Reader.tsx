@@ -83,16 +83,19 @@ function Reader() {
   }, []);
 
   return (
+    // @ts-expect-error
     <Space.Modifiers overflow="hidden" flexDirection="column" p="1rem">
       <ReaderNav handlePrev={handlePrev} handleNext={handleNext} />
-
+      {/* @ts-expect-error */}
       <Space.Modifiers justifyContent="center" ref={readerRef}>
         <ReadContent
           ref={pageRef}
+          // @ts-expect-error
           my="1rem"
           overflowX="hidden"
           overflowY="auto"
         >
+          {/* @ts-expect-error */}
           <Space.Modifiers flexDirection="column">
             {lines.map((phrase: string, index: number) => (
               <Phrase key={index} index={index} phrase={phrase} />
@@ -127,12 +130,14 @@ const ReaderNav = memo(
       }, []);
 
       return (
+        // @ts-expect-error
         <Space.Modifiers ref={ref} gridGap="1rem">
           <Button.Normal onClick={handlePrev}>
             {translateThis("LEGERE.PREV")}
           </Button.Normal>
           <Space.Center
             onClick={handleSettings}
+            // @ts-expect-error
             width="auto"
             style={{ cursor: "pointer" }}
           >

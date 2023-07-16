@@ -17,7 +17,9 @@ function Example() {
   }, [textArea]);
 
   return (
+    // @ts-expect-error
     <Space.Modifiers gridGap="1rem" flexWrap="wrap" justifyContent="center">
+      {/* @ts-expect-error */}
       <Space.Modifiers flexDirection="column" alignItems="center">
         <Text.H2>{translateThis("LEGERE.DEFAULT")}</Text.H2>
         <TextArea
@@ -25,6 +27,7 @@ function Example() {
           onChange={(e) => setTextArea(e.target.value)}
         />
       </Space.Modifiers>
+      {/* @ts-expect-error */}
       <Space.Modifiers flexDirection="column" alignItems="center">
         <Text.H2>{translateThis("LEGERE.NOW")}</Text.H2>
         {lines.map((line, index) => (

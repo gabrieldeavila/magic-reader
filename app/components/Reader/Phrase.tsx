@@ -30,6 +30,7 @@ function Phrase({ phrase, index }: { phrase: string; index: number }) {
 
   return (
     <Space.Modifiers
+      // @ts-expect-error
       minHeight="fit-content"
       alignItems="center"
       gridGap="0 0.5rem"

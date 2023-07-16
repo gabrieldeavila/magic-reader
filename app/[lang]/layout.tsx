@@ -13,7 +13,6 @@ const kanit = Kanit({
 });
 
 export const metadata = {
-  template: "%s | Dissolutus",
   title: "Dissolutus",
   description: "Dissolutus",
 };
@@ -21,9 +20,6 @@ export const metadata = {
 export async function generateStaticParams() {
   return [{ lang: "en-US" }, { lang: "pt-BR" }];
 }
-
-// this page is dynamic because the cookies are used to set the theme
-export const dynamic = true;
 
 export default async function RootLayout({
   children,

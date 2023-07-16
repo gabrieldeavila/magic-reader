@@ -1,17 +1,15 @@
-import React, { memo, useCallback, useEffect, useMemo } from "react";
-import { stateStorage, useTriggerState } from "react-trigger-state";
-import { db } from "../Dexie/Dexie";
 import {
   Box,
   MotionBox,
   Space,
   Text,
-  Zinc,
   useGTTranslate,
 } from "@geavila/gt-design";
-import useBookName from "../../hooks/useBookName";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { memo, useEffect, useMemo } from "react";
+import { useTriggerState } from "react-trigger-state";
+import useBookName from "../../hooks/useBookName";
+import { db } from "../Dexie/Dexie";
 
 function Books() {
   const { translateThis } = useGTTranslate();
@@ -26,7 +24,9 @@ function Books() {
   }, []);
 
   return (
+    // @ts-expect-error
     <Space.Modifiers mt="1rem" display="grid">
+      {/* @ts-expect-error */}
       <Text.Strong mb="1rem">{translateThis("LEGERE.BOOKS")}</Text.Strong>
       <Box.Column>
         {books.map((book) => (
@@ -54,6 +54,7 @@ const Book = memo(({ book }: { book: any }) => {
     <MotionBox title="LEGERE.READ_BOOK" key={book}>
       <Link style={{ height: "100%" }} href={`/${page}/legere/${book.id}/`}>
         <Space.MiddleCenter>
+          {/* @ts-expect-error */}
           <Text.P textAlign="center" className={font}>
             {convertedName}
           </Text.P>
