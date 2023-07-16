@@ -1,0 +1,49 @@
+{
+  "TITLE": "Unleash Your Reading Potential",
+  "SUBTITLE": "Absorb Knowledge at Warp Speed",
+
+  "LOADING": "Loading your experience...",
+
+  "LANDING_PAGE": {
+    "LOG_IN": "Start",
+    "DESCRIPTION": "Ignite Your Potential: Where Dreams Take Flight",
+    "BENEFITS": {
+      "DESCRIPTION": "Read careless, without distractions, and with the power of your mind.",
+      "ENHANCED_SPEED": {
+        "TITLE": "Enhanced Reading Speed",
+        "DESCRIPTION": "Dissolutus's innovative reader app allows users to read faster and more efficiently. It helps readers grasp the main ideas and concepts more quickly, saving valuable time."
+      },
+      "IMPROVED_COMPREHENSION": {
+        "TITLE": "Improved Comprehension",
+        "DESCRIPTION": "By highlighting important words, it draws attention to crucial information, aiding readers in better understanding the context and extracting key insights from the text."
+      },
+      "PERSONALIZED": {
+        "TITLE": "Personalized Experience",
+        "DESCRIPTION": "It offers a customizable environment, so users can adjust font sizes and other settings according to their preferences. Creating an environment that suits their needs."
+      }
+    },
+    "ACTION": {
+      "TITLE": "Unleash Your Reading Potential",
+      "DESCRIPTION": "Absorb Knowledge at Warp Speed",
+      "GET_STARTED": "Get Started Now!"
+    },
+    "FOOTER": {
+      "DESCRIPTION": "© 2023 Dissolutus"
+    }
+  },
+
+  "LEGERE": {
+    "UNTITLED": "Untitled",
+    "START": "Start Experiencing the Power of Sonic Reading",
+    "DROP": "Click or drop a PDF to start the magic",
+    "DROP_ACCEPT": "File will be uploaded to the server and converted to a magic reader format",
+    "DROP_REJECT": "File is not a PDF file",
+    "READ_BOOK": "Click to read",
+    "BOOKS": "Your Books",
+    "NUM_OF_PAGES": "{{PAGES}} pages",
+    "SETTINGS": "Settings",
+    "GO_BACK": "Go Back to Main Menu",
+    "PREV": "Previous",
+    "NEXT": "Next"
+  }
+}

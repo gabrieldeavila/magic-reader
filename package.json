@@ -1,64 +1,41 @@
 {
-  "name": "magic-reader",
+  "name": "next-ts",
   "version": "0.1.0",
   "private": true,
-  "dependencies": {
-    "@geavila/gt-design": "^1.0.33",
-    "@tanstack/react-query": "^4.29.19",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.38",
-    "@types/react": "^18.2.14",
-    "@types/react-dom": "^18.2.6",
-    "axios": "^1.4.0",
-    "i18next": "^22.5.0",
-    "i18next-browser-languagedetector": "^7.0.2",
-    "lodash": "^4.17.21",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-dropzone": "^14.2.3",
-    "react-i18next": "^13.0.1",
-    "react-router-dom": "^6.14.1",
-    "react-scripts": "5.0.1",
-    "react-trigger-state": "^1.1.1",
-    "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4"
-  },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dev": "next dev -p 3003",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "dependencies": {
+    "@formatjs/intl-localematcher": "^0.2.32",
+    "@geavila/gt-design": "^1.0.39",
+    "@types/node": "18.15.11",
+    "@types/react": "18.0.31",
+    "@types/react-dom": "18.0.11",
+    "@types/react-router": "^5.1.20",
+    "axios": "^1.4.0",
+    "date-fns": "^2.30.0",
+    "dexie": "^3.2.4",
+    "dotenv": "^16.0.3",
+    "eslint": "8.37.0",
+    "eslint-config-next": "13.2.4",
+    "js-cookie": "^3.0.1",
+    "negotiator": "^0.6.3",
+    "next": "13.4.10",
+    "next-auth": "^4.22.0",
+    "next-intl": "^2.12.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-dropzone": "^14.2.3",
+    "server-only": "^0.0.1",
+    "styled-components": "^5.3.9",
+    "typescript": "5.0.3"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@types/lodash": "^4.14.195",
-    "@typescript-eslint/eslint-plugin": "^5.59.2",
-    "eslint": "^8.40.0",
-    "eslint-config-standard-with-typescript": "^34.0.1",
-    "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-n": "^15.7.0",
-    "eslint-plugin-promise": "^6.1.1",
-    "typescript": "^5.0.4"
+    "@types/js-cookie": "^3.0.3",
+    "@types/negotiator": "^0.6.1",
+    "@types/styled-components": "^5.1.26"
   }
 }

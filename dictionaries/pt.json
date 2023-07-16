@@ -1,0 +1,49 @@
+{
+  "TITLE": "Desperte seu Potencial de Leitura",
+  "SUBTITLE": "Leia em Velocidade Máxima",
+
+  "LOADING": "Carregando sua experiência...",
+
+  "LANDING_PAGE": {
+    "LOG_IN": "Começar",
+    "DESCRIPTION": "Explorando Novos Horizontes: Onde Sonhos Ganham Asas",
+    "BENEFITS": {
+      "DESCRIPTION": "Leia sem descuidos, sem distrações e com o poder da sua mente",
+      "ENHANCED_SPEED": {
+        "TITLE": "Leitura sônica",
+        "DESCRIPTION": "Permite ler mais rápido e de forma mais eficiente. Ao enfatizar letras com negrito, leitores compreendem as principais ideias e conceitos rapidamente."
+      },
+      "IMPROVED_COMPREHENSION": {
+        "TITLE": "Compreensão ninja",
+        "DESCRIPTION": "Chama a atenção para informações cruciais, auxiliando os leitores a entenderem melhor o contexto e extrairem insights do texto."
+      },
+      "PERSONALIZED": {
+        "TITLE": "Leitura Personalizada",
+        "DESCRIPTION": "Permite que os usuários ajustem tamanhos de fonte, temas de cores e outras configurações de acordo com suas preferências e necessidades."
+      }
+    },
+    "ACTION": {
+      "TITLE": "Desperte seu Potencial de Leitura",
+      "DESCRIPTION": "Leia em Velocidade Máxima",
+      "GET_STARTED": "Comece agora!"
+    },
+    "FOOTER": {
+      "DESCRIPTION": "© 2023 Dissolutus"
+    }
+  },
+
+  "LEGERE": {
+    "UNTITLED": "Sem título",
+    "START": "Experimente o Poder da Leitura Sônica",
+    "DROP": "Solte ou arraste um PDF para transformá-lo em um arquivo mágico",
+    "DROP_ACCEPT": "O PDF será convertido em um arquivo mágico",
+    "DROP_REJECT": "Apenas arquivos PDF são aceitos",
+    "READ_BOOK": "Clique para ler",
+    "BOOKS": "Seus Livros",
+    "NUM_OF_PAGES": "{{PAGES}} páginas",
+    "SETTINGS": "Configurações",
+    "GO_BACK": "Voltar para menu principal",
+    "PREV": "Anterior",
+    "NEXT": "Próxima"
+  }
+}
