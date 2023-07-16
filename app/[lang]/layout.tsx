@@ -18,7 +18,7 @@ export const metadata = {
 };
 
 export async function generateStaticParams() {
-  return [{ lang: "en-US" }, { lang: "pt-BR" }];
+  return [{ lang: "en" }, { lang: "pt-BR" }];
 }
 
 export default async function RootLayout({
