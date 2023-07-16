@@ -2,29 +2,36 @@
 
 import React, { useMemo, useState } from "react";
 import Phrase from "./Phrase";
+import { Space, Text, useGTTranslate } from "@geavila/gt-design";
+import { TextArea } from "./styles";
 
 function Example() {
-  const [textArea, setTextArea] = useState("");
+  const { translateThis } = useGTTranslate();
+
+  const [textArea, setTextArea] = useState(
+    translateThis("LEGERE.EXAMPLE_PARAGRAPH")
+  );
 
   const lines = useMemo(() => {
     return textArea.split("\n") || [];
   }, [textArea]);
 
   return (
-    <div>
-      <textarea
-        value={textArea}
-        onChange={(e) => setTextArea(e.target.value)}
-        style={{
-          background: "var(--primary)",
-          borderRadius: "5px",
-          color: "var(--contrast)",
-        }}
-      />
-      {lines.map((line, index) => (
-        <Phrase key={index} index={index} phrase={line} />
-      ))}
-    </div>
+    <Space.Modifiers gridGap="1rem" flexWrap="wrap" justifyContent="center">
+      <Space.Modifiers flexDirection="column" alignItems="center">
+        <Text.H2>{translateThis("LEGERE.DEFAULT")}</Text.H2>
+        <TextArea
+          value={textArea}
+          onChange={(e) => setTextArea(e.target.value)}
+        />
+      </Space.Modifiers>
+      <Space.Modifiers flexDirection="column" alignItems="center">
+        <Text.H2>{translateThis("LEGERE.NOW")}</Text.H2>
+        {lines.map((line, index) => (
+          <Phrase key={index} index={index} phrase={line} />
+        ))}
+      </Space.Modifiers>
+    </Space.Modifiers>
   );
 }
 

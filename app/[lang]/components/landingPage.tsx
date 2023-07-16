@@ -1,21 +1,12 @@
 "use client";
 
 import {
-  EasyState,
   GTBasicLandingPage,
-  GTInput,
   IGTLandingBenefit,
   IGTLandingFeature,
-  IGTLandingNavbar,
-  INonNumericMask,
-  INumericMask,
-  Input,
-  SelectionOptions,
-  autoUpdateTheme,
+  IGTLandingNavbar
 } from "@geavila/gt-design";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import React from "react";
 import { Clock, Edit3, Tool } from "react-feather";
 import Example from "../../components/Reader/example";
 
@@ -78,8 +69,6 @@ const Benefits: IGTLandingBenefit[] = [
 
 const Features: IGTLandingFeature[] = [
   {
-    title: "",
-    description: "",
     component: <Example />,
   },
 ];

@@ -9,3 +9,16 @@ export const ReadContent = styled(Space.Modifiers)`
   ${shadows.simple};
   ${scrolls.default};
 `;
+
+export const TextArea = styled.textarea`
+  background: var(--primary);
+  color: var(--contrast);
+  font-size: 1.15rem;
+  border-radius: 5px;
+  resize: none;
+  width: 500px !important;
+  height: 100% !important;
+  min-height: 155px;
+  ${scrolls.default};
+  ${shadows.simple};
+`;

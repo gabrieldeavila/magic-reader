@@ -33,6 +33,9 @@
   },
 
   "LEGERE": {
+    "EXAMPLE_PARAGRAPH": "Os gatos têm um olfato e audição aguçados. Eles podem ouvir sons que são muito agudos para os humanos ouvirem, e eles podem cheirar coisas que não podemos nem detectar. Isso os torna excelentes caçadores, e eles são capazes de rastrear presas mesmo no escuro.",
+    "DEFAULT": "Como você lia",
+    "NOW": "Com Leitura Sônica",
     "UNTITLED": "Sem título",
     "START": "Experimente o Poder da Leitura Sônica",
     "DROP": "Solte ou arraste um PDF para transformá-lo em um arquivo mágico",

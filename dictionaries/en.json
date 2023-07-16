@@ -33,6 +33,9 @@
   },
 
   "LEGERE": {
+    "EXAMPLE_PARAGRAPH": "Cats have a keen sense of hearing and smell. They can hear sounds that are too high-pitched for humans to hear, and they can smell things that we cannot even detect. This makes them excellent hunters, and they are able to track down prey even in the dark.",
+    "DEFAULT": "Old way of reading",
+    "NOW": "With Sonic Reading",
     "UNTITLED": "Untitled",
     "START": "Start Experiencing the Power of Sonic Reading",
     "DROP": "Click or drop a PDF to start the magic",
