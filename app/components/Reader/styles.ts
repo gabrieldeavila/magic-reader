@@ -16,7 +16,7 @@ export const TextArea = styled.textarea`
   font-size: 1.15rem;
   border-radius: 5px;
   resize: none;
-  width: 500px !important;
+  max-width: 500px !important;
   height: 100% !important;
   min-height: 155px;
   ${scrolls.default};

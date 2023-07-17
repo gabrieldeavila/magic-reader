@@ -31,7 +31,7 @@ function Example() {
       <Space.Modifiers flexDirection="column" alignItems="center">
         <Text.H2>{translateThis("LEGERE.NOW")}</Text.H2>
         {lines.map((line, index) => (
-          <Phrase key={index} index={index} phrase={line} />
+          <Phrase customWidth={500} key={index} index={index} phrase={line} />
         ))}
       </Space.Modifiers>
     </Space.Modifiers>

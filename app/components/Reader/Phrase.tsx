@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import Word from "./Word";
 import { Space } from "@geavila/gt-design";
 
-const GET_INITIAL_WIDTH = () => {
+const GET_INITIAL_WIDTH = (customWidth?: number) => {
+  if (customWidth) return customWidth;
+
   try {
     return window.innerWidth / 1.75;
   } catch {
@@ -10,10 +12,18 @@ const GET_INITIAL_WIDTH = () => {
   }
 };
 
-function Phrase({ phrase, index }: { phrase: string; index: number }) {
+function Phrase({
+  phrase,
+  index,
+  customWidth,
+}: {
+  phrase: string;
+  index: number;
+  customWidth?: number;
+}) {
   const words = useMemo(() => phrase.split(" "), [phrase]);
 
-  const [width, setWidth] = useState(GET_INITIAL_WIDTH());
+  const [width, setWidth] = useState(GET_INITIAL_WIDTH(customWidth));
 
   useEffect(() => {
     const handleResize = () => {
