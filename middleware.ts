@@ -8,6 +8,7 @@ export function middleware(request: NextRequest) {
   // gets the path
   // http://localhost:3003/legere -> legere
   const path = request.nextUrl.pathname.split("/")[1];
+
   if (!supportedLocales.includes(path)) {
     // redirect to the default locale
     // gets the user's language
