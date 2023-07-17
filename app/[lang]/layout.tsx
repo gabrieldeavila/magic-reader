@@ -18,7 +18,7 @@ export const metadata = {
 };
 
 export async function generateStaticParams() {
-  return [{ lang: "en" }, { lang: "pt-BR" }];
+  return [{ lang: "en-US" }, { lang: "pt-BR" }];
 }
 
 export default async function RootLayout({
@@ -26,7 +26,7 @@ export default async function RootLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { lang: "en" | "pt-BR" };
+  params: { lang: "en-US" | "pt-BR" };
 }) {
   const dict = await getDictionary(params.lang);
 
