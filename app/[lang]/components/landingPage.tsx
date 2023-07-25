@@ -9,6 +9,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Clock, Edit3, Tool } from "react-feather";
 import Example from "../../components/Reader/example";
+import { useEffect } from "react";
 
 export default function LandingPage({
   params: { lang },
@@ -34,6 +35,10 @@ export default function LandingPage({
       title: "LANDING_PAGE.ACTION.GET_STARTED",
     },
   };
+
+  useEffect(() => {
+    router.prefetch(`${lang}/legere`);
+  }, []);
 
   return (
     <GTBasicLandingPage
