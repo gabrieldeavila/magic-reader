@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Phrase from "./Phrase";
 import { Space, Text, useGTTranslate } from "@geavila/gt-design";
 import { TextArea } from "./styles";
@@ -12,9 +12,13 @@ function Example() {
     translateThis("LEGERE.EXAMPLE_PARAGRAPH")
   );
 
+  const [textAreaNew, setTextAreaNew] = useState(
+    translateThis("LEGERE.EXAMPLE_PARAGRAPH")
+  );
+
   const lines = useMemo(() => {
-    return textArea.split("\n") || [];
-  }, [textArea]);
+    return textAreaNew.split("\n") || [];
+  }, [textAreaNew]);
 
   const [width, setWidth] = useState(0);
 
@@ -29,17 +33,19 @@ function Example() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const handleChangeDiv = useCallback((e) => {
+    setTextAreaNew(e.target.innerText);
+  }, []);
+
   return (
     // @ts-expect-error
     <Space.Modifiers gridGap="1rem" flexWrap="wrap" justifyContent="center">
       {/* @ts-expect-error */}
       <Space.Modifiers flexDirection="column" alignItems="center">
         <Text.H2>{translateThis("LEGERE.DEFAULT")}</Text.H2>
-        <TextArea
-          style={{ width }}
-          value={textArea}
-          onChange={(e) => setTextArea(e.target.value)}
-        />
+        <TextArea style={{ width }} onKeyDown={handleChangeDiv} contentEditable>
+          {textArea}
+        </TextArea>
       </Space.Modifiers>
       {/* @ts-expect-error */}
       <Space.Modifiers flexDirection="column" alignItems="center">

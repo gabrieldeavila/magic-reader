@@ -29,10 +29,13 @@ function DropPDF({ uploadFile }) {
         updatedAt: new Date(),
       };
 
-      db.pdfs.add(newBook);
+      const id = await db.pdfs.add(newBook);
+
       const allBooks = stateStorage.get("books");
 
-      stateStorage.set("books", [...allBooks, newBook]);
+      console.log([...allBooks, newBook]);
+
+      stateStorage.set("books", [...allBooks, { ...newBook, id }]);
       setLoading(false);
     })();
   }, []);

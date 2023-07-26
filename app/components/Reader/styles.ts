@@ -10,13 +10,15 @@ export const ReadContent = styled(Space.Modifiers)`
   ${scrolls.default};
 `;
 
-export const TextArea = styled.textarea`
+export const TextArea = styled.div`
   background: var(--primary);
+  padding: 1rem;
   color: var(--contrast);
   font-size: 1.15rem;
   border-radius: 5px;
   resize: none;
-  max-width: 500px !important;
+  min-height: 155px;
+  width: 500px !important;
   height: 100% !important;
   min-height: 155px;
   ${scrolls.default};
