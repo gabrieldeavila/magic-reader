@@ -12,17 +12,21 @@ export function middleware(request: NextRequest) {
   if (!supportedLocales.includes(path)) {
     // redirect to the default locale
     // gets the user's language
-    const { headers } = request;
-    const acceptLanguageHeader = headers["Accept-Language"];
+    const language = request.headers.get("accept-language");
 
-    const language =
-      request.headers.get("Accept-Language") || acceptLanguageHeader;
+    const info = {};
+
+    request.headers.forEach((e, key) => {
+      info[key] = e;
+    });
     // gets the first that is supported
     const supportedLocale =
       language?.split(",").find((locale) => {
         return supportedLocales.includes(locale);
-      }) || "gg";
-    return NextResponse.redirect(new URL(`/${supportedLocale}`, request.url));
+      }) || "en-US";
+    return NextResponse.redirect(
+      new URL(`/${supportedLocale}/${JSON.stringify(info)}}`, request.url)
+    );
   }
 }
 
