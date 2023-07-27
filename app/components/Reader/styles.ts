@@ -18,9 +18,14 @@ export const TextArea = styled.div`
   border-radius: 5px;
   resize: none;
   min-height: 155px;
-  width: 500px !important;
   height: 100% !important;
+  width: 500px !important;
   min-height: 155px;
   ${scrolls.default};
   ${shadows.simple};
+
+  /* when it's mobile */
+  @media (max-width: 768px) {
+    width: -webkit-fill-available !important;
+  }
 `;
