@@ -1,0 +1,13 @@
+{
+  "projectName": "dissolutus-legere",
+  "defaultConfig": {
+    "region": "us-east-1",
+    "hosting": {
+      "customHeaders": {
+        "Accept-Language": {
+          "forward": true
+        }
+      }
+    }
+  }
+}
