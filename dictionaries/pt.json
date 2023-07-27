@@ -27,6 +27,10 @@
       "DESCRIPTION": "Leia em Velocidade Máxima",
       "GET_STARTED": "Comece agora!"
     },
+    "EXAMPLE": {
+      "TITLE": "Edite no painel à esquerda",
+      "DESCRIPTION": "As alterações serão refletidas aqui!"
+    },
     "FOOTER": {
       "DESCRIPTION": "© 2023 Dissolutus"
     }

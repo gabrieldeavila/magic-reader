@@ -27,6 +27,10 @@
       "DESCRIPTION": "Absorb Knowledge at Warp Speed",
       "GET_STARTED": "Get Started Now!"
     },
+    "EXAMPLE": {
+      "TITLE": "Edit the left panel",
+      "DESCRIPTION": "The changes will be reflected here!"
+    },
     "FOOTER": {
       "DESCRIPTION": "© 2023 Dissolutus"
     }
