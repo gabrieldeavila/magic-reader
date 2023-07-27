@@ -14,11 +14,11 @@ export function middleware(request: NextRequest) {
     // gets the user's language
     const language = request.headers.get("Accept-Language");
     // gets the first that is supported
-    const supportedLocale =
-      language?.split(",").find((locale) => {
-        return supportedLocales.includes(locale);
-      }) || "en-US";
-    return NextResponse.redirect(new URL(`/${supportedLocale}`, request.url));
+    // const supportedLocale =
+    //   language?.split(",").find((locale) => {
+    //     return supportedLocales.includes(locale);
+    //   }) || "en-US";
+    return NextResponse.redirect(new URL(`/${language}`, request.url));
   }
 }
 
