@@ -42,7 +42,7 @@
     "NOW": "Com Leitura Sônica",
     "UNTITLED": "Sem título",
     "START": "Experimente o Poder da Leitura Sônica",
-    "DROP": "Solte ou arraste um PDF para transformá-lo em um arquivo mágico",
+    "DROP": "Clique ou arraste um PDF para transformá-lo em um arquivo mágico",
     "DROP_ACCEPT": "O PDF será convertido em um arquivo mágico",
     "DROP_REJECT": "Apenas arquivos PDF são aceitos",
     "READ_BOOK": "Clique para ler",
@@ -51,6 +51,7 @@
     "SETTINGS": "Configurações",
     "GO_BACK": "Voltar para menu principal",
     "PREV": "Anterior",
-    "NEXT": "Próxima"
+    "NEXT": "Próxima",
+    "NO_BOOKS": "Você ainda não tem nenhum livro, clique no botão acima para começar!"
   }
 }

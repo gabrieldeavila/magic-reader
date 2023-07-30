@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   GTNavbar,
@@ -6,9 +6,10 @@ import {
   Space,
   Text,
   useGTTranslate,
-  useIsMobile
+  useIsMobile,
 } from "@geavila/gt-design";
 import { useCallback, useState } from "react";
+import { Menu, X } from "react-feather";
 
 function Nav({ logo }: { logo: string }) {
   const { translateThis } = useGTTranslate();
@@ -31,9 +32,13 @@ function Nav({ logo }: { logo: string }) {
   return (
     <>
       <GTNavbar>
-        <Space.Center>
-          {/* @ts-ignore */}
-          <Space.Modifiers justifyContent="space-between">
+        {/* @ts-ignore */}
+        <Space.Center px="0.5rem">
+          <Space.Modifiers
+            //  @ts-ignore
+            justifyContent="space-between"
+            width="-webkit-fill-available"
+          >
             <Navbar.Left>
               <Navbar.Logo>{logo}</Navbar.Logo>
             </Navbar.Left>
@@ -44,26 +49,19 @@ function Nav({ logo }: { logo: string }) {
                   <Navbar.Options>
                     <Navbar.OptionWrapper>
                       {/* @ts-ignore */}
-                      <Space.Modifiers gridGap="1rem">
-                        {/* {options.map((option, index) => (
-                          <Text.Action onClick={option.onClick} key={index}>
-                            {translateThis(option.description)}
-                          </Text.Action>
-                        ))} */}
-                      </Space.Modifiers>
+                      <Space.Modifiers gridGap="1rem">aaa</Space.Modifiers>
                     </Navbar.OptionWrapper>
 
                     <Navbar.OptionWrapper>
                       {/* @ts-ignore */}
-                      <Space.Modifiers gridGap="1rem">
-                      </Space.Modifiers>
+                      <Space.Modifiers gridGap="1rem"></Space.Modifiers>
                     </Navbar.OptionWrapper>
                   </Navbar.Options>
                 }
               </Navbar.Right>
             ) : (
               <Navbar.Right>
-                {/* <Menu onClick={handleOpenMobile} className="navbar-menu" /> */}
+                <Menu onClick={handleOpenMobile} className="navbar-menu" />
               </Navbar.Right>
             )}
           </Space.Modifiers>
@@ -84,14 +82,15 @@ function Nav({ logo }: { logo: string }) {
               {logo}
             </Text.Title>
 
-            {/* <X onClick={handleCloseMobile} className="navbar-x" /> */}
+            <X onClick={handleCloseMobile} className="navbar-x" />
           </Space.Modifiers>
-          {/* @ts-ignore */}
-          <Space.Modifiers flexDirection="column" gridGap="1rem">
-          </Space.Modifiers>
+          <Space.Modifiers
+            // @ts-expect-error
+            flexDirection="column"
+            gridGap="1rem"
+          ></Space.Modifiers>
           {/*  @ts-ignore */}
-          <Space.Modifiers pt="2rem">
-          </Space.Modifiers>
+          <Space.Modifiers pt="2rem"></Space.Modifiers>
         </Navbar.Mobile.Wrapper>
       )}
     </>

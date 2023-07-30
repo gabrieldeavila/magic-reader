@@ -28,6 +28,11 @@ function Books() {
     <Space.Modifiers mt="1rem" display="grid">
       {/* @ts-expect-error */}
       <Text.Strong mb="1rem">{translateThis("LEGERE.BOOKS")}</Text.Strong>
+
+      {!books.length && (
+        <Text.P>{translateThis("LEGERE.NO_BOOKS")}</Text.P>
+      )}
+
       <Box.Column>
         {books.map((book) => (
           <Book book={book} />
@@ -52,7 +57,11 @@ const Book = memo(({ book }: { book: any }) => {
 
   return (
     <MotionBox title="LEGERE.READ_BOOK" key={book}>
-      <Link style={{ height: "100%" }} prefetch href={`/${page}/legere/${book.id}/`}>
+      <Link
+        style={{ height: "100%" }}
+        prefetch
+        href={`/${page}/legere/${book.id}/`}
+      >
         <Space.MiddleCenter>
           {/* @ts-expect-error */}
           <Text.P textAlign="center" className={font}>
