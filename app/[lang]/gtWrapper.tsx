@@ -1,11 +1,7 @@
 "use client";
 
-/* 
-  you probably won't need to change this file
-*/
-
 import { GTBasic } from "@geavila/gt-design";
-import { globalState } from "react-trigger-state";
+import { globalState, useTriggerState } from "react-trigger-state";
 
 function GTWrapper({
   serverTranslation,
@@ -19,10 +15,18 @@ function GTWrapper({
   kanit: any;
 }) {
   globalState.set("font", kanit.className);
+  const [noThemeChange] = useTriggerState({
+    initial: false,
+    name: "no_theme_change",
+  });
 
   return (
     // <SessionProvider>
-    <GTBasic serverTranslation={serverTranslation} lang={lang}>
+    <GTBasic
+      serverTranslation={serverTranslation}
+      lang={lang}
+      noThemeChange={noThemeChange}
+    >
       {children}
     </GTBasic>
     // </SessionProvider>

@@ -70,11 +70,8 @@ function Reader() {
       if (!readerRef.current) return;
 
       const navHeight = navRef.current?.clientHeight || 0;
-      const readerHeight = window.innerHeight - navHeight * 2 - 32;
+      const readerHeight = window.innerHeight - navHeight * 2 - 32 - 16 * 3.25;
       readerRef.current.style.height = `${readerHeight}px`;
-
-      const width = window.innerWidth;
-      readerRef.current.style.width = `${width}px`;
     };
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -83,11 +80,21 @@ function Reader() {
   }, []);
 
   return (
-    // @ts-expect-error
-    <Space.Modifiers overflow="hidden" flexDirection="column" p="1rem">
+    <Space.Modifiers
+      // @ts-expect-error
+      overflow="hidden"
+      flexDirection="column"
+      py="1rem"
+      px="1.5rem"
+      width="-webkit-fill-available"
+    >
       <ReaderNav handlePrev={handlePrev} handleNext={handleNext} />
-      {/* @ts-expect-error */}
-      <Space.Modifiers justifyContent="center" ref={readerRef}>
+      <Space.Modifiers
+        // @ts-expect-error
+        justifyContent="center"
+        width="-webkit-fill-available"
+        ref={readerRef}
+      >
         <ReadContent
           ref={pageRef}
           // @ts-expect-error
@@ -125,24 +132,12 @@ const ReaderNav = memo(
     ) => {
       const { translateThis } = useGTTranslate();
 
-      const handleSettings = useCallback(() => {
-        stateStorage.set("show_modal_reader", true);
-      }, []);
-
       return (
         // @ts-expect-error
         <Space.Modifiers ref={ref} gridGap="1rem">
           <Button.Normal onClick={handlePrev}>
             {translateThis("LEGERE.PREV")}
           </Button.Normal>
-          <Space.Center
-            onClick={handleSettings}
-            // @ts-expect-error
-            width="auto"
-            style={{ cursor: "pointer" }}
-          >
-            <Icon.Settings />
-          </Space.Center>
           <Button.Contrast onClick={handleNext}>
             {translateThis("LEGERE.NEXT")}
           </Button.Contrast>

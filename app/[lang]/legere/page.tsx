@@ -1,7 +1,7 @@
 "use client";
 
 import { SectionContainer, Space } from "@geavila/gt-design";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import Books from "../../components/Books/Books";
 import DropPDF from "../../components/Drop/DropPDF";
 import axios from "axios";
@@ -13,8 +13,13 @@ function page() {
     return data;
   }, []);
 
+  useEffect(() => {
+    axios.get("/api");
+  }, []);
+
   return (
-    <Space.Horizontal>
+    // @ts-expect-error
+    <Space.Horizontal mt="-1rem !important" px="1.5rem !important">
       <SectionContainer title="Dissolutus Legere" subtitle="LEGERE.START" />
 
       <DropPDF uploadFile={handleClick} />

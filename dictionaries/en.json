@@ -51,6 +51,7 @@
     "SETTINGS": "Settings",
     "GO_BACK": "Go Back to Main Menu",
     "PREV": "Previous",
-    "NEXT": "Next"
+    "NEXT": "Next",
+    "NO_BOOKS": "You have no books yet, click the button above to add one!"
   }
 }

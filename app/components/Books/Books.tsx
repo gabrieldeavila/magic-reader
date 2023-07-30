@@ -1,5 +1,7 @@
 import {
   Box,
+  Loader,
+  Loading,
   MotionBox,
   Space,
   Text,
@@ -10,6 +12,7 @@ import { memo, useEffect, useMemo } from "react";
 import { useTriggerState } from "react-trigger-state";
 import useBookName from "../../hooks/useBookName";
 import { db } from "../Dexie/Dexie";
+import useIsSSR from "../../hooks/useIsSSR";
 
 function Books() {
   const { translateThis } = useGTTranslate();
@@ -23,11 +26,20 @@ function Books() {
     db.pdfs.toArray().then((pdfs) => setBooks(pdfs));
   }, []);
 
+  const { isSSR } = useIsSSR();
+
   return (
     // @ts-expect-error
     <Space.Modifiers mt="1rem" display="grid">
       {/* @ts-expect-error */}
       <Text.Strong mb="1rem">{translateThis("LEGERE.BOOKS")}</Text.Strong>
+
+      {isSSR && <Loader.Simple />}
+
+      {!books.length && !isSSR && (
+        <Text.P>{translateThis("LEGERE.NO_BOOKS")}</Text.P>
+      )}
+
       <Box.Column>
         {books.map((book) => (
           <Book book={book} />
@@ -52,7 +64,11 @@ const Book = memo(({ book }: { book: any }) => {
 
   return (
     <MotionBox title="LEGERE.READ_BOOK" key={book}>
-      <Link style={{ height: "100%" }} prefetch href={`/${page}/legere/${book.id}/`}>
+      <Link
+        style={{ height: "100%" }}
+        prefetch
+        href={`/${page}/legere/${book.id}/`}
+      >
         <Space.MiddleCenter>
           {/* @ts-expect-error */}
           <Text.P textAlign="center" className={font}>
