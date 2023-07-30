@@ -33,7 +33,7 @@ function Nav({ logo }: { logo: string }) {
       <GTNavbar>
         <Space.Center>
           {/* @ts-ignore */}
-          <Space.Modifiers width="1248px" justifyContent="space-between">
+          <Space.Modifiers justifyContent="space-between">
             <Navbar.Left>
               <Navbar.Logo>{logo}</Navbar.Logo>
             </Navbar.Left>

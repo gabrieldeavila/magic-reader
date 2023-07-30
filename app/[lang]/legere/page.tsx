@@ -14,7 +14,8 @@ function page() {
   }, []);
 
   return (
-    <Space.Horizontal>
+    // @ts-expect-error
+    <Space.Horizontal mt="-3.5rem">
       <SectionContainer title="Dissolutus Legere" subtitle="LEGERE.START" />
 
       <DropPDF uploadFile={handleClick} />
