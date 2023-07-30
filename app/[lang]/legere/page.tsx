@@ -1,7 +1,7 @@
 "use client";
 
 import { SectionContainer, Space } from "@geavila/gt-design";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import Books from "../../components/Books/Books";
 import DropPDF from "../../components/Drop/DropPDF";
 import axios from "axios";
@@ -11,6 +11,10 @@ function page() {
     const { data } = await axios.post("/api/legere", formData);
 
     return data;
+  }, []);
+
+  useEffect(() => {
+    axios.get("/api");
   }, []);
 
   return (

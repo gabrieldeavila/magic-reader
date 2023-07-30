@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@formatjs/intl-localematcher": "^0.2.32",
-    "@geavila/gt-design": "^1.0.46",
+    "@geavila/gt-design": "^1.0.53",
     "@types/node": "18.15.11",
     "@types/react": "18.0.31",
     "@types/react-dom": "18.0.11",
@@ -23,7 +23,7 @@
     "eslint-config-next": "13.2.4",
     "js-cookie": "^3.0.1",
     "negotiator": "^0.6.3",
-    "next": "13.4.10",
+    "next": "^13.4.12",
     "next-auth": "^4.22.0",
     "next-intl": "^2.12.0",
     "react": "18.2.0",
