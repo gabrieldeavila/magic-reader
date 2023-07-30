@@ -9,7 +9,8 @@ import {
   useIsMobile,
 } from "@geavila/gt-design";
 import { useCallback, useState } from "react";
-import { Menu, X } from "react-feather";
+import { Menu, MoreHorizontal, X } from "react-feather";
+import { stateStorage } from "react-trigger-state";
 
 function Nav({ logo }: { logo: string }) {
   const { translateThis } = useGTTranslate();
@@ -29,11 +30,15 @@ function Nav({ logo }: { logo: string }) {
     }, 300);
   }, []);
 
+  const handleSettings = useCallback(() => {
+    stateStorage.set("show_modal_reader", true);
+  }, []);
+
   return (
     <>
       <GTNavbar>
         {/* @ts-ignore */}
-        <Space.Center px="0.5rem">
+        <Space.Center>
           <Space.Modifiers
             //  @ts-ignore
             justifyContent="space-between"
@@ -49,7 +54,12 @@ function Nav({ logo }: { logo: string }) {
                   <Navbar.Options>
                     <Navbar.OptionWrapper>
                       {/* @ts-ignore */}
-                      <Space.Modifiers gridGap="1rem">aaa</Space.Modifiers>
+                      <Space.Modifiers gridGap="1rem">
+                        <MoreHorizontal
+                          onClick={handleSettings}
+                          cursor="pointer"
+                        />
+                      </Space.Modifiers>
                     </Navbar.OptionWrapper>
 
                     <Navbar.OptionWrapper>

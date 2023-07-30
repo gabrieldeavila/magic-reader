@@ -8,7 +8,8 @@ function layout({ children }) {
   return (
     <>
       <Nav logo="DL" />
-      <Space.Main>{children}</Space.Main>
+      {/* @ts-expect-error */}
+      <Space.Modifiers pt="3.25rem">{children}</Space.Modifiers>
     </>
   );
 }
