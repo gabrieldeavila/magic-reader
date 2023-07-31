@@ -39,5 +39,8 @@
     "@types/negotiator": "^0.6.1",
     "@types/styled-components": "^5.1.26",
     "typescript": "^5.1.6"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
