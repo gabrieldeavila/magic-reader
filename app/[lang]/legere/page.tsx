@@ -5,6 +5,7 @@ import { useCallback, useEffect } from "react";
 import Books from "../../components/Books/Books";
 import DropPDF from "../../components/Drop/DropPDF";
 import axios from "axios";
+import { ReaderModal } from "../../components/Reader/Reader";
 
 function page() {
   const handleClick = useCallback(async (formData: any) => {
@@ -24,6 +25,8 @@ function page() {
 
       <DropPDF uploadFile={handleClick} />
       <Books />
+
+      <ReaderModal />
     </Space.Horizontal>
   );
 }
