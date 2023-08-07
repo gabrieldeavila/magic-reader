@@ -226,6 +226,8 @@ export const ReaderModal = memo(() => {
 
   // 555.22622 -> 555.26
   const wpm = useMemo(() => {
+    if (typeof window === "undefined") return 0;
+
     const wpm = localStorage.getItem("currPerMinute");
     if (!wpm) return 0;
 

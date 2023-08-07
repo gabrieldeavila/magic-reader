@@ -22,6 +22,8 @@ function useReadingTime({
   useEffect(() => {
     if (isFirstRender) return;
 
+    if (typeof window === "undefined") return;
+
     // check if the page is already in the database
     // if it is, update the end time
     // if it isn't, create a new entry
@@ -35,7 +37,7 @@ function useReadingTime({
       if (diff < 10) return;
       // returns the words per minute read
       const wpm = (60 * words) / diff;
-      
+
       const currPerMinute = localStorage.getItem("currPerMinute");
 
       if (currPerMinute) {
