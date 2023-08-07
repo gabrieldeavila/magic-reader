@@ -8,8 +8,9 @@ import {
   useGTTranslate,
   useIsMobile,
 } from "@geavila/gt-design";
+import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import { Menu, MoreHorizontal, X } from "react-feather";
+import { Info, Menu, MoreHorizontal, X } from "react-feather";
 import { stateStorage } from "react-trigger-state";
 
 function Nav({ logo }: { logo: string }) {
@@ -34,6 +35,14 @@ function Nav({ logo }: { logo: string }) {
     stateStorage.set("show_modal_reader", true);
   }, []);
 
+  const router = useRouter();
+
+  const handleGoBack = useCallback(() => {
+    const lang = stateStorage.get("lang");
+    console.log("aa");
+    router.push(`/${lang}/legere`);
+  }, []);
+
   return (
     <>
       <GTNavbar>
@@ -45,7 +54,14 @@ function Nav({ logo }: { logo: string }) {
             width="-webkit-fill-available"
           >
             <Navbar.Left>
-              <Navbar.Logo>{logo}</Navbar.Logo>
+              <Navbar.Logo
+                style={{
+                  cursor: "pointer",
+                }}
+                onClick={handleGoBack}
+              >
+                {logo}
+              </Navbar.Logo>
             </Navbar.Left>
 
             {!isMobile ? (
@@ -55,7 +71,8 @@ function Nav({ logo }: { logo: string }) {
                     <Navbar.OptionWrapper>
                       {/* @ts-ignore */}
                       <Space.Modifiers gridGap="1rem">
-                        <MoreHorizontal
+                        <Info
+                          size="1rem"
                           onClick={handleSettings}
                           cursor="pointer"
                         />

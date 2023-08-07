@@ -20,6 +20,7 @@ import { ReadContent, ReadWrapper } from "./styles";
 import { db } from "../Dexie/Dexie";
 import { IModalData } from "./interface";
 import { useRouter } from "next/navigation";
+import useReadingTime from "./utils/useReadingTime";
 
 function Reader() {
   const [readingBook] = useTriggerState({ name: "reading_book", initial: {} });
@@ -104,6 +105,11 @@ function Reader() {
 
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useReadingTime({
+    currPage,
+    words: pageWords,
+  });
 
   return (
     <Space.Modifiers
@@ -213,20 +219,20 @@ export const ReaderModal = memo(() => {
   });
 
   const modalData = useRef<IModalData>({
-    title: "LEGERE.SETTINGS",
+    title: "LEGERE.INFO",
     orientationY: "center",
     orientationX: "center",
   });
 
+  // 555.22622 -> 555.26
+  const wpm = useMemo(() => {
+    const wpm = localStorage.getItem("currPerMinute");
+    if (!wpm) return 0;
+
+    return parseFloat(wpm).toFixed(2);
+  }, [showModalBasic]);
+
   const { translateThis } = useGTTranslate();
-
-  const router = useRouter();
-
-  const handleGoBack = useCallback(() => {
-    const lang = stateStorage.get("lang");
-    router.push(`/${lang}/legere`);
-    setShowModalBasic(false);
-  }, []);
 
   return (
     <GTModal
@@ -234,9 +240,12 @@ export const ReaderModal = memo(() => {
       show={showModalBasic}
       setShow={setShowModalBasic}
     >
-      <Button.Contrast onClick={handleGoBack}>
-        {translateThis("LEGERE.GO_BACK")}
-      </Button.Contrast>
+      {/* @ts-expect-error */}
+      <Space.Between alignItems="center">
+        <Text.Strong>{translateThis("LEGERE.WPM")}:</Text.Strong>
+
+        <Text.P>{wpm}</Text.P>
+      </Space.Between>
     </GTModal>
   );
 });

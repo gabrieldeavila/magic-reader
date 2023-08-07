@@ -51,9 +51,11 @@
     "BOOKS": "Your Books",
     "NUM_OF_PAGES": "{{PAGES}} pages",
     "SETTINGS": "Settings",
+    "INFO": "Info",
     "GO_BACK": "Go Back to Main Menu",
     "PREV": "Previous",
     "NEXT": "Next",
+    "WPM": "Words per minute",
     "NO_BOOKS": "You have no books yet, click the button above to add one!"
   }
 }
