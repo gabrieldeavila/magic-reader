@@ -65,7 +65,7 @@ const Book = memo(({ book }: { book: any }) => {
   return (
     <MotionBox title="LEGERE.READ_BOOK" key={book}>
       <Link
-        style={{ height: "100%" }}
+        style={{ height: "100%", textDecoration: "none" }}
         prefetch
         href={`/${page}/legere/${book.id}/`}
       >

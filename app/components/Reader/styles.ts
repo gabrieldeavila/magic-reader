@@ -1,12 +1,19 @@
 import { Space, scrolls, shadows } from "@geavila/gt-design";
 import styled from "styled-components";
 
-export const ReadContent = styled(Space.Modifiers)`
-  display: initial;
-  padding: 1rem;
+export const ReadWrapper = styled(Space.Modifiers)`
   background-color: var(--secondary-0_5);
+  position: relative;
   border-radius: 5px;
+  padding: 1rem;
   ${shadows.simple};
+`;
+
+export const ReadContent = styled(Space.Modifiers)`
+  margin-bottom: 2rem;
+  display: initial;
+  overflow-x: hidden;
+  overflow-y: auto;
   ${scrolls.default};
 `;
 
