@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "next dev -p 3003",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "next start -H 0.0.0.0",
+    "start-localhost": "next start"
   },
   "lint": "eslint .",
   "dependencies": {
@@ -49,6 +49,6 @@
     "eslint-plugin-react-hooks": "^4.6.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=18 <19"
   }
 }
