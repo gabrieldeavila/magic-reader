@@ -71,11 +71,15 @@ function Nav({ logo }: { logo: string }) {
                     <Navbar.OptionWrapper>
                       {/* @ts-ignore */}
                       <Space.Modifiers gridGap="1rem">
-                        <Info
-                          size="1rem"
-                          onClick={handleSettings}
-                          cursor="pointer"
-                        />
+                        <button onClick={handleSettings} style={
+                          {
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer"
+                          }
+                        }>
+                          <Info size="1rem" cursor="pointer" />
+                        </button>
                       </Space.Modifiers>
                     </Navbar.OptionWrapper>
 
