@@ -1,4 +1,3 @@
-import React from "react";
 import Writer from "../../components/Writer/Writer";
 import { IWritterContent } from "../../components/Writer/interface";
 

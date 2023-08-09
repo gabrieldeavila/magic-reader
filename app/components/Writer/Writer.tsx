@@ -8,10 +8,10 @@ const OPTIONS = {
 function Writer({ content }: IWriter) {
   return (
     <>
-      {content.map((item) => {
+      {content.map((item, index) => {
         const Component = OPTIONS[item.type];
 
-        return <Component {...item} />;
+        return <Component {...item} position={index} />;
       })}
     </>
   );
