@@ -1,9 +1,15 @@
+/* eslint-disable no-undef */
 module.exports = {
   env: {
     browser: true,
     es2021: true,
   },
-  extends: ["plugin:react/recommended"],
+  parser: "@typescript-eslint/parser",
+  extends: [
+    "plugin:react/recommended",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+  ],
   overrides: [],
   parserOptions: {
     ecmaVersion: "latest",
@@ -13,7 +19,6 @@ module.exports = {
   plugins: [
     "react",
     "@typescript-eslint",
-    "plugin:@typescript-eslint/recommended",
     "react-hooks",
   ],
   rules: {
