@@ -10,7 +10,12 @@ module.exports = {
     sourceType: "module",
     project: "./tsconfig.json",
   },
-  plugins: ["react", "@typescript-eslint", "react-hooks"],
+  plugins: [
+    "react",
+    "@typescript-eslint",
+    "plugin:@typescript-eslint/recommended",
+    "react-hooks",
+  ],
   rules: {
     "react/react-in-jsx-scope": "off",
     "@typescript-eslint/explicit-function-return-type": "off",

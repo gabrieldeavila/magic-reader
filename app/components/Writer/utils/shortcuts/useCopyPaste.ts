@@ -1,17 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { IShortcuts } from "../../interface";
 import { useWriterContext } from "../../context/WriterContext";
 
 function useCopyPaste({ ref, editableInfo, position, text }: IShortcuts) {
-  const { setContent } = useWriterContext()
+  const { setContent } = useWriterContext();
 
   // gets when ctrl + c is pressed
   useEffect(() => {
-    const refInstance = ref.current; 
+    const refInstance = ref.current;
 
     const handleCopy = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === "c" && editableInfo.current.hasFocus) {
-
         // prevents the default copy event
         e.preventDefault();
 
@@ -56,7 +55,7 @@ function useCopyPaste({ ref, editableInfo, position, text }: IShortcuts) {
             newContent.splice(position + 1, 0, {
               text: copiedValue.replace("\n", ""),
             });
-            console.log(copiedValue);;
+            console.log(copiedValue);
             return newContent;
           });
           return;
