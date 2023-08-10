@@ -3,7 +3,6 @@ import { IWritterContent } from "../../components/Writer/interface";
 
 const DEFAULT_CONTENT: IWritterContent[] = [
   {
-    type: "p",
     text: "This is editable!",
   },
 ];

@@ -1,10 +1,13 @@
 import { useEffect, useRef } from "react";
-import { IEditable, IEditableProps } from "../interface";
+import { IEditableProps } from "../interface";
+import useShortcuts from "./shortcuts/useShortcuts";
 
-function useEditable({ ref }: IEditableProps) {
+function useEditable({ ref, ...props }: IEditableProps) {
   const editableInfo = useRef({
     hasFocus: false,
   });
+
+  useShortcuts({ ref, editableInfo, ...props });
 
   useEffect(() => {
     // gets when the user is on the editable
@@ -31,6 +34,22 @@ function useEditable({ ref }: IEditableProps) {
 
     return () => {
       ref.current?.removeEventListener("blur", handleBlur);
+    };
+  }, []);
+
+  // gets when the user reaches the end of the editable
+  useEffect(() => {
+    const handleEnd = (e: KeyboardEvent) => {
+      const value = ref.current?.innerText;
+      if (value.length === 0) {
+        console.log("zerooo");
+      }
+    };
+
+    ref.current?.addEventListener("keyup", handleEnd);
+
+    return () => {
+      ref.current?.removeEventListener("keyup", handleEnd);
     };
   }, []);
 }

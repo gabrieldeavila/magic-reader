@@ -1,20 +1,9 @@
 import React from "react";
 import { IWriter } from "./interface";
-
-const OPTIONS = {
-  p: React.lazy(() => import("./options/p/p")),
-};
+import WriterContextProvider from "./context/WriterContext";
 
 function Writer({ content }: IWriter) {
-  return (
-    <>
-      {content.map((item, index) => {
-        const Component = OPTIONS[item.type];
-
-        return <Component {...item} position={index} />;
-      })}
-    </>
-  );
+  return <WriterContextProvider initialContent={content} />;
 }
 
 export default Writer;
