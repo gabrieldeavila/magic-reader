@@ -14,7 +14,7 @@ function Component({ text, ...props }: IEditable) {
 
   const handleBlur = useCallback(() => {
     handleUpdate(props.position, ref.current?.innerHTML);
-  }, []);
+  }, [handleUpdate, props.position]);
 
   return (
     <Editable ref={ref} onBlur={handleBlur} contentEditable>

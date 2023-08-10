@@ -6,6 +6,8 @@ export const Editable = styled.div`
   font-size: 1rem;
   outline: none;
   cursor: text;
+  font-weight: 200;
+
   &:empty:before {
     content: attr(placeholder);
     color: #aaa;

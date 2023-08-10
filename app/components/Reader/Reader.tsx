@@ -113,7 +113,7 @@ function Reader() {
 
   return (
     <Space.Modifiers
-      // @ts-expect-error
+      // @ts-expect-error - do later
       overflow="hidden"
       flexDirection="column"
       py="1rem"
@@ -126,7 +126,7 @@ function Reader() {
         handleNext={handleNext}
       />
       <Space.Modifiers
-        // @ts-expect-error
+        // @ts-expect-error - do later
         position="relative"
         justifyContent="center"
         width="-webkit-fill-available"
@@ -144,7 +144,7 @@ function Reader() {
           </ReadContent>
 
           <Space.Modifiers
-            // @ts-expect-error
+            // @ts-expect-error - do later
             position="absolute"
             justifyContent="space-between"
             bottom="1rem"
@@ -198,7 +198,7 @@ const ReaderNav = memo(
       }, [disabledNav]);
 
       return (
-        // @ts-expect-error
+        // @ts-expect-error - do later
         <Space.Modifiers ref={ref} gridGap="1rem">
           <Button.Normal disabled={disabledNav.prev} onClick={handlePrev}>
             {translateThis(label.prev)}

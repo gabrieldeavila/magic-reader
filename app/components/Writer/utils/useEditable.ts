@@ -1,57 +1,79 @@
-import { useEffect, useRef } from "react";
-import { IEditableProps } from "../interface";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import { IEditableProps, TEditable } from "../interface";
 import useShortcuts from "./shortcuts/useShortcuts";
 
 function useEditable({ ref, ...props }: IEditableProps) {
-  const editableInfo = useRef({
+  const editableInfo = useRef<TEditable>({
     hasFocus: false,
+    selection: null,
   });
 
   useShortcuts({ ref, editableInfo, ...props });
 
+  useLayoutEffect(() => {
+    const refInstance = ref.current;
+
+    const selection = window.getSelection();
+
+    const range = document.createRange();
+
+    // range.setStart(refInstance.childNodes[0], 15);
+    range.setStart(refInstance.childNodes[0], editableInfo.current.selection);
+    range.setEnd(refInstance.childNodes[0], editableInfo.current.selection);
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }, [props.text, ref]);
+
   useEffect(() => {
+    const refInstance = ref.current;
+
     // gets when the user is on the editable
-    const handleFocus = (e: FocusEvent) => {
+    const handleFocus = () => {
       editableInfo.current.hasFocus = true;
     };
 
     // add event listener to the editable
-    ref.current?.addEventListener("focus", handleFocus);
+    refInstance?.addEventListener("focus", handleFocus);
 
     // remove event listener when the component unmounts
     return () => {
-      ref.current?.removeEventListener("focus", handleFocus);
+      refInstance?.removeEventListener("focus", handleFocus);
     };
-  }, []);
+  }, [ref]);
 
   // when loses focus, it returns the editable info
   useEffect(() => {
-    const handleBlur = (e: FocusEvent) => {
+    const refInstance = ref.current;
+
+    const handleBlur = () => {
       editableInfo.current.hasFocus = false;
     };
 
-    ref.current?.addEventListener("blur", handleBlur);
+    refInstance?.addEventListener("blur", handleBlur);
 
     return () => {
-      ref.current?.removeEventListener("blur", handleBlur);
+      refInstance?.removeEventListener("blur", handleBlur);
     };
-  }, []);
+  }, [ref]);
 
   // gets when the user reaches the end of the editable
   useEffect(() => {
-    const handleEnd = (e: KeyboardEvent) => {
+    const refInstance = ref.current;
+
+    const handleEnd = () => {
       const value = ref.current?.innerText;
       if (value.length === 0) {
         console.log("zerooo");
       }
     };
 
-    ref.current?.addEventListener("keyup", handleEnd);
+    refInstance?.addEventListener("keyup", handleEnd);
 
     return () => {
-      ref.current?.removeEventListener("keyup", handleEnd);
+      refInstance?.removeEventListener("keyup", handleEnd);
     };
-  }, []);
+  }, [ref]);
 }
 
 export default useEditable;

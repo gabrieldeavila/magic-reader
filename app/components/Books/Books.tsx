@@ -29,7 +29,7 @@ function Books() {
   const { isSSR } = useIsSSR();
 
   return (
-    // @ts-expect-error
+    // @ts-expect-error - do later
     <Space.Modifiers mt="1rem" display="grid">
       {/* @ts-expect-error */}
       <Text.Strong mb="1rem">{translateThis("LEGERE.BOOKS")}</Text.Strong>

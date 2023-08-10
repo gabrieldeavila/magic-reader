@@ -116,7 +116,7 @@ function Nav({ logo }: { logo: string }) {
             <X onClick={handleCloseMobile} className="navbar-x" />
           </Space.Modifiers>
           <Space.Modifiers
-            // @ts-expect-error
+            // @ts-expect-error - do later
             flexDirection="column"
             gridGap="1rem"
           ></Space.Modifiers>

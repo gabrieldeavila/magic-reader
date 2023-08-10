@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { IShortcuts } from "../../interface";
+import { useEffect } from "react";
 import { useWriterContext } from "../../context/WriterContext";
+import { IShortcuts } from "../../interface";
 
 function useCopyPaste({ ref, editableInfo, position, text }: IShortcuts) {
   const { setContent } = useWriterContext();
@@ -37,10 +37,12 @@ function useCopyPaste({ ref, editableInfo, position, text }: IShortcuts) {
     return () => {
       refInstance?.removeEventListener("keydown", handleCopy);
     };
-  }, [text]);
+  }, [editableInfo, ref, text]);
 
   // gets when ctrl + v is pressed
   useEffect(() => {
+    const refInstance = ref.current;
+
     const handlePaste = async (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === "v") {
         // prevents the default paste event
@@ -55,20 +57,40 @@ function useCopyPaste({ ref, editableInfo, position, text }: IShortcuts) {
             newContent.splice(position + 1, 0, {
               text: copiedValue.replace("\n", ""),
             });
-            console.log(copiedValue);
+
             return newContent;
           });
+
           return;
         }
+
+        const currSelection = window.getSelection()?.anchorOffset;
+
+        // if not, adds in the same paragraph, but where the cursor is
+        setContent((prev) => {
+          const newContent = [...prev];
+          newContent[position].text =
+            newContent[position].text.substring(0, currSelection) +
+            copiedValue +
+            newContent[position].text.substring(currSelection);
+
+          return newContent;
+        });
+
+        setTimeout(() => {
+          const newSelection = currSelection + copiedValue.length;
+
+          editableInfo.current.selection = newSelection;
+        });
       }
     };
 
-    ref.current?.addEventListener("keydown", handlePaste);
+    refInstance?.addEventListener("keydown", handlePaste);
 
     return () => {
-      ref.current?.removeEventListener("keydown", handlePaste);
+      refInstance?.removeEventListener("keydown", handlePaste);
     };
-  }, []);
+  }, [editableInfo, position, ref, setContent]);
 
   return null;
 }

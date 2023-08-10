@@ -14,12 +14,12 @@ export interface IEditableProps extends IEditable {
   ref: React.RefObject<HTMLDivElement>;
 }
 
+export type TEditable = { hasFocus: boolean, selection: number | null }
+
 export interface IShortcuts extends IEditable {
   ref: React.RefObject<HTMLDivElement>;
-  editableInfo: React.MutableRefObject<{ hasFocus: boolean }>;
+  editableInfo: React.MutableRefObject<TEditable>;
 }
-
-type SetState<S> = (state: S, callback?: (prevState: S) => IWritterContent[]) => void;
 
 export interface IWriterContext {
   content: IWritterContent[];

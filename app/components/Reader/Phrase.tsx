@@ -42,7 +42,7 @@ function Phrase({
 
   return (
     <Space.Modifiers
-      // @ts-expect-error
+      // @ts-expect-error - do later
       minHeight="fit-content"
       alignItems="center"
       gridGap="0 0.5rem"
