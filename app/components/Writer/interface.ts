@@ -26,3 +26,9 @@ export interface IWriterContext {
   setContent: React.Dispatch<React.SetStateAction<IWritterContent[]>>
   handleUpdate: (position: number, value: string) => void;
 }
+
+export interface InputEvent extends React.KeyboardEvent<HTMLInputElement> {}
+
+export interface ISetRange extends IEditable, IEditableProps {
+  editableInfo?: React.MutableRefObject<TEditable>;
+}

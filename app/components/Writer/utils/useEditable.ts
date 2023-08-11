@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { IEditableProps, TEditable } from "../interface";
 import useShortcuts from "./shortcuts/useShortcuts";
+import useSetRange from "./useSetRange";
 
 function useEditable({ ref, ...props }: IEditableProps) {
   const editableInfo = useRef<TEditable>({
@@ -9,21 +10,17 @@ function useEditable({ ref, ...props }: IEditableProps) {
   });
 
   useShortcuts({ ref, editableInfo, ...props });
+  const { setRange } = useSetRange({ ref, editableInfo, ...props });
 
   useLayoutEffect(() => {
-    const refInstance = ref.current;
+    setRange();
+  }, [props.text, ref, setRange]);
 
-    const selection = window.getSelection();
-
-    const range = document.createRange();
-
-    // range.setStart(refInstance.childNodes[0], 15);
-    range.setStart(refInstance.childNodes[0], editableInfo.current.selection);
-    range.setEnd(refInstance.childNodes[0], editableInfo.current.selection);
-
-    selection.removeAllRanges();
-    selection.addRange(range);
-  }, [props.text, ref]);
+  useEffect(() => {
+    setTimeout(() => {
+      setRange();
+    }, 200);
+  }, [props.text, setRange]);
 
   useEffect(() => {
     const refInstance = ref.current;

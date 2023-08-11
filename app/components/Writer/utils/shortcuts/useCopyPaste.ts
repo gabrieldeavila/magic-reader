@@ -12,7 +12,7 @@ function useCopyPaste({ ref, editableInfo, position, text }: IShortcuts) {
     const handleCopy = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === "c" && editableInfo.current.hasFocus) {
         // prevents the default copy event
-        e.preventDefault();
+        // e.preventDefault();
 
         // if the user has selected text, it copies it, otherwise it copies the whole editable
         // but becareful, because what is selected is not the same as what is copied!
@@ -28,8 +28,10 @@ function useCopyPaste({ ref, editableInfo, position, text }: IShortcuts) {
           );
         }
 
-        // copies
-        navigator.clipboard.writeText(textToCopy);
+        setTimeout(() => {
+          // copies
+          navigator.clipboard.writeText(textToCopy);
+        });
       }
     };
 
@@ -42,53 +44,55 @@ function useCopyPaste({ ref, editableInfo, position, text }: IShortcuts) {
   // gets when ctrl + v is pressed
   useEffect(() => {
     const refInstance = ref.current;
+    
+    const handlePaste = async (e: ClipboardEvent) => {
+      console.log(e);
 
-    const handlePaste = async (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === "v") {
-        // prevents the default paste event
-        e.preventDefault();
+      if (!editableInfo.current.hasFocus) return;
 
-        const copiedValue = await navigator.clipboard.readText();
+      // prevents the default paste event
+      // e.preventDefault();
 
-        // if has \n in the end, adds a new paragraph
-        if (copiedValue.endsWith("\n")) {
-          setContent((prev) => {
-            const newContent = [...prev];
-            newContent.splice(position + 1, 0, {
-              text: copiedValue.replace("\n", ""),
-            });
-
-            return newContent;
-          });
-
-          return;
-        }
-
-        const currSelection = window.getSelection()?.anchorOffset;
-
-        // if not, adds in the same paragraph, but where the cursor is
+      const copiedValue = e.clipboardData.getData("text/plain");
+      console.log(copiedValue);
+      // if has \n in the end, adds a new paragraph
+      if (copiedValue.endsWith("\n")) {
         setContent((prev) => {
           const newContent = [...prev];
-          newContent[position].text =
-            newContent[position].text.substring(0, currSelection) +
-            copiedValue +
-            newContent[position].text.substring(currSelection);
+          newContent.splice(position + 1, 0, {
+            text: copiedValue.replace("\n", ""),
+          });
 
           return newContent;
         });
 
-        setTimeout(() => {
-          const newSelection = currSelection + copiedValue.length;
-
-          editableInfo.current.selection = newSelection;
-        });
+        return;
       }
+
+      const currSelection = window.getSelection()?.anchorOffset;
+
+      // if not, adds in the same paragraph, but where the cursor is
+      setContent((prev) => {
+        const newContent = [...prev];
+        newContent[position].text =
+          newContent[position].text.substring(0, currSelection) +
+          copiedValue +
+          newContent[position].text.substring(currSelection);
+
+        return newContent;
+      });
+
+      setTimeout(() => {
+        const newSelection = currSelection + copiedValue.length;
+
+        editableInfo.current.selection = newSelection;
+      });
     };
 
-    refInstance?.addEventListener("keydown", handlePaste);
+    refInstance?.addEventListener("paste", handlePaste);
 
     return () => {
-      refInstance?.removeEventListener("keydown", handlePaste);
+      refInstance?.removeEventListener("paste", handlePaste);
     };
   }, [editableInfo, position, ref, setContent]);
 
