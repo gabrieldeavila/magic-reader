@@ -7,49 +7,52 @@ import { IEditable, InputEvent } from "../../interface";
 import { Editable } from "../../style";
 import useEditable from "../../utils/useEditable";
 import useSetRange from "../../utils/useSetRange";
+import Decoration from "./Decoration";
 
 function Component({ text, ...props }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
-  const { handleUpdate } = useWriterContext();
+  // const { handleUpdate } = useWriterContext();
 
-  const { setRange } = useSetRange({ text, ref, ...props });
+  // const { setRange } = useSetRange({ text, ref, ...props });
 
-  const handleChange = useCallback(
-    (event: InputEvent) => {
-      // only accept letters, numbers, spaces and special characters
-      const allowedChars = /^[a-zA-Z0-9\s~`!@#$%^&*()_+={}[\]:;"'<>,.?/\\|-]+$/;
+  // const handleChange = useCallback(
+  //   (event: InputEvent) => {
+  //     // only accept letters, numbers, spaces and special characters
+  //     const allowedChars = /^[a-zA-Z0-9\s~`!@#$%^&*()_+={}[\]:;"'<>,.?/\\|-]+$/;
 
-      const inputChar = event.key;
+  //     const inputChar = event.key;
 
-      const isAllowed = allowedChars.test(inputChar) && event.key.length === 1;
+  //     const isAllowed = allowedChars.test(inputChar) && event.key.length === 1;
 
-      if (!isAllowed) return;
+  //     if (!isAllowed) return;
 
-      const cursorPosition = window.getSelection()?.anchorOffset;
-      globalState.set("cursorPosition", cursorPosition);
+  //     const cursorPosition = window.getSelection()?.anchorOffset;
+  //     globalState.set("cursorPosition", cursorPosition);
 
-      // removes &nbsp;
-      const newText = String(ref.current?.innerHTML).replace(
-        /&nbsp;/g,
-        "\u00A0"
-      );
+  //     // removes &nbsp;
+  //     const newText = String(ref.current?.innerHTML).replace(
+  //       /&nbsp;/g,
+  //       "\u00A0"
+  //     );
 
-      handleUpdate(props.position, newText);
-      setRange();
-    },
-    [handleUpdate, props.position, setRange]
-  );
+  //     handleUpdate(props.position, newText);
+  //     setRange();
+  //   },
+  //   [handleUpdate, props.position, setRange]
+  // );
 
-  useEditable({ text, ...props, ref });
+  // useEditable({ text, ...props, ref });
 
   return (
     <Editable
       ref={ref}
-      onKeyUp={handleChange}
+      // onKeyUp={handleChange}
       contentEditable
       suppressContentEditableWarning
     >
-      {text}
+      {text.map((item, index) => {
+        return <Decoration {...item} key={index} />;
+      })}
     </Editable>
   );
 }

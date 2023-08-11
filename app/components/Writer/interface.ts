@@ -1,5 +1,12 @@
+type TOptions = "bold" | "italic" | "underline" | "strikethrough" | "code";
+
+export interface IText {
+  options?: TOptions[];
+  value: string;
+}
+
 export interface IWritterContent {
-  text: string;
+  text: IText[];
 }
 
 export interface IWriter {
@@ -14,7 +21,7 @@ export interface IEditableProps extends IEditable {
   ref: React.RefObject<HTMLDivElement>;
 }
 
-export type TEditable = { hasFocus: boolean, selection: number | null }
+export type TEditable = { hasFocus: boolean; selection: number | null };
 
 export interface IShortcuts extends IEditable {
   ref: React.RefObject<HTMLDivElement>;
@@ -23,8 +30,8 @@ export interface IShortcuts extends IEditable {
 
 export interface IWriterContext {
   content: IWritterContent[];
-  setContent: React.Dispatch<React.SetStateAction<IWritterContent[]>>
-  handleUpdate: (position: number, value: string) => void;
+  setContent: React.Dispatch<React.SetStateAction<IWritterContent[]>>;
+  handleUpdate: (position: number, value: IText) => void;
 }
 
 export interface InputEvent extends React.KeyboardEvent<HTMLInputElement> {}

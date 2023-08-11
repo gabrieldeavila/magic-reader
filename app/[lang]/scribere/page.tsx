@@ -3,7 +3,16 @@ import { IWritterContent } from "../../components/Writer/interface";
 
 const DEFAULT_CONTENT: IWritterContent[] = [
   {
-    text: "This is editable!",
+    text: [
+      {
+        value: "Hello ",
+        options: []
+      },
+      {
+        value: "World",
+        options: ["bold"]
+      }
+    ],
   },
 ];
 
