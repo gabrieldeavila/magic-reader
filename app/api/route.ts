@@ -1,6 +1,6 @@
 import apiReader from "../Axios/apiReader";
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const { data } = await apiReader.post("/reader/pdf-to-array");
     console.log(data);

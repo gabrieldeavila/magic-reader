@@ -38,6 +38,8 @@
 
   "LEGERE": {
     "EXAMPLE_PARAGRAPH": "Os gatos têm um olfato e audição aguçados. Eles podem ouvir sons que são muito agudos para os humanos ouvirem, e eles podem cheirar coisas que não podemos nem detectar. Isso os torna excelentes caçadores, e eles são capazes de rastrear presas mesmo no escuro!",
+    "REACHED_START": "Está é primeira página!",
+    "REACHED_END": "Está é última página!",
     "DEFAULT": "Como você lia",
     "NOW": "Com Leitura Sônica",
     "UNTITLED": "Sem título",
@@ -49,9 +51,11 @@
     "BOOKS": "Seus Livros",
     "NUM_OF_PAGES": "{{PAGES}} páginas",
     "SETTINGS": "Configurações",
-    "GO_BACK": "Voltar para menu principal",
+    "INFO": "Informações",
+    "GO_BACK": "Voltar para o menu principal",
     "PREV": "Anterior",
     "NEXT": "Próxima",
+    "WPM": "Palavras por minuto",
     "NO_BOOKS": "Você ainda não tem nenhum livro, clique no botão acima para começar!"
   }
 }

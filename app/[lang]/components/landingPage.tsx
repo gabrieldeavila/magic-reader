@@ -4,12 +4,12 @@ import {
   GTBasicLandingPage,
   IGTLandingBenefit,
   IGTLandingFeature,
-  IGTLandingNavbar
+  IGTLandingNavbar,
 } from "@geavila/gt-design";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Clock, Edit3, Tool } from "react-feather";
 import Example from "../../components/Reader/example";
-import { useEffect } from "react";
 
 export default function LandingPage({
   params: { lang },
@@ -38,7 +38,7 @@ export default function LandingPage({
 
   useEffect(() => {
     router.prefetch(`${lang}/legere`);
-  }, []);
+  }, [lang, router]);
 
   return (
     <GTBasicLandingPage

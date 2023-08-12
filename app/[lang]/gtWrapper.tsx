@@ -2,6 +2,7 @@
 
 import { GTBasic } from "@geavila/gt-design";
 import { globalState, useTriggerState } from "react-trigger-state";
+import { ReaderModal } from "../components/Reader/Reader";
 
 function GTWrapper({
   serverTranslation,
@@ -27,6 +28,8 @@ function GTWrapper({
       lang={lang}
       noThemeChange={noThemeChange}
     >
+      <ReaderModal />
+
       {children}
     </GTBasic>
     // </SessionProvider>

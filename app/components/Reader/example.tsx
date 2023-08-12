@@ -46,10 +46,10 @@ function Example() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   return (
-    // @ts-expect-error
+    // @ts-expect-error - do later
     <Space.Modifiers gridGap="1rem" flexWrap="wrap" justifyContent="center">
       <Space.Modifiers
-        // @ts-expect-error
+        // @ts-expect-error - do later
         gridGap="0.5rem"
         flexDirection="column"
         alignItems="center"
@@ -60,7 +60,7 @@ function Example() {
         </TextArea>
       </Space.Modifiers>
       <Space.Modifiers
-        // @ts-expect-error
+        // @ts-expect-error - do later
         gridGap="0.5rem"
         flexDirection="column"
         alignItems="center"

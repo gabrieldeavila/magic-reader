@@ -33,8 +33,6 @@ function DropPDF({ uploadFile }) {
 
       const allBooks = stateStorage.get("books");
 
-      console.log([...allBooks, newBook]);
-
       stateStorage.set("books", [...allBooks, { ...newBook, id }]);
       setLoading(false);
     })();

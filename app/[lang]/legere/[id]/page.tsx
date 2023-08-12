@@ -23,7 +23,6 @@ function edit({ params: { id } }) {
   return (
     <>
       <Reader />
-      <ReaderModal />
     </>
   );
 }

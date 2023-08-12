@@ -29,7 +29,7 @@ function Books() {
   const { isSSR } = useIsSSR();
 
   return (
-    // @ts-expect-error
+    // @ts-expect-error - do later
     <Space.Modifiers mt="1rem" display="grid">
       {/* @ts-expect-error */}
       <Text.Strong mb="1rem">{translateThis("LEGERE.BOOKS")}</Text.Strong>
@@ -65,7 +65,7 @@ const Book = memo(({ book }: { book: any }) => {
   return (
     <MotionBox title="LEGERE.READ_BOOK" key={book}>
       <Link
-        style={{ height: "100%" }}
+        style={{ height: "100%", textDecoration: "none" }}
         prefetch
         href={`/${page}/legere/${book.id}/`}
       >

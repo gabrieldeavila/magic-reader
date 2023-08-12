@@ -1,4 +1,10 @@
-import { Button, GTModal, Space, useGTTranslate } from "@geavila/gt-design";
+import {
+  Button,
+  GTModal,
+  Space,
+  Text,
+  useGTTranslate,
+} from "@geavila/gt-design";
 import { stateStorage, useTriggerState } from "react-trigger-state";
 import Phrase from "./Phrase";
 import {
@@ -10,11 +16,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { ReadContent } from "./styles";
-import * as Icon from "react-feather";
+import { ReadContent, ReadWrapper } from "./styles";
 import { db } from "../Dexie/Dexie";
 import { IModalData } from "./interface";
 import { useRouter } from "next/navigation";
+import useReadingTime from "./utils/useReadingTime";
 
 function Reader() {
   const [readingBook] = useTriggerState({ name: "reading_book", initial: {} });
@@ -53,6 +59,14 @@ function Reader() {
     return readingBook.pages[currPage];
   }, [readingBook, currPage]);
 
+  const pageWords = useMemo(() => {
+    if (!readingBook.pages) return 0;
+
+    return readingBook.pages[currPage].reduce((acc, curr) => {
+      return acc + curr.split(" ").length;
+    }, 0);
+  }, [readingBook, currPage]);
+
   const handleNext = useCallback(() => {
     if (currPage === readingBook.pages.length - 1) return;
 
@@ -63,6 +77,19 @@ function Reader() {
     if (currPage === 0) return;
 
     setCurrPage((prev) => prev - 1);
+  }, [currPage, readingBook]);
+
+  const disabledNav = useMemo(() => {
+    if (!readingBook.pages)
+      return {
+        prev: true,
+        next: true,
+      };
+
+    return {
+      prev: currPage === 0,
+      next: currPage === readingBook.pages.length - 1,
+    };
   }, [currPage, readingBook]);
 
   useEffect(() => {
@@ -79,39 +106,65 @@ function Reader() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  useReadingTime({
+    currPage,
+    words: pageWords,
+  });
+
   return (
     <Space.Modifiers
-      // @ts-expect-error
+      // @ts-expect-error - do later
       overflow="hidden"
       flexDirection="column"
       py="1rem"
       px="1.5rem"
       width="-webkit-fill-available"
     >
-      <ReaderNav handlePrev={handlePrev} handleNext={handleNext} />
+      <ReaderNav
+        disabledNav={disabledNav}
+        handlePrev={handlePrev}
+        handleNext={handleNext}
+      />
       <Space.Modifiers
-        // @ts-expect-error
+        // @ts-expect-error - do later
+        position="relative"
         justifyContent="center"
         width="-webkit-fill-available"
         ref={readerRef}
       >
-        <ReadContent
-          ref={pageRef}
-          // @ts-expect-error
-          my="1rem"
-          overflowX="hidden"
-          overflowY="auto"
-        >
-          {/* @ts-expect-error */}
-          <Space.Modifiers flexDirection="column">
-            {lines.map((phrase: string, index: number) => (
-              <Phrase key={index} index={index} phrase={phrase} />
-            ))}
+        {/* @ts-expect-error */}
+        <ReadWrapper my="1rem">
+          <ReadContent ref={pageRef}>
+            {/* @ts-expect-error */}
+            <Space.Modifiers flexDirection="column">
+              {lines.map((phrase: string, index: number) => (
+                <Phrase key={index} index={index} phrase={phrase} />
+              ))}
+            </Space.Modifiers>
+          </ReadContent>
+
+          <Space.Modifiers
+            // @ts-expect-error - do later
+            position="absolute"
+            justifyContent="space-between"
+            bottom="1rem"
+            left="1rem"
+            right="1rem"
+          >
+            <Text.P>{pageWords} words</Text.P>
+            <Text.P>
+              {currPage + 1} / {readingBook.pages?.length}
+            </Text.P>
           </Space.Modifiers>
-        </ReadContent>
+        </ReadWrapper>
       </Space.Modifiers>
 
-      <ReaderNav ref={navRef} handlePrev={handlePrev} handleNext={handleNext} />
+      <ReaderNav
+        ref={navRef}
+        disabledNav={disabledNav}
+        handlePrev={handlePrev}
+        handleNext={handleNext}
+      />
     </Space.Modifiers>
   );
 }
@@ -124,22 +177,34 @@ const ReaderNav = memo(
       {
         handlePrev,
         handleNext,
+        disabledNav,
       }: {
         handlePrev: () => void;
         handleNext: () => void;
+        disabledNav: {
+          prev: boolean;
+          next: boolean;
+        };
       },
       ref: any
     ) => {
       const { translateThis } = useGTTranslate();
 
+      const label = useMemo(() => {
+        return {
+          prev: disabledNav.prev ? "LEGERE.REACHED_START" : "LEGERE.PREV",
+          next: disabledNav.next ? "LEGERE.REACHED_END" : "LEGERE.NEXT",
+        };
+      }, [disabledNav]);
+
       return (
-        // @ts-expect-error
+        // @ts-expect-error - do later
         <Space.Modifiers ref={ref} gridGap="1rem">
-          <Button.Normal onClick={handlePrev}>
-            {translateThis("LEGERE.PREV")}
+          <Button.Normal disabled={disabledNav.prev} onClick={handlePrev}>
+            {translateThis(label.prev)}
           </Button.Normal>
-          <Button.Contrast onClick={handleNext}>
-            {translateThis("LEGERE.NEXT")}
+          <Button.Contrast disabled={disabledNav.next} onClick={handleNext}>
+            {translateThis(label.next)}
           </Button.Contrast>
         </Space.Modifiers>
       );
@@ -154,20 +219,22 @@ export const ReaderModal = memo(() => {
   });
 
   const modalData = useRef<IModalData>({
-    title: "LEGERE.SETTINGS",
+    title: "LEGERE.INFO",
     orientationY: "center",
     orientationX: "center",
   });
 
+  // 555.22622 -> 555.26
+  const wpm = useMemo(() => {
+    if (typeof window === "undefined") return 0;
+
+    const wpm = localStorage.getItem("currPerMinute");
+    if (!wpm) return 0;
+
+    return parseFloat(wpm).toFixed(2);
+  }, [showModalBasic]);
+
   const { translateThis } = useGTTranslate();
-
-  const router = useRouter();
-
-  const handleGoBack = useCallback(() => {
-    const lang = stateStorage.get("lang");
-    router.push(`/${lang}/legere`);
-    setShowModalBasic(false);
-  }, []);
 
   return (
     <GTModal
@@ -175,9 +242,12 @@ export const ReaderModal = memo(() => {
       show={showModalBasic}
       setShow={setShowModalBasic}
     >
-      <Button.Contrast onClick={handleGoBack}>
-        {translateThis("LEGERE.GO_BACK")}
-      </Button.Contrast>
+      {/* @ts-expect-error */}
+      <Space.Between alignItems="center">
+        <Text.Strong>{translateThis("LEGERE.WPM")}:</Text.Strong>
+
+        <Text.P>{wpm}</Text.P>
+      </Space.Between>
     </GTModal>
   );
 });
