@@ -1,12 +1,8 @@
 "use client";
 
-import { useCallback, useRef } from "react";
-import { globalState } from "react-trigger-state";
-import { useWriterContext } from "../../context/WriterContext";
-import { IEditable, InputEvent } from "../../interface";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { IEditable } from "../../interface";
 import { Editable } from "../../style";
-import useEditable from "../../utils/useEditable";
-import useSetRange from "../../utils/useSetRange";
 import Decoration from "./Decoration";
 
 function Component({ text, ...props }: IEditable) {
@@ -15,38 +11,63 @@ function Component({ text, ...props }: IEditable) {
 
   // const { setRange } = useSetRange({ text, ref, ...props });
 
-  // const handleChange = useCallback(
-  //   (event: InputEvent) => {
-  //     // only accept letters, numbers, spaces and special characters
-  //     const allowedChars = /^[a-zA-Z0-9\s~`!@#$%^&*()_+={}[\]:;"'<>,.?/\\|-]+$/;
-
-  //     const inputChar = event.key;
-
-  //     const isAllowed = allowedChars.test(inputChar) && event.key.length === 1;
-
-  //     if (!isAllowed) return;
-
-  //     const cursorPosition = window.getSelection()?.anchorOffset;
-  //     globalState.set("cursorPosition", cursorPosition);
-
-  //     // removes &nbsp;
-  //     const newText = String(ref.current?.innerHTML).replace(
-  //       /&nbsp;/g,
-  //       "\u00A0"
-  //     );
-
-  //     handleUpdate(props.position, newText);
-  //     setRange();
-  //   },
-  //   [handleUpdate, props.position, setRange]
-  // );
-
   // useEditable({ text, ...props, ref });
+  const mimic = useMemo(
+    () =>
+      text.reduce((acc, item) => {
+        const words = item.value.split("");
+
+        console.log(words);
+
+        words.forEach((word) => {
+          acc.push({
+            letter: word,
+            id: item.id,
+          });
+        });
+
+        return acc;
+      }, []),
+    [text]
+  );
+
+  const handleChange = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      // only accept letters, numbers, spaces and special characters
+      const allowedChars = /^[a-zA-Z0-9\s~`!@#$%^&*()_+={}[\]:;"'<>,.?/\\|-]+$/;
+
+      const inputChar = event.key;
+
+      const isAllowed = allowedChars.test(inputChar) && event.key.length === 1;
+
+      if (!isAllowed) {
+        // prevents, if enter
+        if (event.key === "Enter") {
+          event.preventDefault();
+        }
+        return;
+      }
+
+      // const positionToAdd = 
+
+      console.log("uh");
+    },
+    []
+  );
+
+  useEffect(() => {
+    console.log(text, mimic);
+  }, [mimic, text]);
+
+  // const handleChange = useCallback((e) => {
+  //   console.log(e);
+  // }, []);
 
   return (
     <Editable
       ref={ref}
-      // onKeyUp={handleChange}
+      onKeyDown={handleChange}
+      // onKeyDown={(e)=>console.log(e)}
       contentEditable
       suppressContentEditableWarning
     >

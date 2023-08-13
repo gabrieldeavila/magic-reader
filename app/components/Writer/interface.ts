@@ -3,6 +3,7 @@ type TOptions = "bold" | "italic" | "underline" | "strikethrough" | "code";
 export interface IText {
   options?: TOptions[];
   value: string;
+  id: number;
 }
 
 export interface IWritterContent {

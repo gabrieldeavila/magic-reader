@@ -6,11 +6,13 @@ const DEFAULT_CONTENT: IWritterContent[] = [
     text: [
       {
         value: "Hello ",
-        options: []
+        options: [],
+        id: 1,
       },
       {
         value: "World",
-        options: ["bold"]
+        options: ["bold"],
+        id: 2
       }
     ],
   },
