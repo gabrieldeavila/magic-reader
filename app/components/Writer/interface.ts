@@ -8,7 +8,7 @@ export interface IText {
 
 export interface IWritterContent {
   text: IText[];
-  id: number
+  id: number;
 }
 
 export interface IWriter {
@@ -34,11 +34,20 @@ export interface IWriterContext {
   content: IWritterContent[];
   setContent: React.Dispatch<React.SetStateAction<IWritterContent[]>>;
   handleUpdate: (position: number, value: IText[]) => void;
-  contextName: string,
+  contextName: string;
 }
 
 export interface InputEvent extends React.KeyboardEvent<HTMLInputElement> {}
 
 export interface ISetRange extends IEditable, IEditableProps {
   editableInfo?: React.MutableRefObject<TEditable>;
+}
+
+export interface IWriterInfo {
+  selection: number;
+  blockId: number
+}
+
+export interface IDecoration extends IText {
+  info: React.RefObject<IWriterInfo>;
 }

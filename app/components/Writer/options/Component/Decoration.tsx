@@ -1,5 +1,10 @@
-import React, { useMemo } from "react";
-import { IText } from "../../interface";
+import {
+  memo,
+  useLayoutEffect,
+  useMemo,
+  useRef
+} from "react";
+import { IDecoration } from "../../interface";
 
 const STYLE_MAP = {
   bold: {
@@ -19,7 +24,9 @@ const STYLE_MAP = {
   },
 };
 
-function Decoration({ options = [], value, id }: IText) {
+const Decoration = memo(({ options = [], value, id, info }: IDecoration) => {
+  const tagRef = useRef<HTMLDivElement>(null);
+
   const style = useMemo(
     () =>
       options.reduce((acc, item) => {
@@ -39,11 +46,30 @@ function Decoration({ options = [], value, id }: IText) {
     return "span";
   }, [options]);
 
+  useLayoutEffect(() => {
+    if (info.current.blockId !== id) return;
+
+    const selection = window.getSelection();
+
+    const range = document.createRange();
+
+    const cursorPositionValue = info.current.selection;
+    console.log(tagRef.current.childNodes[0], cursorPositionValue);
+
+    range.setStart(tagRef.current.childNodes[0], cursorPositionValue);
+    range.setEnd(tagRef.current.childNodes[0], cursorPositionValue);
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }, [id, info, value]);
+
   return (
-    <Tag data-block-id={id} onKeyUpCapture={() => console.log("o")} style={style}>
+    <Tag ref={tagRef} data-block-id={id} style={style}>
       {value}
     </Tag>
   );
-}
+});
+
+Decoration.displayName = "Decoration";
 
 export default Decoration;

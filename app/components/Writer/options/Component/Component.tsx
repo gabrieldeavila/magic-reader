@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useRef } from "react";
 import { globalState } from "react-trigger-state";
 import { useWriterContext } from "../../context/WriterContext";
-import { IEditable } from "../../interface";
+import { IEditable, IWriterInfo } from "../../interface";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
 
@@ -11,7 +11,10 @@ function Component({ text, id, position }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
 
   const { contextName, handleUpdate } = useWriterContext();
-
+  const info = useRef<IWriterInfo>({
+    selection: 0,
+    blockId: 0,
+  });
   // const { setRange } = useSetRange({ text, ref, ...props });
 
   // useEditable({ text, ...props, ref });
@@ -75,6 +78,11 @@ function Component({ text, id, position }: IEditable) {
       });
 
       handleUpdate(position, newText);
+
+      info.current = {
+        selection: selection.anchorOffset + 1,
+        blockId: changedBlockId,
+      };
     },
     [contextName, handleUpdate, id, position]
   );
@@ -88,7 +96,7 @@ function Component({ text, id, position }: IEditable) {
       suppressContentEditableWarning
     >
       {text.map((item, index) => {
-        return <Decoration {...item} key={index} />;
+        return <Decoration {...{ ...item, info }} key={index} />;
       })}
     </Editable>
   );
