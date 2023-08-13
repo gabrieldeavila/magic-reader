@@ -34,6 +34,7 @@ export interface IWriterContext {
   content: IWritterContent[];
   setContent: React.Dispatch<React.SetStateAction<IWritterContent[]>>;
   handleUpdate: (position: number, value: IText[]) => void;
+  deleteBlock: (position: number, textId: number, blockId: number) => void;
   contextName: string;
 }
 
@@ -45,7 +46,7 @@ export interface ISetRange extends IEditable, IEditableProps {
 
 export interface IWriterInfo {
   selection: number;
-  blockId: number
+  blockId: number;
 }
 
 export interface IDecoration extends IText {

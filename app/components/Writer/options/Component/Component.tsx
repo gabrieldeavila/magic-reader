@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef } from "react";
-import { globalState } from "react-trigger-state";
+import { globalState, stateStorage } from "react-trigger-state";
 import { useWriterContext } from "../../context/WriterContext";
 import { IEditable, IWriterInfo } from "../../interface";
 import { Editable } from "../../style";
@@ -10,7 +10,7 @@ import Decoration from "./Decoration";
 function Component({ text, id, position }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
 
-  const { contextName, handleUpdate } = useWriterContext();
+  const { contextName, handleUpdate, deleteBlock } = useWriterContext();
   const info = useRef<IWriterInfo>({
     selection: 0,
     blockId: 0,
@@ -39,7 +39,6 @@ function Component({ text, id, position }: IEditable) {
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (event.key === "Backspace") {
         event.preventDefault();
-
         const selection = window.getSelection();
 
         const changedBlockId = parseInt(
@@ -65,6 +64,28 @@ function Component({ text, id, position }: IEditable) {
           return item;
         });
 
+        if (newValue.length === 0 && text.length > 1) {
+          deleteBlock(position, id, changedBlockId);
+
+          // the prev block is the last item before the current block
+          const prevBlock = currText.find((_item, index) => {
+            const nextBlock = currText[index + 1];
+
+            return nextBlock?.id === changedBlockId;
+          });
+
+          info.current = {
+            selection: prevBlock.value.length,
+            blockId: prevBlock.id,
+          };
+
+          stateStorage.set(
+            `${contextName}_decoration-${prevBlock.id}`,
+            new Date()
+          );
+          return;
+        }
+
         handleUpdate(position, newText);
 
         info.current = {
@@ -73,7 +94,7 @@ function Component({ text, id, position }: IEditable) {
         };
       }
     },
-    [contextName, handleUpdate, id, position]
+    [contextName, deleteBlock, handleUpdate, id, position, text]
   );
 
   const handleChange = useCallback(
@@ -95,7 +116,8 @@ function Component({ text, id, position }: IEditable) {
       const selection = window.getSelection();
 
       const changedBlockId = parseInt(
-        selection.anchorNode.parentElement.getAttribute("data-block-id")
+        // @ts-expect-error - this is a valid attribute
+        selection.anchorNode.parentElement.getAttribute("data-block-id") ?? selection.anchorNode.getAttribute("data-block-id")
       );
 
       const currText = globalState
@@ -104,7 +126,7 @@ function Component({ text, id, position }: IEditable) {
 
       const block = currText.find(({ id }) => id === changedBlockId);
 
-      const baseValue = block.value.slice();
+      const baseValue = block?.value?.slice?.() ?? "";
 
       const newValue =
         baseValue.slice(0, selection.anchorOffset) +

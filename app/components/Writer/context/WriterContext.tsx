@@ -11,6 +11,9 @@ export const WriterContext = createContext<IWriterContext>({
   handleUpdate: (position: number, text: IText[]) => {
     console.log(position, text);
   },
+  deleteBlock: (position: number, textId: number, blockId: number) => {
+    console.log(position, textId, blockId);
+  },
   contextName: "writter_context",
 });
 
@@ -43,9 +46,34 @@ const WriterContextProvider = ({
     [setContent]
   );
 
+  const deleteBlock = useCallback(
+    (position: number, textId: number, blockId: number) => {
+      setContent((prev) => {
+        const newContent = [...prev];
+
+        const blocks = newContent.find(({ id }) => id === textId);
+
+        const blockDeleted = blocks.text.filter(
+          ({ id: blockIdItem }) => blockIdItem !== blockId
+        );
+
+        blocks.text = blockDeleted;
+
+        return newContent.map((item) => {
+          if (item.id === textId) {
+            item.text = blockDeleted;
+          }
+
+          return item;
+        });
+      });
+    },
+    [setContent]
+  );
+
   return (
     <WriterContext.Provider
-      value={{ content, setContent, handleUpdate, contextName }}
+      value={{ content, setContent, handleUpdate, contextName, deleteBlock }}
     >
       {content.map((item, index) => {
         return <Component key={index} {...item} position={index} />;
@@ -55,3 +83,9 @@ const WriterContextProvider = ({
 };
 
 export default WriterContextProvider;
+
+export const useContextName = () => {
+  const { contextName } = useWriterContext();
+
+  return contextName;
+};

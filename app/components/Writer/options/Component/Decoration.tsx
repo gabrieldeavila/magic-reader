@@ -1,10 +1,7 @@
-import {
-  memo,
-  useLayoutEffect,
-  useMemo,
-  useRef
-} from "react";
+import { memo, useLayoutEffect, useMemo, useRef } from "react";
 import { IDecoration } from "../../interface";
+import { useContextName } from "../../context/WriterContext";
+import { useTriggerState } from "react-trigger-state";
 
 const STYLE_MAP = {
   bold: {
@@ -26,6 +23,11 @@ const STYLE_MAP = {
 
 const Decoration = memo(({ options = [], value, id, info }: IDecoration) => {
   const tagRef = useRef<HTMLDivElement>(null);
+  const name = useContextName();
+
+  const [decoration] = useTriggerState({
+    name: `${name}_decoration-${id}`,
+  });
 
   const style = useMemo(
     () =>
@@ -55,12 +57,16 @@ const Decoration = memo(({ options = [], value, id, info }: IDecoration) => {
 
     const cursorPositionValue = info.current.selection;
 
-    range.setStart(tagRef.current.childNodes[0], cursorPositionValue);
-    range.setEnd(tagRef.current.childNodes[0], cursorPositionValue);
+    const node = tagRef.current.childNodes[0];
+
+    if (node === undefined) return;
+
+    range.setStart(node, cursorPositionValue);
+    range.setEnd(node, cursorPositionValue);
 
     selection.removeAllRanges();
     selection.addRange(range);
-  }, [id, info, value]);
+  }, [id, info, value, decoration]);
 
   return (
     <Tag ref={tagRef} data-block-id={id} style={style}>
