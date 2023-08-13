@@ -54,7 +54,6 @@ const Decoration = memo(({ options = [], value, id, info }: IDecoration) => {
     const range = document.createRange();
 
     const cursorPositionValue = info.current.selection;
-    console.log(tagRef.current.childNodes[0], cursorPositionValue);
 
     range.setStart(tagRef.current.childNodes[0], cursorPositionValue);
     range.setEnd(tagRef.current.childNodes[0], cursorPositionValue);

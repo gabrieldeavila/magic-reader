@@ -35,6 +35,47 @@ function Component({ text, id, position }: IEditable) {
     [text]
   );
 
+  const verifySpecialChars = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === "Backspace") {
+        event.preventDefault();
+
+        const selection = window.getSelection();
+
+        const changedBlockId = parseInt(
+          selection.anchorNode.parentElement.getAttribute("data-block-id")
+        );
+
+        const currText = globalState
+          .get(contextName)
+          .find(({ id: textId }) => textId === id).text;
+
+        const baseValue = selection.anchorNode.parentElement.innerText;
+
+        const charToDelete = selection.anchorOffset - 1;
+
+        const newValue =
+          baseValue.slice(0, charToDelete) + baseValue.slice(charToDelete + 1);
+
+        const newText = currText.map((item) => {
+          if (item.id === changedBlockId) {
+            item.value = newValue;
+          }
+
+          return item;
+        });
+
+        handleUpdate(position, newText);
+
+        info.current = {
+          selection: charToDelete,
+          blockId: changedBlockId,
+        };
+      }
+    },
+    [contextName, handleUpdate, id, position]
+  );
+
   const handleChange = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       // only accept letters, numbers, spaces and special characters
@@ -45,6 +86,7 @@ function Component({ text, id, position }: IEditable) {
       const isAllowed = allowedChars.test(inputChar) && event.key.length === 1;
 
       if (!isAllowed) {
+        verifySpecialChars(event);
         return;
       }
 
@@ -84,7 +126,7 @@ function Component({ text, id, position }: IEditable) {
         blockId: changedBlockId,
       };
     },
-    [contextName, handleUpdate, id, position]
+    [contextName, handleUpdate, id, position, verifySpecialChars]
   );
 
   return (
