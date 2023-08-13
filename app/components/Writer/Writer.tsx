@@ -3,7 +3,7 @@ import { IWriter } from "./interface";
 import WriterContextProvider from "./context/WriterContext";
 
 function Writer({ content }: IWriter) {
-  return <WriterContextProvider initialContent={content} />;
+  return <WriterContextProvider name="writter" initialContent={content} />;
 }
 
 export default Writer;

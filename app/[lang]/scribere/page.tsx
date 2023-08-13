@@ -3,6 +3,7 @@ import { IWritterContent } from "../../components/Writer/interface";
 
 const DEFAULT_CONTENT: IWritterContent[] = [
   {
+    id: 1,
     text: [
       {
         value: "Hello ",
@@ -12,8 +13,13 @@ const DEFAULT_CONTENT: IWritterContent[] = [
       {
         value: "World",
         options: ["bold"],
-        id: 2
-      }
+        id: 2,
+      },
+      {
+        value: " he",
+        options: [],
+        id: 3,
+      },
     ],
   },
 ];

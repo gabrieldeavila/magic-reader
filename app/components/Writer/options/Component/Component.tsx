@@ -1,13 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
+import { globalState } from "react-trigger-state";
+import { useWriterContext } from "../../context/WriterContext";
 import { IEditable } from "../../interface";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
 
-function Component({ text, ...props }: IEditable) {
+function Component({ text, id, position }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
-  // const { handleUpdate } = useWriterContext();
+
+  const { contextName, handleUpdate } = useWriterContext();
 
   // const { setRange } = useSetRange({ text, ref, ...props });
 
@@ -16,8 +19,6 @@ function Component({ text, ...props }: IEditable) {
     () =>
       text.reduce((acc, item) => {
         const words = item.value.split("");
-
-        console.log(words);
 
         words.forEach((word) => {
           acc.push({
@@ -41,27 +42,42 @@ function Component({ text, ...props }: IEditable) {
       const isAllowed = allowedChars.test(inputChar) && event.key.length === 1;
 
       if (!isAllowed) {
-        // prevents, if enter
-        if (event.key === "Enter") {
-          event.preventDefault();
-        }
         return;
       }
 
-      // const positionToAdd = 
+      event.preventDefault();
 
-      console.log("uh");
+      const selection = window.getSelection();
+
+      const changedBlockId = parseInt(
+        selection.anchorNode.parentElement.getAttribute("data-block-id")
+      );
+
+      const currText = globalState
+        .get(contextName)
+        .find(({ id: textId }) => textId === id).text;
+
+      const block = currText.find(({ id }) => id === changedBlockId);
+
+      const baseValue = block.value.slice();
+
+      const newValue =
+        baseValue.slice(0, selection.anchorOffset) +
+        inputChar +
+        baseValue.slice(selection.anchorOffset);
+
+      const newText = currText.map((item) => {
+        if (item.id === changedBlockId) {
+          item.value = newValue;
+        }
+
+        return item;
+      });
+
+      handleUpdate(position, newText);
     },
-    []
+    [contextName, handleUpdate, id, position]
   );
-
-  useEffect(() => {
-    console.log(text, mimic);
-  }, [mimic, text]);
-
-  // const handleChange = useCallback((e) => {
-  //   console.log(e);
-  // }, []);
 
   return (
     <Editable

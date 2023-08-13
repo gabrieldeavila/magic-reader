@@ -8,6 +8,7 @@ export interface IText {
 
 export interface IWritterContent {
   text: IText[];
+  id: number
 }
 
 export interface IWriter {
@@ -32,7 +33,8 @@ export interface IShortcuts extends IEditable {
 export interface IWriterContext {
   content: IWritterContent[];
   setContent: React.Dispatch<React.SetStateAction<IWritterContent[]>>;
-  handleUpdate: (position: number, value: IText) => void;
+  handleUpdate: (position: number, value: IText[]) => void;
+  contextName: string,
 }
 
 export interface InputEvent extends React.KeyboardEvent<HTMLInputElement> {}

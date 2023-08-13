@@ -19,7 +19,7 @@ const STYLE_MAP = {
   },
 };
 
-function Decoration({ options = [], value }: IText) {
+function Decoration({ options = [], value, id }: IText) {
   const style = useMemo(
     () =>
       options.reduce((acc, item) => {
@@ -36,14 +36,11 @@ function Decoration({ options = [], value }: IText) {
   const Tag = useMemo(() => {
     if (options.includes("code")) return "code";
 
-    // returns a fragment
-    if (!options.length) return React.Fragment;
-
     return "span";
   }, [options]);
 
   return (
-    <Tag onKeyUpCapture={() => console.log("o")} style={style}>
+    <Tag data-block-id={id} onKeyUpCapture={() => console.log("o")} style={style}>
       {value}
     </Tag>
   );
