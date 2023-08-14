@@ -52,3 +52,8 @@ export interface IWriterInfo {
 export interface IDecoration extends IText {
   info: React.RefObject<IWriterInfo>;
 }
+
+export interface IPopup {
+  parentRef: React.RefObject<HTMLDivElement>;
+  text: IText[];
+}

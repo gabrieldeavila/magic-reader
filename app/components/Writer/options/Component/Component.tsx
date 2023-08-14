@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { globalState, stateStorage } from "react-trigger-state";
 import { useWriterContext } from "../../context/WriterContext";
 import { IEditable, IWriterInfo } from "../../interface";
+import Popup from "../../popup/Popup";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
 
@@ -15,25 +16,6 @@ function Component({ text, id, position }: IEditable) {
     selection: 0,
     blockId: 0,
   });
-  // const { setRange } = useSetRange({ text, ref, ...props });
-
-  // useEditable({ text, ...props, ref });
-  const mimic = useMemo(
-    () =>
-      text.reduce((acc, item) => {
-        const words = item.value.split("");
-
-        words.forEach((word) => {
-          acc.push({
-            letter: word,
-            id: item.id,
-          });
-        });
-
-        return acc;
-      }, []),
-    [text]
-  );
 
   const verifySpecialChars = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -116,8 +98,10 @@ function Component({ text, id, position }: IEditable) {
       const selection = window.getSelection();
 
       const changedBlockId = parseInt(
-        // @ts-expect-error - this is a valid attribute
-        selection.anchorNode.parentElement.getAttribute("data-block-id") ?? selection.anchorNode.getAttribute("data-block-id")
+        selection.anchorNode.parentElement.getAttribute("data-block-id") ??
+          // @ts-expect-error - this is a valid attribute
+          selection.anchorNode.getAttribute?.("data-block-id") ??
+          text[0].id
       );
 
       const currText = globalState
@@ -148,20 +132,21 @@ function Component({ text, id, position }: IEditable) {
         blockId: changedBlockId,
       };
     },
-    [contextName, handleUpdate, id, position, verifySpecialChars]
+    [contextName, handleUpdate, id, position, text, verifySpecialChars]
   );
 
   return (
     <Editable
       ref={ref}
       onKeyDown={handleChange}
-      // onKeyDown={(e)=>console.log(e)}
       contentEditable
       suppressContentEditableWarning
     >
       {text.map((item, index) => {
         return <Decoration {...{ ...item, info }} key={index} />;
       })}
+
+      <Popup text={text} parentRef={ref} />
     </Editable>
   );
 }
