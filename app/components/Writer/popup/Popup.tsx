@@ -77,7 +77,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
     }
 
     const firstNodeIndex = mimic.findIndex(({ id }) => {
-      if (id === firstNodeId) {
+      if (id == firstNodeId) {
         return firstIdIndex++ === firstNodeOffset;
       }
 
@@ -87,13 +87,14 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
     let lastIdIndex = 0;
 
     const lastNodeIndex = mimic.findIndex(({ id }) => {
-      if (id === lastNodeId) {
+      if (id == lastNodeId) {
         return lastIdIndex++ === lastNodeOffset;
       }
 
       return false;
     });
 
+    // gets the letters between the first and last node
     const selected = mimic.slice(firstNodeIndex, lastNodeIndex + 1);
 
     const wordsBeforeSelected = [];
