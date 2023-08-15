@@ -138,7 +138,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
     const newWords = [...wordsBeforeSelected];
 
     // now checks if the first word will be sliced, if so, it'll generate 2 words
-    if (selected?.[0]?.index !== 0 && selected?.[0]?.index != null) {
+    if ((selected?.[0]?.index !== 0 || areTheSame) && selected?.[0]?.index != null) {
       const firstWord = wordsSelected[0];
 
       // if areTheSame, then the first word will be sliced in 2
