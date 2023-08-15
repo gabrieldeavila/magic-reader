@@ -8,11 +8,11 @@ import Component from "../options/Component/Component";
 export const WriterContext = createContext<IWriterContext>({
   content: [],
   setContent: () => [{ text: "Initial" }],
-  handleUpdate: (position: number, text: IText[]) => {
-    console.log(position, text);
+  handleUpdate: (textId: number, text: IText[]) => {
+    console.log(textId, text);
   },
-  deleteBlock: (position: number, textId: number, blockId: number) => {
-    console.log(position, textId, blockId);
+  deleteBlock: (textId: number, blockId: number) => {
+    console.log(textId, blockId);
   },
   contextName: "writter_context",
 });
@@ -35,11 +35,14 @@ const WriterContextProvider = ({
   const contextName = useMemo(() => `${name}_writter_context`, [name]);
 
   const handleUpdate = useCallback(
-    (position: number, text: IText[]) => {
+    (textId: number, text: IText[]) => {
       setContent((prev) => {
         const newContent = [...prev];
 
-        newContent[position].text = text;
+        const blocks = newContent.find(({ id }) => id === textId);
+
+        blocks.text = text;
+
         return newContent;
       });
     },
@@ -47,7 +50,7 @@ const WriterContextProvider = ({
   );
 
   const deleteBlock = useCallback(
-    (position: number, textId: number, blockId: number) => {
+    (textId: number, blockId: number) => {
       setContent((prev) => {
         const newContent = [...prev];
 

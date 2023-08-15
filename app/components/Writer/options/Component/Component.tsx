@@ -8,7 +8,7 @@ import Popup from "../../popup/Popup";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
 
-function Component({ text, id, position }: IEditable) {
+function Component({ text, id }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
 
   const { contextName, handleUpdate, deleteBlock } = useWriterContext();
@@ -47,7 +47,7 @@ function Component({ text, id, position }: IEditable) {
         });
 
         if (newValue.length === 0 && text.length > 1) {
-          deleteBlock(position, id, changedBlockId);
+          deleteBlock(id, changedBlockId);
 
           // the prev block is the last item before the current block
           const prevBlock = currText.find((_item, index) => {
@@ -68,7 +68,7 @@ function Component({ text, id, position }: IEditable) {
           return;
         }
 
-        handleUpdate(position, newText);
+        handleUpdate(id, newText);
 
         info.current = {
           selection: charToDelete,
@@ -76,7 +76,7 @@ function Component({ text, id, position }: IEditable) {
         };
       }
     },
-    [contextName, deleteBlock, handleUpdate, id, position, text]
+    [contextName, deleteBlock, handleUpdate, id, text]
   );
 
   const handleChange = useCallback(
@@ -125,14 +125,14 @@ function Component({ text, id, position }: IEditable) {
         return item;
       });
 
-      handleUpdate(position, newText);
+      handleUpdate(id, newText);
 
       info.current = {
         selection: selection.anchorOffset + 1,
         blockId: changedBlockId,
       };
     },
-    [contextName, handleUpdate, id, position, text, verifySpecialChars]
+    [contextName, handleUpdate, id, text, verifySpecialChars]
   );
 
   return (
@@ -146,7 +146,7 @@ function Component({ text, id, position }: IEditable) {
         return <Decoration {...{ ...item, info }} key={index} />;
       })}
 
-      <Popup text={text} parentRef={ref} />
+      <Popup id={id} text={text} parentRef={ref} />
     </Editable>
   );
 }

@@ -22,6 +22,7 @@ const PopupContent = styled.div`
 const PopupItem = styled.div`
   padding: 0.5rem;
   cursor: pointer;
+  display: flex;
   background: var(--primary);
 
   &:hover {

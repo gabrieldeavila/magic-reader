@@ -56,6 +56,7 @@
     "PREV": "Previous",
     "NEXT": "Next",
     "WPM": "Words per minute",
-    "NO_BOOKS": "You have no books yet, click the button above to add one!"
+    "NO_BOOKS": "You have no books yet, click the button above to add one!",
+    "NO_SELECTION": "No text selected"
   }
 }

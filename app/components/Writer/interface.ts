@@ -33,8 +33,8 @@ export interface IShortcuts extends IEditable {
 export interface IWriterContext {
   content: IWritterContent[];
   setContent: React.Dispatch<React.SetStateAction<IWritterContent[]>>;
-  handleUpdate: (position: number, value: IText[]) => void;
-  deleteBlock: (position: number, textId: number, blockId: number) => void;
+  handleUpdate: (textId: number, value: IText[]) => void;
+  deleteBlock: (textId: number, blockId: number) => void;
   contextName: string;
 }
 
@@ -54,6 +54,7 @@ export interface IDecoration extends IText {
 }
 
 export interface IPopup {
+  id: number,
   parentRef: React.RefObject<HTMLDivElement>;
   text: IText[];
 }

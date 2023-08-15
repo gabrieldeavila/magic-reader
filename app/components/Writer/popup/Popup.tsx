@@ -1,17 +1,23 @@
+import { useGTToastContext } from "@geavila/gt-design";
 import { memo, useCallback, useMemo } from "react";
 import { IPopup } from "../interface";
 import WPopup from "./style";
+import { useWriterContext } from "../context/WriterContext";
 
-const Popup = memo(({ text, parentRef }: IPopup) => {
+const Popup = memo(({ id, text, parentRef }: IPopup) => {
+  const { toast } = useGTToastContext();
+  const { handleUpdate } = useWriterContext();
+
   const mimic = useMemo(
     () =>
       text.reduce((acc, item) => {
         const words = item.value.split("");
 
-        words.forEach((word) => {
+        words.forEach((letter, index) => {
           acc.push({
-            letter: word,
+            letter: letter,
             id: item.id,
+            index,
           });
         });
 
@@ -32,18 +38,19 @@ const Popup = memo(({ text, parentRef }: IPopup) => {
   const bold = useCallback(() => {
     const selection = window.getSelection();
 
-    const anchor = selection.anchorNode.parentElement;
+    const anchor = selection.anchorNode?.parentElement;
     const anchorOffset = selection.anchorOffset;
 
     // @ts-expect-error - it is a valid attribute
-    const extent = selection.extentNode.parentElement;
+    const extent = selection.extentNode?.parentElement;
     // @ts-expect-error - it is a valid attribute
     const extentOffset = selection.extentOffset;
 
     // see which node is the first
     // if the anchor is the first, then the extent is the last
     const anchorComesFirst =
-      anchor.compareDocumentPosition(extent) & Node.DOCUMENT_POSITION_FOLLOWING;
+      anchor?.compareDocumentPosition(extent) &
+      Node.DOCUMENT_POSITION_FOLLOWING;
 
     const firstNode = anchorComesFirst ? anchor : extent;
     const lastNode = anchorComesFirst ? extent : anchor;
@@ -51,11 +58,19 @@ const Popup = memo(({ text, parentRef }: IPopup) => {
     const firstNodeOffset = anchorComesFirst ? anchorOffset : extentOffset;
     const lastNodeOffset = (anchorComesFirst ? extentOffset : anchorOffset) - 1;
 
-    const firstNodeId = parseInt(firstNode.getAttribute("data-block-id"));
+    const firstNodeId = parseInt(firstNode?.getAttribute("data-block-id"));
 
-    const lastNodeId = parseInt(lastNode.getAttribute("data-block-id"));
+    const lastNodeId = parseInt(lastNode?.getAttribute("data-block-id"));
 
     let firstIdIndex = 0;
+
+    if (!firstNodeId || !lastNodeId) {
+      toast("LEGERE.NO_SELECTION", {
+        type: "error",
+      });
+
+      return;
+    }
 
     const firstNodeIndex = mimic.findIndex(({ id }) => {
       if (id === firstNodeId) {
@@ -75,8 +90,158 @@ const Popup = memo(({ text, parentRef }: IPopup) => {
       return false;
     });
 
-    console.log(firstNodeIndex, lastNodeIndex, mimic);
-  }, [mimic]);
+    const selected = mimic.slice(firstNodeIndex, lastNodeIndex + 1);
+
+    const wordsBeforeSelected = [];
+    const wordsAfterSelected = [];
+
+    let wordsAreBefore = true;
+
+    const wordsSelected = text.filter((item) => {
+      const { id } = item;
+
+      const isSelected = selected.some(
+        ({ id: selectedId }) => selectedId === id
+      );
+
+      if (isSelected) wordsAreBefore = false;
+
+      if (wordsAreBefore) {
+        wordsBeforeSelected.push(item);
+      } else if (!isSelected) {
+        wordsAfterSelected.push(item);
+      }
+
+      return isSelected;
+    });
+
+    // removes the first and last selected
+    const selectedWithoutFirstAndLast = wordsSelected
+      .slice(1, -1)
+      .map((item) => {
+        if (item.options.includes("bold")) return item;
+
+        return {
+          ...item,
+          options: [...item.options, "bold"],
+        };
+      });
+
+    const newWords = [...wordsBeforeSelected];
+
+    // now checks if the first word will be sliced, if so, it'll generate 2 words
+    if (selected?.[0]?.index !== 0) {
+      const firstWord = wordsSelected[0];
+      const firstWordSliced = {
+        ...firstWord,
+        value: firstWord.value.slice(0, selected[0].index),
+      };
+
+      const firstWordSliced2 = {
+        ...firstWord,
+        value: firstWord.value.slice(selected[0].index),
+        options: firstWord.options.includes("bold")
+          ? firstWord.options
+          : [...firstWord.options, "bold"],
+      };
+
+      newWords.push(firstWordSliced);
+      newWords.push(firstWordSliced2);
+    } else {
+      newWords.push({
+        ...wordsSelected[0],
+        options: wordsSelected[0].options.includes("bold")
+          ? wordsSelected[0].options
+          : [...wordsSelected[0].options, "bold"],
+      });
+    }
+
+    // the rest of the words are just copied
+    newWords.push(...selectedWithoutFirstAndLast);
+
+    // now checks if the last word will be sliced
+    if (
+      selected[selected.length - 1].index !==
+      wordsSelected[wordsSelected.length - 1].value.length - 1
+    ) {
+      const lastWord = wordsSelected[wordsSelected.length - 1];
+
+      const lastWordSliced = {
+        ...lastWord,
+        value: lastWord.value.slice(0, selected[selected.length - 1].index + 1),
+        options: lastWord.options.includes("bold")
+          ? lastWord.options
+          : [...lastWord.options, "bold"],
+      };
+
+      const lastWordSliced2 = {
+        ...lastWord,
+        value: lastWord.value.slice(selected[selected.length - 1].index + 1),
+      };
+
+      newWords.push(lastWordSliced);
+      newWords.push(lastWordSliced2);
+    } else {
+      newWords.push({
+        ...wordsSelected[wordsSelected.length - 1],
+        options: wordsSelected[wordsSelected.length - 1].options.includes(
+          "bold"
+        )
+          ? wordsSelected[wordsSelected.length - 1].options
+          : [...wordsSelected[wordsSelected.length - 1].options, "bold"],
+      });
+    }
+
+    newWords.push(...wordsAfterSelected);
+
+    // sees if can merge some words, because they have the same options
+    const finalWords = [];
+    let tempOptions = [];
+
+    newWords.forEach((item, index) => {
+      // if is the first item, just add it to the tempOptions
+      if (index === 0) {
+        tempOptions.push(item);
+        return;
+      }
+
+      // if the current item has the same options as the previous one, just add it to the tempOptions
+      if (item.options.join("") === tempOptions[0].options.join("")) {
+        tempOptions.push(item);
+        return;
+      }
+
+      // if the current item has different options than the previous one, then add the tempOptions to the finalWords
+      if (tempOptions.length > 0) {
+        finalWords.push({
+          ...tempOptions[0],
+          value: tempOptions.map(({ value }) => value).join(""),
+        });
+      }
+
+      // and then, reset the tempOptions
+      tempOptions = [item];
+    });
+
+    // if the last item is not in the tempOptions, then it'll add it
+    if (tempOptions.length > 0) {
+      finalWords.push({
+        ...tempOptions[0],
+        value: tempOptions.map(({ value }) => value).join(""),
+      });
+    }
+
+    // now, give unique ids to the words
+    const newText = finalWords.map((item, index) => {
+      return {
+        ...item,
+        id: `${new Date().getTime()}${index}`,
+      };
+    });
+
+    console.log(text, newText);
+    handleUpdate(id, newText);
+  }, [handleUpdate, id, mimic, text, toast]);
 
   return (
     <WPopup.Wrapper isUp={false} contentEditable={false}>
