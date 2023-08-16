@@ -324,7 +324,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
       const newText = finalWords.map((item, index) => {
         return {
           ...item,
-          id: `${new Date().getTime()}${index}`,
+          id: parseInt(`${new Date().getTime()}${index}`),
         };
       });
 
