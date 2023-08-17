@@ -1,6 +1,6 @@
 import { useGTToastContext } from "@geavila/gt-design";
 import { memo, useCallback, useMemo } from "react";
-import { stateStorage } from "react-trigger-state";
+import { globalState, stateStorage } from "react-trigger-state";
 import { useWriterContext } from "../context/WriterContext";
 import { IPopup } from "../interface";
 import WPopup from "./style";
@@ -61,9 +61,16 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
       const firstNode = anchorComesFirst ? anchor : focus;
       const lastNode = anchorComesFirst ? focus : anchor;
 
-      const firstNodeOffset = anchorComesFirst ? anchorOffset : focusOffset;
+      const prevSelectionRange = stateStorage.get("selection_range");
+
+      const firstNodeOffset =
+        prevSelectionRange?.start || anchorComesFirst
+          ? anchorOffset
+          : focusOffset;
+
       const lastNodeOffset =
-        (anchorComesFirst ? focusOffset : anchorOffset) - 1;
+        (prevSelectionRange?.end ||
+          (anchorComesFirst ? focusOffset : anchorOffset)) - 1;
 
       const firstNodeId = parseInt(firstNode?.getAttribute("data-block-id"));
 
@@ -96,6 +103,14 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
         return false;
       });
+
+      if (firstNodeIndex === -1 || lastNodeIndex === -1) {
+        toast("LEGERE.NO_SELECTION", {
+          type: "error",
+        });
+
+        return;
+      }
 
       // gets the letters between the first and last node
       const selected = mimic.slice(firstNodeIndex, lastNodeIndex + 1);
@@ -359,9 +374,10 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         const letters = item.value.split("");
 
         const letterIndex = letters.findIndex((__, index) => {
-          if (tempEndIndex === lastNodeIndex + 1) {
+          if (tempEndIndex === lastNodeIndex) {
             endBlockId = item.id;
-            newLastNodeIndex = index;
+            newLastNodeIndex = index + 1;
+
             return true;
           }
 
@@ -372,8 +388,6 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
         return letterIndex !== -1;
       });
-
-      // console.log(selected, newText, firstNodeIndex, tempStartIndex);
 
       stateStorage.set("selection_range", {
         start: newFirstNodeIndex,

@@ -163,7 +163,9 @@ function Component({ text, id }: IEditable) {
       `[data-block-id="${selectionRange.endBlockId}"]`
     )?.firstChild;
 
-    if (!startBlock || !endBlock) return;
+    if (!startBlock || !endBlock) {
+      return;
+    }
 
     range.setStart(startBlock, selectionRange.start);
     range.setEnd(endBlock, selectionRange.end);
