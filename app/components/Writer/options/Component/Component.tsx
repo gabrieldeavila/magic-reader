@@ -1,7 +1,11 @@
 "use client";
 
-import { useCallback, useRef } from "react";
-import { globalState, stateStorage } from "react-trigger-state";
+import { useCallback, useLayoutEffect, useRef } from "react";
+import {
+  globalState,
+  stateStorage,
+  useTriggerState,
+} from "react-trigger-state";
 import { useWriterContext } from "../../context/WriterContext";
 import { IEditable, IWriterInfo } from "../../interface";
 import Popup from "../../popup/Popup";
@@ -134,6 +138,39 @@ function Component({ text, id }: IEditable) {
     },
     [contextName, handleUpdate, id, text, verifySpecialChars]
   );
+
+  const [selectionRange] = useTriggerState({
+    name: "selection_range",
+    initial: {},
+  });
+
+  useLayoutEffect(() => {
+    if (!ref.current || selectionRange.start == null) return;
+
+    info.current = {
+      selection: 0,
+      blockId: 0,
+    };
+
+    const selection = window.getSelection();
+    const range = document.createRange();
+
+    const startBlock = document.querySelector(
+      `[data-block-id="${selectionRange.startBlockId}"]`
+    )?.firstChild;
+
+    const endBlock = document.querySelector(
+      `[data-block-id="${selectionRange.endBlockId}"]`
+    )?.firstChild;
+
+    if (!startBlock || !endBlock) return;
+
+    range.setStart(startBlock, selectionRange.start);
+    range.setEnd(endBlock, selectionRange.end);
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }, [selectionRange]);
 
   return (
     <Editable

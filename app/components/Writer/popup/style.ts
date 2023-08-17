@@ -20,7 +20,6 @@ const PopupContent = styled.div`
 `;
 
 const PopupItem = styled.div`
-  padding: 0.5rem;
   cursor: pointer;
   display: flex;
   background: var(--primary);
@@ -40,7 +39,7 @@ const Base = styled.button`
   /* resets */
   border: none;
   background: none;
-  padding: 0;
+  padding: 0.5rem;
   margin: 0;
   outline: none;
   cursor: pointer;

@@ -1,5 +1,6 @@
 import { useGTToastContext } from "@geavila/gt-design";
 import { memo, useCallback, useMemo } from "react";
+import { stateStorage } from "react-trigger-state";
 import { useWriterContext } from "../context/WriterContext";
 import { IPopup } from "../interface";
 import WPopup from "./style";
@@ -326,6 +327,59 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
           ...item,
           id: parseInt(`${new Date().getTime()}${index}`),
         };
+      });
+
+      let tempStartIndex = 0;
+      let startBlockId = null;
+      let newFirstNodeIndex = 0;
+
+      newText.find((item) => {
+        const letters = item.value.split("");
+
+        const letterIndex = letters.findIndex((__, index) => {
+          if (tempStartIndex === firstNodeIndex) {
+            startBlockId = item.id;
+            newFirstNodeIndex = index;
+            return true;
+          }
+
+          tempStartIndex++;
+
+          return false;
+        });
+
+        return letterIndex !== -1;
+      });
+
+      let tempEndIndex = 0;
+      let endBlockId = null;
+      let newLastNodeIndex = 0;
+
+      newText.find((item) => {
+        const letters = item.value.split("");
+
+        const letterIndex = letters.findIndex((__, index) => {
+          if (tempEndIndex === lastNodeIndex + 1) {
+            endBlockId = item.id;
+            newLastNodeIndex = index;
+            return true;
+          }
+
+          tempEndIndex++;
+
+          return false;
+        });
+
+        return letterIndex !== -1;
+      });
+
+      // console.log(selected, newText, firstNodeIndex, tempStartIndex);
+
+      stateStorage.set("selection_range", {
+        start: newFirstNodeIndex,
+        end: newLastNodeIndex,
+        startBlockId,
+        endBlockId,
       });
 
       handleUpdate(id, newText);
