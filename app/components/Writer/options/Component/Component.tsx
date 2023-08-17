@@ -27,7 +27,7 @@ function Component({ text, id }: IEditable) {
         event.preventDefault();
         const selection = window.getSelection();
 
-        const changedBlockId = parseInt(
+        let changedBlockId = parseInt(
           selection.anchorNode.parentElement.getAttribute("data-block-id")
         );
 
@@ -35,9 +35,29 @@ function Component({ text, id }: IEditable) {
           .get(contextName)
           .find(({ id: textId }) => textId === id).text;
 
-        const baseValue = selection.anchorNode.parentElement.innerText;
+        let baseValue = selection.anchorNode.parentElement.innerText;
 
-        const charToDelete = selection.anchorOffset - 1;
+        let charToDelete = selection.anchorOffset - 1;
+
+        // if the charToDelete is -1, it means that the cursor is at the beginning of the block
+        // and we need to delete the previous block
+        if (charToDelete === -1) {
+          const prevBlock = currText.find((_item, index) => {
+            const nextBlock = currText[index + 1];
+
+            return nextBlock?.id === changedBlockId;
+          });
+
+          if (!prevBlock) return;
+
+          const prevBlockValue = prevBlock.value;
+
+          charToDelete = prevBlockValue.length - 1;
+
+          baseValue = prevBlockValue;
+
+          changedBlockId = prevBlock.id;
+        }
 
         const newValue =
           baseValue.slice(0, charToDelete) + baseValue.slice(charToDelete + 1);
@@ -50,6 +70,7 @@ function Component({ text, id }: IEditable) {
           return item;
         });
 
+        // if the current block is empty and there are more than one block
         if (newValue.length === 0 && text.length > 1) {
           deleteBlock(id, changedBlockId);
 
@@ -60,9 +81,11 @@ function Component({ text, id }: IEditable) {
             return nextBlock?.id === changedBlockId;
           });
 
+          if (!prevBlock) return;
+
           info.current = {
-            selection: prevBlock.value.length,
-            blockId: prevBlock.id,
+            selection: prevBlock?.value?.length ?? 0,
+            blockId: prevBlock?.id,
           };
 
           stateStorage.set(

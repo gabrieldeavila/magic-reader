@@ -59,7 +59,9 @@ const Decoration = memo(({ options = [], value, id, info }: IDecoration) => {
 
     const node = tagRef.current.childNodes[0];
 
-    if (node === undefined) return;
+    if (node == null || info.current.selection === -1) {
+      return;
+    }
 
     range.setStart(node, cursorPositionValue);
     range.setEnd(node, cursorPositionValue);
