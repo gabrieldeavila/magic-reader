@@ -51,6 +51,7 @@ export interface IWriterInfo {
 
 export interface IDecoration extends IText {
   info: React.RefObject<IWriterInfo>;
+  onlyOneBlockAndIsEmpty: boolean;
 }
 
 export interface IPopup {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useLayoutEffect, useRef } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import {
   globalState,
   stateStorage,
@@ -214,6 +214,11 @@ function Component({ text, id }: IEditable) {
     ev.preventDefault();
   }, []);
 
+  const onlyOneBlockAndIsEmpty = useMemo(
+    () => text.length === 1 && text[0].value.length === 0,
+    [text]
+  );
+
   return (
     <Editable
       ref={ref}
@@ -225,7 +230,7 @@ function Component({ text, id }: IEditable) {
       suppressContentEditableWarning
     >
       {text.map((item, index) => {
-        return <Decoration {...{ ...item, info }} key={index} />;
+        return <Decoration {...{ ...item, info, onlyOneBlockAndIsEmpty }} key={index} />;
       })}
 
       <Popup id={id} text={text} parentRef={ref} />
