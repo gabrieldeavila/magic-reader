@@ -210,12 +210,18 @@ function Component({ text, id }: IEditable) {
     []
   );
 
+  const preventDefault = useCallback((ev: React.DragEvent<HTMLDivElement>) => {
+    ev.preventDefault();
+  }, []);
+
   return (
     <Editable
       ref={ref}
       onKeyDown={handleChange}
       contentEditable
       onSelectCapture={handleSelect}
+      onDragStart={preventDefault}
+      onDrop={preventDefault}
       suppressContentEditableWarning
     >
       {text.map((item, index) => {
