@@ -197,11 +197,25 @@ function Component({ text, id }: IEditable) {
     selection.addRange(range);
   }, [selectionRange]);
 
+  const handleSelect = useCallback(
+    (ev: React.KeyboardEvent<HTMLDivElement>) => {
+      const block = ev.nativeEvent.target;
+
+      // gets the block id
+      // console.log(block, block.getAttribute("data-block-id"));
+      if (block) {
+        stateStorage.set("selection_range", null);
+      }
+    },
+    []
+  );
+
   return (
     <Editable
       ref={ref}
       onKeyDown={handleChange}
       contentEditable
+      onSelectCapture={handleSelect}
       suppressContentEditableWarning
     >
       {text.map((item, index) => {
