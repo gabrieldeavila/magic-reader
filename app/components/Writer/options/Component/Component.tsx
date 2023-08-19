@@ -101,6 +101,82 @@ function Component({ text, id }: IEditable) {
           selection: charToDelete,
           blockId: changedBlockId,
         };
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+
+        // gets the current block id
+        const selection = window.getSelection();
+
+        const changedBlockId = parseInt(
+          selection.anchorNode.parentElement.getAttribute("data-block-id")
+        );
+
+        const content = globalState.get(contextName);
+
+        const currText = content.find(({ id: textId }) => textId === id).text;
+
+        const block = currText.find(({ id }) => id === changedBlockId);
+
+        const baseValue = block?.value?.slice?.() ?? "";
+
+        // will create a new block with the text after the cursor
+        const newValue = baseValue.slice(selection.anchorOffset);
+
+        let foundBlock = false;
+
+        // and will update the current block with the text before the cursor
+        const { prevText, newLineText } = currText.reduce(
+          (acc, item) => {
+            if (item.id === changedBlockId) {
+              item.value = baseValue.slice(0, selection.anchorOffset);
+            }
+
+            if (foundBlock) {
+              acc.newLineText.push(item);
+            } else {
+              acc.prevText.push(item);
+            }
+
+            if (item.id === changedBlockId) {
+              acc.newLineText.push({
+                ...item,
+                id: Math.random(),
+                value: newValue,
+              });
+
+              foundBlock = true;
+            }
+
+            return acc;
+          },
+          {
+            prevText: [],
+            newLineText: [],
+          }
+        );
+
+        const newContent = content.map((item) => {
+          if (item.id === id) {
+            item.text = prevText;
+          }
+
+          return item;
+        });
+
+        const newId = Math.random();
+
+        newContent.splice(
+          content.findIndex(({ id: textId }) => textId === id) + 1,
+          0,
+          {
+            id: newId,
+            text: newLineText,
+          }
+        );
+        stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
+        stateStorage.set(contextName, newContent);
+
+        console.log(newContent);
       }
     },
     [contextName, deleteBlock, handleUpdate, id, text]
@@ -230,7 +306,12 @@ function Component({ text, id }: IEditable) {
       suppressContentEditableWarning
     >
       {text.map((item, index) => {
-        return <Decoration {...{ ...item, info, onlyOneBlockAndIsEmpty }} key={index} />;
+        return (
+          <Decoration
+            {...{ ...item, info, onlyOneBlockAndIsEmpty }}
+            key={index}
+          />
+        );
       })}
 
       <Popup id={id} text={text} parentRef={ref} />
