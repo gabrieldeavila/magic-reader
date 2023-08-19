@@ -173,10 +173,9 @@ function Component({ text, id }: IEditable) {
             text: newLineText,
           }
         );
+
         stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
         stateStorage.set(contextName, newContent);
-
-        console.log(newContent);
       }
     },
     [contextName, deleteBlock, handleUpdate, id, text]
@@ -279,8 +278,14 @@ function Component({ text, id }: IEditable) {
     setTimeout(() => {
       const selection = window.getSelection();
       const lettersSelected = selection.toString().length;
-      console.log(lettersSelected);
-      setShowPopup(lettersSelected > 0);
+
+      const show = lettersSelected > 0;
+
+      if (show) {
+        stateStorage.set("force_popup_positions_update", new Date());
+      }
+
+      setShowPopup(show);
     });
   }, []);
 
@@ -314,7 +319,8 @@ function Component({ text, id }: IEditable) {
       onSelectCapture={handleSelect}
       onDragStart={preventDefault}
       onDrop={preventDefault}
-      onBlurCapture={checkSelection}
+      onBlur={checkSelection}
+      onFocus={checkSelection}
       suppressContentEditableWarning
     >
       {text.map((item, index) => {

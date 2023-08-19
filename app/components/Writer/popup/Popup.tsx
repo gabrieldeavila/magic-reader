@@ -1,6 +1,6 @@
 import { useGTToastContext } from "@geavila/gt-design";
 import { memo, useCallback, useMemo } from "react";
-import { globalState, stateStorage } from "react-trigger-state";
+import { stateStorage, useTriggerState } from "react-trigger-state";
 import { useWriterContext } from "../context/WriterContext";
 import { IPopup } from "../interface";
 import WPopup from "./style";
@@ -30,11 +30,26 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
   const isUp = useMemo(() => {
     if (!parentRef.current) return false;
 
-    const bounding = parentRef.current.getBoundingClientRect();
-
     // if the top is less than 100, then the popup should be below the text
-    return bounding.top < 100;
+    return false;
   }, [parentRef]);
+
+  const [updatePositions] = useTriggerState({
+    name: "force_popup_positions_update",
+  });
+
+  const positions = useMemo(() => {
+    // gets the position of the selected text
+    const selection = window.getSelection();
+    const position = selection?.getRangeAt(0)?.getBoundingClientRect?.();
+
+    if (!position) return {};
+
+    return {
+      left: `${position.right - position.width}px`,
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updatePositions]);
 
   const addDecoration = useCallback(
     (decoration: string) => {
@@ -414,7 +429,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
   }, [addDecoration]);
 
   return (
-    <WPopup.Wrapper isUp={false} contentEditable={false}>
+    <WPopup.Wrapper style={positions} isUp={isUp} contentEditable={false}>
       <WPopup.Content>
         <WPopup.Item>
           <WPopup.B onClick={bold}>B</WPopup.B>

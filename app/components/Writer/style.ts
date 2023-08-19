@@ -7,6 +7,7 @@ export const Editable = styled.div`
   outline: none;
   cursor: text;
   font-weight: 200;
+  position: relative;
   white-space: pre-wrap;
 
   &:empty:before {

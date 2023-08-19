@@ -4,7 +4,7 @@ import { PopupWrapperProps } from "./interface";
 
 const PopupWrapper = styled.div<PopupWrapperProps>`
   position: absolute;
-  top: ${({ isUp }) => (isUp ? "unset" : "40px")};
+  top: ${({ isUp }) => (isUp ? "-40px" : "40px")};
   bottom: ${({ isUp }) => (isUp ? "-40px" : "unset")};
   left: 0.5rem;
   z-index: 100;
