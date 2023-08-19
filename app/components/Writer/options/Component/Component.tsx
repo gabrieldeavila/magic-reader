@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   globalState,
   stateStorage,
@@ -273,17 +273,28 @@ function Component({ text, id }: IEditable) {
     selection.addRange(range);
   }, [selectionRange]);
 
+  const [showPopup, setShowPopup] = useState(false);
+
+  const checkSelection = useCallback(() => {
+    setTimeout(() => {
+      const selection = window.getSelection();
+      const lettersSelected = selection.toString().length;
+      console.log(lettersSelected);
+      setShowPopup(lettersSelected > 0);
+    });
+  }, []);
+
   const handleSelect = useCallback(
     (ev: React.KeyboardEvent<HTMLDivElement>) => {
       const block = ev.nativeEvent.target;
 
-      // gets the block id
-      // console.log(block, block.getAttribute("data-block-id"));
+      // if there is no block, it means that the user selected the text and then clicked on the popup
       if (block) {
+        checkSelection();
         stateStorage.set("selection_range", null);
       }
     },
-    []
+    [checkSelection]
   );
 
   const preventDefault = useCallback((ev: React.DragEvent<HTMLDivElement>) => {
@@ -303,6 +314,7 @@ function Component({ text, id }: IEditable) {
       onSelectCapture={handleSelect}
       onDragStart={preventDefault}
       onDrop={preventDefault}
+      onBlurCapture={checkSelection}
       suppressContentEditableWarning
     >
       {text.map((item, index) => {
@@ -314,7 +326,7 @@ function Component({ text, id }: IEditable) {
         );
       })}
 
-      <Popup id={id} text={text} parentRef={ref} />
+      {showPopup && <Popup id={id} text={text} parentRef={ref} />}
     </Editable>
   );
 }
