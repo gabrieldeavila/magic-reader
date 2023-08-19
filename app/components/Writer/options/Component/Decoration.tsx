@@ -11,7 +11,7 @@ const STYLE_MAP = {
     fontStyle: "italic",
   },
   underline: {
-    textDecoration: "underline",
+    borderBottom: "0.1rem solid var(--contrast)",
   },
   strikethrough: {
     textDecoration: "line-through",

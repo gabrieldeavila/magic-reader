@@ -16,7 +16,7 @@ const DEFAULT_CONTENT: IWritterContent[] = [
         id: 2,
       },
       {
-        value: " he",
+        value: " hehe",
         options: [],
         id: 3,
       },

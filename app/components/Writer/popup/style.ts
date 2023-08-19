@@ -57,6 +57,14 @@ const Underline = styled(Base)`
   text-decoration: underline;
 `;
 
+const Strike = styled(Base)`
+  text-decoration: line-through;
+`;
+
+const Code = styled(Base)`
+  font-family: "Fira Code", monospace;
+`;
+
 const WPopup = {
   Wrapper: PopupWrapper,
   Content: PopupContent,
@@ -64,6 +72,8 @@ const WPopup = {
   B: Bold,
   I: Italic,
   U: Underline,
+  S: Strike,
+  Code,
 };
 
 export default WPopup;

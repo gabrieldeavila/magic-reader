@@ -428,6 +428,14 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
     addDecoration("underline");
   }, [addDecoration]);
 
+  const strikethrough = useCallback(() => {
+    addDecoration("strikethrough");
+  }, [addDecoration]);
+
+  const code = useCallback(() => {
+    addDecoration("code");
+  }, [addDecoration]);
+
   return (
     <WPopup.Wrapper style={positions} isUp={isUp} contentEditable={false}>
       <WPopup.Content>
@@ -441,6 +449,14 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
         <WPopup.Item>
           <WPopup.U onClick={underline}>U</WPopup.U>
+        </WPopup.Item>
+
+        <WPopup.Item>
+          <WPopup.S onClick={strikethrough}>S</WPopup.S>
+        </WPopup.Item>
+
+        <WPopup.Item>
+          <WPopup.Code onClick={code}>{"</>"}</WPopup.Code>
         </WPopup.Item>
       </WPopup.Content>
     </WPopup.Wrapper>
