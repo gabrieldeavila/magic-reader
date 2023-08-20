@@ -2,7 +2,7 @@ import { memo, useLayoutEffect, useMemo, useRef } from "react";
 import { IDecoration } from "../../interface";
 import { useContextName } from "../../context/WriterContext";
 import { useTriggerState } from "react-trigger-state";
-import { Code, dracula } from "react-code-blocks";
+import { Code, dracula, atomOneLight } from "react-code-blocks";
 import { DCode } from "./style";
 
 const STYLE_MAP = {
@@ -25,6 +25,7 @@ const Decoration = memo(
   ({ options = [], value, id, info, onlyOneBlockAndIsEmpty }: IDecoration) => {
     const tagRef = useRef<HTMLDivElement>(null);
     const name = useContextName();
+    const [currTheme] = useTriggerState({ name: "curr_theme" });
 
     const [decoration] = useTriggerState({
       name: `${name}_decoration-${id}`,
@@ -121,7 +122,7 @@ const Decoration = memo(
             // @ts-expect-error - uh
             text={value || " "}
             language="javascript"
-            theme={dracula}
+            theme={currTheme === "darkTheme" ? dracula : atomOneLight}
           />
         </DCode>
       );
