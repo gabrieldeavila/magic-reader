@@ -200,10 +200,14 @@ function Component({ text, id }: IEditable) {
       const selection = window.getSelection();
 
       const changedBlockId = parseInt(
-        selection.anchorNode.parentElement.getAttribute("data-block-id") ??
-          // @ts-expect-error - this is a valid attribute
-          selection.anchorNode.getAttribute?.("data-block-id") ??
-          text[0].id
+        selection.anchorNode.parentElement?.parentElement.tagName === "CODE"
+          ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
+              "data-block-id"
+            )
+          : selection.anchorNode.parentElement.getAttribute("data-block-id") ??
+              // @ts-expect-error - this is a valid attribute
+              selection.anchorNode.getAttribute?.("data-block-id") ??
+              text[0].id
       );
 
       const currText = globalState
@@ -284,7 +288,7 @@ function Component({ text, id }: IEditable) {
       let letterStartIndex = 0;
 
       const newStart = startChilds?.find((item) => {
-        const letters = item.textContent?.split("") ?? "";
+        const letters = item.textContent?.split("") ?? [""];
 
         const hasLetterIndex = letters.find((item, index) => {
           startIndex++;
@@ -325,8 +329,6 @@ function Component({ text, id }: IEditable) {
 
       selectionRange.start = letterStartIndex;
       selectionRange.end = letterEndIndex + 1;
-      // now we need to properly set the cursor position
-      // because the code block may have a lot of components
     }
 
     if (!startBlock || !endBlock) {

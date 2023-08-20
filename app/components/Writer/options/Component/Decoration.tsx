@@ -18,8 +18,7 @@ const STYLE_MAP = {
   strikethrough: {
     textDecoration: "line-through",
   },
-  code: {
-  },
+  code: {},
 };
 
 const Decoration = memo(
@@ -53,7 +52,35 @@ const Decoration = memo(
 
       let cursorPositionValue = info.current.selection;
 
-      const node = tagRef.current.childNodes[0];
+      let node = tagRef.current.childNodes[0];
+
+      // if there's a code option, the node is another element
+      if (options.includes("code")) {
+        const codeNodes = tagRef.current.childNodes[0].childNodes[0].childNodes;
+        const codeNodesArray = Array.from(codeNodes);
+
+        let nodeIndex = 0;
+        let nodePosition = 0;
+        console.log(cursorPositionValue);
+
+        node = codeNodesArray.find((item) => {
+          const letters = item.textContent?.split("") ?? [""];
+
+          const hasCursor = letters.some((_letter, index) => {
+            nodeIndex++;
+            if (nodeIndex === cursorPositionValue) {
+              nodePosition = index;
+              return true;
+            }
+          });
+
+          return hasCursor;
+        })?.childNodes[0];
+
+        cursorPositionValue = nodePosition + 1;
+
+        console.log(node, cursorPositionValue);
+      }
 
       if (
         (node == null || info.current.selection === -1) &&
@@ -78,7 +105,7 @@ const Decoration = memo(
 
       selection.removeAllRanges();
       selection.addRange(range);
-    }, [id, info, value, decoration, onlyOneBlockAndIsEmpty]);
+    }, [id, info, value, decoration, onlyOneBlockAndIsEmpty, options]);
 
     const tagOptions = {
       ref: tagRef,
