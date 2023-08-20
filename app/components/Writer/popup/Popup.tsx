@@ -67,17 +67,21 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
     let newPositions = {};
 
+    let newLeft;
+    const newTop = position.top + window.scrollY + 25;
+
     if (isOutOfScreen) {
-      newPositions = {
-        left: `${position.left - width}px`,
-        top: `${position.top + window.scrollY + 25}px`,
-      };
+      newLeft = position.left - width;
     } else {
-      newPositions = {
-        left: `${position.right - position.width}px`,
-        top: `${position.top + window.scrollY + 25}px`,
-      };
+      newLeft = position.right - position.width;
     }
+
+    if (newLeft < 0) newLeft = 0;
+
+    newPositions = {
+      left: `${newLeft}px`,
+      top: `${newTop}px`,
+    };
 
     setPositions(newPositions);
   }, [updatePositions]);
