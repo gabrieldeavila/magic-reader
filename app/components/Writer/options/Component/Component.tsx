@@ -253,13 +253,81 @@ function Component({ text, id }: IEditable) {
     const selection = window.getSelection();
     const range = document.createRange();
 
-    const startBlock = document.querySelector(
+    let startBlock = document.querySelector(
       `[data-block-id="${selectionRange.startBlockId}"]`
     )?.firstChild;
 
-    const endBlock = document.querySelector(
+    let endBlock = document.querySelector(
       `[data-block-id="${selectionRange.endBlockId}"]`
     )?.firstChild;
+
+    // if it's a code block, get the first child
+    const isCodeBlock = startBlock?.firstChild?.nodeName === "CODE";
+
+    if (isCodeBlock) {
+      startBlock = startBlock?.firstChild;
+      endBlock = endBlock?.firstChild;
+
+      const startChilds = [];
+
+      startBlock?.childNodes.forEach((item) => {
+        startChilds.push(item);
+      });
+
+      const endChilds = [];
+
+      endBlock?.childNodes.forEach((item) => {
+        endChilds.push(item);
+      });
+
+      let startIndex = -1;
+      let letterStartIndex = 0;
+
+      const newStart = startChilds?.find((item) => {
+        const letters = item.textContent?.split("") ?? "";
+
+        const hasLetterIndex = letters.find((item, index) => {
+          startIndex++;
+          const isTheOne = startIndex === selectionRange.start;
+
+          if (isTheOne) {
+            letterStartIndex = index;
+          }
+
+          return isTheOne;
+        });
+
+        return hasLetterIndex;
+      });
+
+      let endIndex = -1;
+      let letterEndIndex = 0;
+
+      const newEnd = endChilds?.find((item) => {
+        const letters = item.textContent?.split("") ?? [""];
+
+        const hasLetterIndex = letters.find((item, index) => {
+          endIndex++;
+          const isTheOne = endIndex === selectionRange.end - 1;
+
+          if (isTheOne) {
+            letterEndIndex = index;
+          }
+
+          return isTheOne;
+        });
+
+        return hasLetterIndex;
+      });
+
+      startBlock = newStart?.firstChild;
+      endBlock = newEnd?.firstChild;
+
+      selectionRange.start = letterStartIndex;
+      selectionRange.end = letterEndIndex + 1;
+      // now we need to properly set the cursor position
+      // because the code block may have a lot of components
+    }
 
     if (!startBlock || !endBlock) {
       return;

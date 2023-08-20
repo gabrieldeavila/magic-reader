@@ -62,7 +62,9 @@ const Strike = styled(Base)`
 `;
 
 const Code = styled(Base)`
-  font-family: "Fira Code", monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 const WPopup = {

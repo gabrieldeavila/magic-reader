@@ -1,5 +1,6 @@
 import { useGTToastContext } from "@geavila/gt-design";
 import { memo, useCallback, useMemo } from "react";
+import { Code } from "react-feather";
 import { stateStorage, useTriggerState } from "react-trigger-state";
 import { useWriterContext } from "../context/WriterContext";
 import { IPopup } from "../interface";
@@ -456,7 +457,9 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         </WPopup.Item>
 
         <WPopup.Item>
-          <WPopup.Code onClick={code}>{"</>"}</WPopup.Code>
+          <WPopup.Code onClick={code}>
+            <Code size={14} />
+          </WPopup.Code>
         </WPopup.Item>
       </WPopup.Content>
     </WPopup.Wrapper>

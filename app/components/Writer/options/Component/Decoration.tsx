@@ -2,6 +2,8 @@ import { memo, useLayoutEffect, useMemo, useRef } from "react";
 import { IDecoration } from "../../interface";
 import { useContextName } from "../../context/WriterContext";
 import { useTriggerState } from "react-trigger-state";
+import { Code, dracula } from "react-code-blocks";
+import { DCode } from "./style";
 
 const STYLE_MAP = {
   bold: {
@@ -17,7 +19,6 @@ const STYLE_MAP = {
     textDecoration: "line-through",
   },
   code: {
-    fontFamily: "monospace",
   },
 };
 
@@ -42,12 +43,6 @@ const Decoration = memo(
         }, {}),
       [options]
     );
-
-    const Tag = useMemo(() => {
-      if (options.includes("code")) return "code";
-
-      return "span";
-    }, [options]);
 
     useLayoutEffect(() => {
       if (info.current.blockId !== id) return;
@@ -85,11 +80,27 @@ const Decoration = memo(
       selection.addRange(range);
     }, [id, info, value, decoration, onlyOneBlockAndIsEmpty]);
 
-    return (
-      <Tag ref={tagRef} data-block-id={id} style={style}>
-        {value || " "}
-      </Tag>
-    );
+    const tagOptions = {
+      ref: tagRef,
+      "data-block-id": id,
+      style,
+    };
+
+    if (options.includes("code")) {
+      return (
+        <DCode {...tagOptions}>
+          <Code
+            {...tagOptions}
+            // @ts-expect-error - uh
+            text={value || " "}
+            language="javascript"
+            theme={dracula}
+          />
+        </DCode>
+      );
+    }
+
+    return <span {...tagOptions}>{value || " "}</span>;
   }
 );
 

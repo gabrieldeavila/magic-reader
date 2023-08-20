@@ -10,10 +10,10 @@ function GTWrapper({
   children,
   kanit,
 }: {
-  serverTranslation: any;
-  lang: any;
+  serverTranslation: unknown;
+  lang: string;
   children: React.ReactNode;
-  kanit: any;
+  kanit: unknown;
 }) {
   globalState.set("font", kanit.className);
   const [noThemeChange] = useTriggerState({
