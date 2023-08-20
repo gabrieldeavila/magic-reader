@@ -62,7 +62,7 @@ const Decoration = memo(
 
         let nodeIndex = 0;
         let nodePosition = 0;
-        console.log(cursorPositionValue);
+        // console.log(cursorPositionValue);
 
         node = codeNodesArray.find((item) => {
           const letters = item.textContent?.split("") ?? [""];
@@ -80,7 +80,7 @@ const Decoration = memo(
 
         cursorPositionValue = nodePosition + 1;
 
-        console.log(node, cursorPositionValue);
+        // console.log(node, cursorPositionValue);
       }
 
       if (

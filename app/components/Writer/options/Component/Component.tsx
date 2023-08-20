@@ -198,9 +198,16 @@ function Component({ text, id }: IEditable) {
       event.preventDefault();
 
       const selection = window.getSelection();
+      // console.log(
+      //   selection.anchorNode.parentElement,
+      //   selection.anchorNode.parentElement.parentElement
+      // );
+
+      const isCodeBlock =
+        selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
 
       const changedBlockId = parseInt(
-        selection.anchorNode.parentElement?.parentElement.tagName === "CODE"
+        isCodeBlock
           ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
               "data-block-id"
             )
@@ -218,10 +225,33 @@ function Component({ text, id }: IEditable) {
 
       const baseValue = block?.value?.slice?.() ?? "";
 
+      let cursorPositionValue = selection.anchorOffset;
+
+      if (isCodeBlock) {
+        const codeChilds = Array.from(
+          selection.anchorNode.parentElement?.parentElement.childNodes
+        );
+
+        let codeNewIndex = 0;
+
+        codeChilds.find((item) => {
+          if (item !== selection.anchorNode.parentElement) {
+            codeNewIndex += item.textContent?.length ?? 0;
+            return false;
+          }
+
+          return true;
+        });
+
+        codeNewIndex += selection.anchorOffset;
+
+        cursorPositionValue = codeNewIndex;
+      }
+
       const newValue =
-        baseValue.slice(0, selection.anchorOffset) +
+        baseValue.slice(0, cursorPositionValue) +
         inputChar +
-        baseValue.slice(selection.anchorOffset);
+        baseValue.slice(cursorPositionValue);
 
       const newText = currText.map((item) => {
         if (item.id === changedBlockId) {
@@ -234,7 +264,7 @@ function Component({ text, id }: IEditable) {
       handleUpdate(id, newText);
 
       info.current = {
-        selection: selection.anchorOffset + 1,
+        selection: cursorPositionValue + 1,
         blockId: changedBlockId,
       };
     },
