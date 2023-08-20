@@ -19,6 +19,12 @@ const STYLE_MAP = {
     textDecoration: "line-through",
   },
   code: {},
+  highlight: {
+    borderRadius: "0.2rem",
+    padding: "0.1rem 0.25rem",
+    backgroundColor: "var(--highlight)",
+    color: "var(--highlightText)",
+  },
 };
 
 const Decoration = memo(
@@ -39,6 +45,7 @@ const Decoration = memo(
             ...STYLE_MAP[item],
           };
 
+          console.log(item, STYLE_MAP[item], acc);
           return acc;
         }, {}),
       [options]
@@ -62,7 +69,6 @@ const Decoration = memo(
 
         let nodeIndex = 0;
         let nodePosition = 0;
-        // console.log(cursorPositionValue);
 
         node = codeNodesArray.find((item) => {
           const letters = item.textContent?.split("") ?? [""];

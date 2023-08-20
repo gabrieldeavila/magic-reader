@@ -2,13 +2,12 @@ import { useGTToastContext } from "@geavila/gt-design";
 import {
   memo,
   useCallback,
-  useId,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
-import { Code } from "react-feather";
+import { Code, PenTool } from "react-feather";
 import { stateStorage, useTriggerState } from "react-trigger-state";
 import { useWriterContext } from "../context/WriterContext";
 import { IPopup } from "../interface";
@@ -76,7 +75,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
       newLeft = position.right - position.width;
     }
 
-    if (newLeft < 0) newLeft = 0;
+    if (newLeft < 0) newLeft = position.x;
 
     newPositions = {
       left: `${newLeft}px`,
@@ -108,8 +107,21 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         anchor?.compareDocumentPosition(focus) &
           Node.DOCUMENT_POSITION_FOLLOWING || isAnchorOffsetLessThanFocusOffset;
 
-      const firstNode = anchorComesFirst ? anchor : focus;
-      const lastNode = anchorComesFirst ? focus : anchor;
+      const firstNodeIsCode = anchor?.parentElement?.tagName === "CODE";
+      const lastNodeIsCode = focus?.parentElement?.tagName === "CODE";
+
+      let firstNode = anchorComesFirst ? anchor : focus;
+      let lastNode = anchorComesFirst ? focus : anchor;
+
+      if (firstNodeIsCode) {
+        // gets the one being selected
+        firstNode = firstNode?.parentElement?.parentElement?.parentElement;
+      }
+
+      if (lastNodeIsCode) {
+        // gets the one being selected
+        lastNode = lastNode?.parentElement?.parentElement?.parentElement;
+      }
 
       const prevSelectionRange = stateStorage.get("selection_range");
 
@@ -471,6 +483,10 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
     addDecoration("code");
   }, [addDecoration]);
 
+  const highlight = useCallback(() => {
+    addDecoration("highlight");
+  }, [addDecoration]);
+
   return (
     <WPopup.Wrapper
       style={positions}
@@ -493,6 +509,12 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
         <WPopup.Item>
           <WPopup.S onClick={strikethrough}>S</WPopup.S>
+        </WPopup.Item>
+
+        <WPopup.Item>
+          <WPopup.Code onClick={highlight}>
+            <PenTool size={14} />
+          </WPopup.Code>
         </WPopup.Item>
 
         <WPopup.Item>

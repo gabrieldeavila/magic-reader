@@ -26,6 +26,18 @@ function GTWrapper({
     <GTBasic
       serverTranslation={serverTranslation}
       lang={lang}
+      themeConfig={{
+        global: {
+          theme: {
+            highlight: "#f0e68c",
+            highlightText: "#da9100",
+          },
+          darkTheme: {
+            highlight: "#f0e68c",
+            highlightText: "#c40233",
+          },
+        },
+      }}
       noThemeChange={noThemeChange}
     >
       <ReaderModal />

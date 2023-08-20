@@ -1,4 +1,4 @@
-type TOptions = "bold" | "italic" | "underline" | "strikethrough" | "code";
+type TOptions = "bold" | "italic" | "underline" | "strikethrough" | "code" | "highlight";
 
 export interface IText {
   options?: TOptions[];

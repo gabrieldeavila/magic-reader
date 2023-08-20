@@ -198,10 +198,6 @@ function Component({ text, id }: IEditable) {
       event.preventDefault();
 
       const selection = window.getSelection();
-      // console.log(
-      //   selection.anchorNode.parentElement,
-      //   selection.anchorNode.parentElement.parentElement
-      // );
 
       const isCodeBlock =
         selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
@@ -285,6 +281,7 @@ function Component({ text, id }: IEditable) {
     };
 
     const selection = window.getSelection();
+
     const range = document.createRange();
 
     let startBlock = document.querySelector(
