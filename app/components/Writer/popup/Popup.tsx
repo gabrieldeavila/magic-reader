@@ -1,5 +1,13 @@
 import { useGTToastContext } from "@geavila/gt-design";
-import { memo, useCallback, useMemo } from "react";
+import {
+  memo,
+  useCallback,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Code } from "react-feather";
 import { stateStorage, useTriggerState } from "react-trigger-state";
 import { useWriterContext } from "../context/WriterContext";
@@ -9,6 +17,8 @@ import WPopup from "./style";
 const Popup = memo(({ id, text, parentRef }: IPopup) => {
   const { toast } = useGTToastContext();
   const { handleUpdate } = useWriterContext();
+
+  const ref = useRef<HTMLDivElement>(null);
 
   const mimic = useMemo(
     () =>
@@ -39,17 +49,37 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
     name: "force_popup_positions_update",
   });
 
-  const positions = useMemo(() => {
+  const [positions, setPositions] = useState({});
+
+  useLayoutEffect(() => {
     // gets the position of the selected text
     const selection = window.getSelection();
     const position = selection?.getRangeAt(0)?.getBoundingClientRect?.();
 
-    if (!position) return {};
+    if (!position) return;
 
-    return {
-      left: `${position.right - position.width}px`,
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const width = ref.current?.getBoundingClientRect()?.width;
+
+    const left = position.right + width;
+
+    // sees if the popup is out of the screen
+    const isOutOfScreen = window.innerWidth < left;
+
+    let newPositions = {};
+
+    if (isOutOfScreen) {
+      newPositions = {
+        left: `${position.left - width}px`,
+        top: `${position.top + window.scrollY + 25}px`,
+      };
+    } else {
+      newPositions = {
+        left: `${position.right - position.width}px`,
+        top: `${position.top + window.scrollY + 25}px`,
+      };
+    }
+
+    setPositions(newPositions);
   }, [updatePositions]);
 
   const addDecoration = useCallback(
@@ -438,7 +468,12 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
   }, [addDecoration]);
 
   return (
-    <WPopup.Wrapper style={positions} isUp={isUp} contentEditable={false}>
+    <WPopup.Wrapper
+      style={positions}
+      isUp={isUp}
+      contentEditable={false}
+      ref={ref}
+    >
       <WPopup.Content>
         <WPopup.Item>
           <WPopup.B onClick={bold}>B</WPopup.B>
