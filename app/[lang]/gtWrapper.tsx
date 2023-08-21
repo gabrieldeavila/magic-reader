@@ -30,10 +30,10 @@ function GTWrapper({
         global: {
           theme: {
             highlight: "#f0e68c",
-            highlightText: "#da9100",
+            highlightText: "#a52a2a",
           },
           darkTheme: {
-            highlight: "#f0e68c",
+            highlight: "#ffc40c",
             highlightText: "#c40233",
           },
         },

@@ -202,7 +202,7 @@ function Component({ text, id }: IEditable) {
       const isCodeBlock =
         selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
 
-      const changedBlockId = parseInt(
+      const changedBlockId = parseFloat(
         isCodeBlock
           ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
               "data-block-id"

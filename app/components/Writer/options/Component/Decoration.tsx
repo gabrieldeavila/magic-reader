@@ -18,7 +18,9 @@ const STYLE_MAP = {
   strikethrough: {
     textDecoration: "line-through",
   },
-  code: {},
+  code: {
+    borderRadius: "0.2rem",
+  },
   highlight: {
     borderRadius: "0.2rem",
     padding: "0.1rem 0.25rem",
@@ -136,7 +138,9 @@ const Decoration = memo(
           (item) => item.id === parseInt(nextId)
         );
 
-        nextIsHighlight = nextBlock.options.includes("highlight");
+        nextIsHighlight =
+          nextBlock?.options?.includes?.("highlight") ||
+          nextBlock?.options?.includes?.("code");
       }
 
       const prevSibling = tagRef.current.previousSibling;
@@ -149,7 +153,9 @@ const Decoration = memo(
           (item) => item.id === parseInt(prevId)
         );
 
-        prevIsHighlight = prevBlock.options.includes("highlight");
+        prevIsHighlight =
+          prevBlock?.options?.includes?.("highlight") ||
+          prevBlock?.options?.includes?.("code");
       }
 
       setIsHighlight({
