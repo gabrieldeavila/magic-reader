@@ -1,8 +1,8 @@
-import { memo, useLayoutEffect, useMemo, useRef } from "react";
-import { IDecoration } from "../../interface";
-import { useContextName } from "../../context/WriterContext";
+import { memo, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Code, atomOneLight, dracula } from "react-code-blocks";
 import { useTriggerState } from "react-trigger-state";
-import { Code, dracula, atomOneLight } from "react-code-blocks";
+import { useContextName } from "../../context/WriterContext";
+import { IDecoration } from "../../interface";
 import { DCode } from "./style";
 
 const STYLE_MAP = {
@@ -28,7 +28,14 @@ const STYLE_MAP = {
 };
 
 const Decoration = memo(
-  ({ options = [], value, id, info, onlyOneBlockAndIsEmpty }: IDecoration) => {
+  ({
+    options = [],
+    value,
+    id,
+    parentText,
+    info,
+    onlyOneBlockAndIsEmpty,
+  }: IDecoration) => {
     const tagRef = useRef<HTMLDivElement>(null);
     const name = useContextName();
     const [currTheme] = useTriggerState({ name: "curr_theme" });
@@ -45,7 +52,6 @@ const Decoration = memo(
             ...STYLE_MAP[item],
           };
 
-          console.log(item, STYLE_MAP[item], acc);
           return acc;
         }, {}),
       [options]
@@ -85,8 +91,6 @@ const Decoration = memo(
         })?.childNodes[0];
 
         cursorPositionValue = nodePosition + 1;
-
-        // console.log(node, cursorPositionValue);
       }
 
       if (
@@ -114,10 +118,62 @@ const Decoration = memo(
       selection.addRange(range);
     }, [id, info, value, decoration, onlyOneBlockAndIsEmpty, options]);
 
+    const [isHighlight, setIsHighlight] = useState({
+      next: false,
+      prev: false,
+    });
+
+    useLayoutEffect(() => {
+      const nextSibling = tagRef.current.nextSibling;
+      let nextIsHighlight = false;
+      let prevIsHighlight = false;
+
+      // @ts-expect-error - uh
+      const nextId = nextSibling?.getAttribute("data-block-id");
+
+      if (nextId != null) {
+        const nextBlock = parentText.find(
+          (item) => item.id === parseInt(nextId)
+        );
+
+        nextIsHighlight = nextBlock.options.includes("highlight");
+      }
+
+      const prevSibling = tagRef.current.previousSibling;
+
+      // @ts-expect-error - uh
+      const prevId = prevSibling?.getAttribute("data-block-id");
+
+      if (prevId != null) {
+        const prevBlock = parentText.find(
+          (item) => item.id === parseInt(prevId)
+        );
+
+        prevIsHighlight = prevBlock.options.includes("highlight");
+      }
+
+      setIsHighlight({
+        next: nextIsHighlight,
+        prev: prevIsHighlight,
+      });
+    }, [parentText]);
+
     const tagOptions = {
       ref: tagRef,
       "data-block-id": id,
-      style,
+      style: {
+        ...style,
+        ...(isHighlight.next && {
+          borderTopRightRadius: "0px",
+          borderBottomRightRadius: "0px",
+          paddingRight: "0px",
+        }),
+        ...(isHighlight.prev && {
+          borderTopLeftRadius: "0px",
+          borderBottomLeftRadius: "0px",
+          paddingLeft: "0px",
+        }),
+      },
     };
 
     if (options.includes("code")) {

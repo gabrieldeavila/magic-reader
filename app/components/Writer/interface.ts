@@ -1,4 +1,10 @@
-type TOptions = "bold" | "italic" | "underline" | "strikethrough" | "code" | "highlight";
+type TOptions =
+  | "bold"
+  | "italic"
+  | "underline"
+  | "strikethrough"
+  | "code"
+  | "highlight";
 
 export interface IText {
   options?: TOptions[];
@@ -52,10 +58,11 @@ export interface IWriterInfo {
 export interface IDecoration extends IText {
   info: React.RefObject<IWriterInfo>;
   onlyOneBlockAndIsEmpty: boolean;
+  parentText: IText[];
 }
 
 export interface IPopup {
-  id: number,
+  id: number;
   parentRef: React.RefObject<HTMLDivElement>;
   text: IText[];
 }

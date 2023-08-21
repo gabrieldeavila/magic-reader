@@ -424,6 +424,7 @@ function Component({ text, id }: IEditable) {
         return (
           <Decoration
             {...{ ...item, info, onlyOneBlockAndIsEmpty }}
+            parentText={text}
             key={index}
           />
         );
