@@ -39,6 +39,38 @@ function Component({ text, id }: IEditable) {
 
         let charToDelete = selection.anchorOffset - 1;
 
+        const isCodeBlock =
+          selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
+
+        if (isCodeBlock) {
+          const codeChilds = Array.from(
+            selection.anchorNode.parentElement?.parentElement.childNodes
+          );
+
+          let newIndex = 0;
+
+          codeChilds.find((item) => {
+            if (item !== selection.anchorNode.parentElement) {
+              newIndex += item.textContent?.length ?? 0;
+              return false;
+            }
+
+            return true;
+          });
+
+          newIndex += selection.anchorOffset;
+
+          charToDelete = newIndex - 1;
+          changedBlockId = parseFloat(
+            selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
+              "data-block-id"
+            )
+          );
+
+          baseValue =
+            selection.anchorNode.parentElement.parentElement.innerText;
+        }
+
         // if the charToDelete is -1, it means that the cursor is at the beginning of the block
         // and we need to delete the previous block
         if (charToDelete === -1) {
