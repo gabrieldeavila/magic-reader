@@ -134,9 +134,9 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         (prevSelectionRange?.end ||
           (anchorComesFirst ? focusOffset : anchorOffset)) - 1;
 
-      const firstNodeId = parseInt(firstNode?.getAttribute("data-block-id"));
+      const firstNodeId = parseFloat(firstNode?.getAttribute("data-block-id"));
 
-      const lastNodeId = parseInt(lastNode?.getAttribute("data-block-id"));
+      const lastNodeId = parseFloat(lastNode?.getAttribute("data-block-id"));
 
       let firstIdIndex = 0;
 

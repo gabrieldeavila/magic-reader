@@ -136,7 +136,7 @@ const Decoration = memo(
 
       if (nextId != null) {
         const nextBlock = parentText.find(
-          (item) => item.id === parseInt(nextId)
+          (item) => item.id === parseFloat(nextId)
         );
 
         nextIsHighlight =
@@ -151,7 +151,7 @@ const Decoration = memo(
 
       if (prevId != null) {
         const prevBlock = parentText.find(
-          (item) => item.id === parseInt(prevId)
+          (item) => item.id === parseFloat(prevId)
         );
 
         prevIsHighlight =

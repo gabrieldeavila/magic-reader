@@ -27,7 +27,7 @@ function Component({ text, id }: IEditable) {
         event.preventDefault();
         const selection = window.getSelection();
 
-        let changedBlockId = parseInt(
+        let changedBlockId = parseFloat(
           selection.anchorNode.parentElement.getAttribute("data-block-id")
         );
 
@@ -107,7 +107,7 @@ function Component({ text, id }: IEditable) {
         // gets the current block id
         const selection = window.getSelection();
 
-        const changedBlockId = parseInt(
+        const changedBlockId = parseFloat(
           selection.anchorNode.parentElement.getAttribute("data-block-id")
         );
 
