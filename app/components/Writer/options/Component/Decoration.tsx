@@ -4,6 +4,7 @@ import { useTriggerState } from "react-trigger-state";
 import { useContextName } from "../../context/WriterContext";
 import { IDecoration } from "../../interface";
 import { DCode } from "./style";
+import { useGTTranslate } from "@geavila/gt-design";
 
 const STYLE_MAP = {
   bold: {
@@ -164,9 +165,13 @@ const Decoration = memo(
       });
     }, [parentText]);
 
+    const { translateThis } = useGTTranslate();
+
     const tagOptions = {
       ref: tagRef,
       "data-block-id": id,
+      placeholder: onlyOneBlockAndIsEmpty && translateThis("SCRIBERE.EMPTY"),
+      className: onlyOneBlockAndIsEmpty && "placeholder",
       style: {
         ...style,
         ...(isHighlight.next && {

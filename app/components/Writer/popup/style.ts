@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { PopupWrapperProps } from "./interface";
 
 const PopupWrapper = styled.div<PopupWrapperProps>`
-  position: absolute;
+  position: fixed;
   top: ${({ isUp }) => (isUp ? "-40px" : "40px")};
   bottom: ${({ isUp }) => (isUp ? "-40px" : "unset")};
   left: 0.5rem;
