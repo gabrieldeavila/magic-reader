@@ -15,6 +15,7 @@ function GTWrapper({
   children: React.ReactNode;
   kanit: unknown;
 }) {
+  // @ts-expect-error - uh
   globalState.set("font", kanit.className);
   const [noThemeChange] = useTriggerState({
     initial: false,
