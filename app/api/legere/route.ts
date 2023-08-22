@@ -1,6 +1,6 @@
 import apiReader from "../../Axios/apiReader";
 
-export async function GET(request: Request) {
+export async function GET() {
   return new Response("Hello world!");
 }
 

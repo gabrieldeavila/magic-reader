@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 type Convert = ({ name }: { name: string }) => string;
 
 function useBookName() {

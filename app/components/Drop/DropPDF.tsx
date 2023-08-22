@@ -6,12 +6,22 @@ import { stateStorage, useTriggerState } from "react-trigger-state";
 import { db } from "../Dexie/Dexie";
 import "./style.css";
 
-function DropPDF({ uploadFile }) {
+type uploadFileReturn = {
+  name: string;
+  pages: Record<string, string>;
+  numOfPages: number;
+};
+
+function DropPDF({
+  uploadFile,
+}: {
+  uploadFile: (formData: FormData) => Promise<uploadFileReturn>;
+}) {
   const [loading, setLoading] = useState(false);
   const { translateThis } = useGTTranslate();
   const [font] = useTriggerState({ name: "font" });
 
-  const handleDrop = useCallback((acceptedFiles: any) => {
+  const handleDrop = useCallback((acceptedFiles: Record<string, string>) => {
     void (async () => {
       setLoading(true);
 
@@ -29,6 +39,7 @@ function DropPDF({ uploadFile }) {
         updatedAt: new Date(),
       };
 
+      // @ts-expect-error - uh
       const id = await db.pdfs.add(newBook);
 
       const allBooks = stateStorage.get("books");
@@ -36,11 +47,12 @@ function DropPDF({ uploadFile }) {
       stateStorage.set("books", [...allBooks, { ...newBook, id }]);
       setLoading(false);
     })();
-  }, []);
+  }, [uploadFile]);
 
   return (
     <>
       <Dropzone
+        // @ts-expect-error - uh
         onDrop={handleDrop}
         disabled={loading}
         accept={{ "application/pdf": ["application/pdf"] }}

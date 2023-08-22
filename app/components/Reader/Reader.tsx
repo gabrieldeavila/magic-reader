@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import {
   Button,
   GTModal,
@@ -5,8 +6,6 @@ import {
   Text,
   useGTTranslate,
 } from "@geavila/gt-design";
-import { stateStorage, useTriggerState } from "react-trigger-state";
-import Phrase from "./Phrase";
 import {
   forwardRef,
   memo,
@@ -16,10 +15,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { ReadContent, ReadWrapper } from "./styles";
+import { useTriggerState } from "react-trigger-state";
 import { db } from "../Dexie/Dexie";
+import Phrase from "./Phrase";
 import { IModalData } from "./interface";
-import { useRouter } from "next/navigation";
+import { ReadContent, ReadWrapper } from "./styles";
 import useReadingTime from "./utils/useReadingTime";
 
 function Reader() {
@@ -39,8 +39,10 @@ function Reader() {
       });
       // puts the scroll to the top of the page
       pageRef.current?.scrollTo(0, 0);
-    } catch {}
-  }, [currPage]);
+    } catch {
+      console.log("error");
+    }
+  }, [currPage, readingBook.id]);
 
   const firstRender = useRef(true);
 
@@ -77,7 +79,7 @@ function Reader() {
     if (currPage === 0) return;
 
     setCurrPage((prev) => prev - 1);
-  }, [currPage, readingBook]);
+  }, [currPage]);
 
   const disabledNav = useMemo(() => {
     if (!readingBook.pages)
@@ -132,10 +134,10 @@ function Reader() {
         width="-webkit-fill-available"
         ref={readerRef}
       >
-        {/* @ts-expect-error */}
+        {/* @ts-expect-error - uh */}
         <ReadWrapper my="1rem">
           <ReadContent ref={pageRef}>
-            {/* @ts-expect-error */}
+            {/* @ts-expect-error - uh */}
             <Space.Modifiers flexDirection="column">
               {lines.map((phrase: string, index: number) => (
                 <Phrase key={index} index={index} phrase={phrase} />
@@ -186,7 +188,7 @@ const ReaderNav = memo(
           next: boolean;
         };
       },
-      ref: any
+      ref: React.Ref<HTMLDivElement>
     ) => {
       const { translateThis } = useGTTranslate();
 
@@ -232,7 +234,7 @@ export const ReaderModal = memo(() => {
     if (!wpm) return 0;
 
     return parseFloat(wpm).toFixed(2);
-  }, [showModalBasic]);
+  }, []);
 
   const { translateThis } = useGTTranslate();
 
@@ -242,7 +244,7 @@ export const ReaderModal = memo(() => {
       show={showModalBasic}
       setShow={setShowModalBasic}
     >
-      {/* @ts-expect-error */}
+      {/* @ts-expect-error - uh*/}
       <Space.Between alignItems="center">
         <Text.Strong>{translateThis("LEGERE.WPM")}:</Text.Strong>
 
@@ -251,3 +253,5 @@ export const ReaderModal = memo(() => {
     </GTModal>
   );
 });
+
+ReaderModal.displayName = "ReaderModal";

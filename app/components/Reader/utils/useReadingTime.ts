@@ -1,5 +1,5 @@
 import { useIsFirstRender } from "@geavila/gt-design";
-import { differenceInMinutes, differenceInSeconds } from "date-fns";
+import { differenceInSeconds } from "date-fns";
 import { useEffect } from "react";
 import { globalState } from "react-trigger-state";
 
@@ -54,6 +54,7 @@ function useReadingTime({
     checkPage();
 
     SET_PREV(currPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currPage]);
 }
 
