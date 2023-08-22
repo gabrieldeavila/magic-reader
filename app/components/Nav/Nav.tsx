@@ -1,20 +1,12 @@
 "use client";
 
-import {
-  GTNavbar,
-  Navbar,
-  Space,
-  Text,
-  useGTTranslate,
-  useIsMobile,
-} from "@geavila/gt-design";
+import { GTNavbar, Navbar, Space, Text, useIsMobile } from "@geavila/gt-design";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import { Info, Menu, MoreHorizontal, X } from "react-feather";
+import { Info, Menu, X } from "react-feather";
 import { stateStorage } from "react-trigger-state";
 
 function Nav({ logo }: { logo: string }) {
-  const { translateThis } = useGTTranslate();
   const isMobile = useIsMobile();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [tempShowMobileMenu, setTempShowMobileMenu] = useState(false);
@@ -41,15 +33,14 @@ function Nav({ logo }: { logo: string }) {
     const lang = stateStorage.get("lang");
     console.log("aa");
     router.push(`/${lang}/legere`);
-  }, []);
+  }, [router]);
 
   return (
     <>
       <GTNavbar>
-        {/* @ts-ignore */}
         <Space.Center>
           <Space.Modifiers
-            //  @ts-ignore
+            //  @ts-expect-error - uh
             justifyContent="space-between"
             width="-webkit-fill-available"
           >
@@ -69,22 +60,23 @@ function Nav({ logo }: { logo: string }) {
                 {
                   <Navbar.Options>
                     <Navbar.OptionWrapper>
-                      {/* @ts-ignore */}
+                      {/* @ts-expect-error - uh */}
                       <Space.Modifiers gridGap="1rem">
-                        <button onClick={handleSettings} style={
-                          {
+                        <button
+                          onClick={handleSettings}
+                          style={{
                             background: "none",
                             border: "none",
-                            cursor: "pointer"
-                          }
-                        }>
+                            cursor: "pointer",
+                          }}
+                        >
                           <Info size="1rem" cursor="pointer" />
                         </button>
                       </Space.Modifiers>
                     </Navbar.OptionWrapper>
 
                     <Navbar.OptionWrapper>
-                      {/* @ts-ignore */}
+                      {/* @ts-expect-error - uh */}
                       <Space.Modifiers gridGap="1rem"></Space.Modifiers>
                     </Navbar.OptionWrapper>
                   </Navbar.Options>
@@ -102,13 +94,13 @@ function Nav({ logo }: { logo: string }) {
       {showMobileMenu && (
         <Navbar.Mobile.Wrapper isOpen={tempShowMobileMenu}>
           <Space.Modifiers
-            //  @ts-ignore
+            //  @ts-expect-error - uh
             mb="1rem"
             pl="0.2rem"
             justifyContent="space-between"
             alignItems="center"
           >
-            {/* @ts-ignore */}
+            {/* @ts-expect-error - uh */}
             <Text.Title mb="0" fontSize="1.2rem !important">
               {logo}
             </Text.Title>
@@ -120,7 +112,7 @@ function Nav({ logo }: { logo: string }) {
             flexDirection="column"
             gridGap="1rem"
           ></Space.Modifiers>
-          {/*  @ts-ignore */}
+          {/*  @ts-expect-error - uh */}
           <Space.Modifiers pt="2rem"></Space.Modifiers>
         </Navbar.Mobile.Wrapper>
       )}

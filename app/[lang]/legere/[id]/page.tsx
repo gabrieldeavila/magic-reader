@@ -3,10 +3,16 @@
 import { useEffect, useState } from "react";
 import { stateStorage } from "react-trigger-state";
 import { db } from "../../../components/Dexie/Dexie";
-import Reader, { ReaderModal } from "../../../components/Reader/Reader";
+import Reader from "../../../components/Reader/Reader";
 import useNoThemeChange from "../../../hooks/useNoThemeChange";
 
-function edit({ params: { id } }) {
+function Edit({
+  params: { id },
+}: {
+  params: {
+    id: string;
+  };
+}) {
   const [loading, setLoading] = useState(true);
   useNoThemeChange();
 
@@ -27,4 +33,4 @@ function edit({ params: { id } }) {
   );
 }
 
-export default edit;
+export default Edit;

@@ -8,7 +8,7 @@ export interface Pdfs {
   name: string;
   numOfPages: number;
   // TODO: ADD TYPE
-  pages: any;
+  pages: unknown[];
   createdAt: Date;
   updatedAt: Date;
   currPage?: number;

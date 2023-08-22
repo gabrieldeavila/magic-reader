@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useTriggerState } from "react-trigger-state";
 
 function useIsSSR() {
@@ -6,7 +6,7 @@ function useIsSSR() {
 
   useEffect(() => {
     setIsSSR(false);
-  }, []);
+  }, [setIsSSR]);
 
   return { isSSR };
 }

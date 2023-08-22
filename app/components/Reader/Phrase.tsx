@@ -36,7 +36,7 @@ function Phrase({
     window.addEventListener("resize", handleResize);
 
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [customWidth]);
 
   if (phrase === "" && !index) return null;
 

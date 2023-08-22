@@ -1,18 +1,17 @@
 import {
   Box,
   Loader,
-  Loading,
   MotionBox,
   Space,
   Text,
-  useGTTranslate,
+  useGTTranslate
 } from "@geavila/gt-design";
 import Link from "next/link";
 import { memo, useEffect, useMemo } from "react";
 import { useTriggerState } from "react-trigger-state";
 import useBookName from "../../hooks/useBookName";
-import { db } from "../Dexie/Dexie";
 import useIsSSR from "../../hooks/useIsSSR";
+import { db } from "../Dexie/Dexie";
 
 function Books() {
   const { translateThis } = useGTTranslate();
@@ -24,14 +23,14 @@ function Books() {
 
   useEffect(() => {
     db.pdfs.toArray().then((pdfs) => setBooks(pdfs));
-  }, []);
+  }, [setBooks]);
 
   const { isSSR } = useIsSSR();
 
   return (
     // @ts-expect-error - do later
     <Space.Modifiers mt="1rem" display="grid">
-      {/* @ts-expect-error */}
+      {/* @ts-expect-error  - uh*/}
       <Text.Strong mb="1rem">{translateThis("LEGERE.BOOKS")}</Text.Strong>
 
       {isSSR && <Loader.Simple />}
@@ -41,8 +40,8 @@ function Books() {
       )}
 
       <Box.Column>
-        {books.map((book) => (
-          <Book book={book} />
+        {books.map((book, index) => (
+          <Book book={book} key={index} />
         ))}
       </Box.Column>
     </Space.Modifiers>
@@ -51,7 +50,7 @@ function Books() {
 
 export default Books;
 
-const Book = memo(({ book }: { book: any }) => {
+const Book = memo(({ book }: { book: Record<string, string> }) => {
   const [font] = useTriggerState({ name: "font" });
   const [page] = useTriggerState({ name: "lang" });
   const { translateThis } = useGTTranslate();
@@ -59,10 +58,11 @@ const Book = memo(({ book }: { book: any }) => {
 
   const convertedName = useMemo(
     () => convertName({ name: book.name }),
-    [book.name]
+    [book.name, convertName]
   );
 
   return (
+    // @ts-expect-error - do later
     <MotionBox title="LEGERE.READ_BOOK" key={book}>
       <Link
         style={{ height: "100%", textDecoration: "none" }}
@@ -70,7 +70,7 @@ const Book = memo(({ book }: { book: any }) => {
         href={`/${page}/legere/${book.id}/`}
       >
         <Space.MiddleCenter>
-          {/* @ts-expect-error */}
+          {/* @ts-expect-error  - uh*/}
           <Text.P textAlign="center" className={font}>
             {convertedName}
           </Text.P>
@@ -82,3 +82,5 @@ const Book = memo(({ book }: { book: any }) => {
     </MotionBox>
   );
 });
+
+Book.displayName = "Book";

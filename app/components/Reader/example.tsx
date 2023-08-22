@@ -14,7 +14,7 @@ import { TextArea } from "./styles";
 function Example() {
   const { translateThis } = useGTTranslate();
 
-  const [textArea, setTextArea] = useState(
+  const [textArea] = useState(
     translateThis("LEGERE.EXAMPLE_PARAGRAPH")
   );
 
