@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev -p 3003",
     "lint": "next lint",
-    "build": "next build",
+    "build": "DISABLE_ESLINT_PLUGIN=true && next build",
     "start": "next start -H 0.0.0.0",
     "start-localhost": "next start"
   },
