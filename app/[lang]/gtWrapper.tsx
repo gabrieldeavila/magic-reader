@@ -10,10 +10,10 @@ function GTWrapper({
   children,
   kanit,
 }: {
-  serverTranslation: any;
-  lang: any;
+  serverTranslation: unknown;
+  lang: string;
   children: React.ReactNode;
-  kanit: any;
+  kanit: unknown;
 }) {
   globalState.set("font", kanit.className);
   const [noThemeChange] = useTriggerState({
@@ -26,6 +26,18 @@ function GTWrapper({
     <GTBasic
       serverTranslation={serverTranslation}
       lang={lang}
+      themeConfig={{
+        global: {
+          theme: {
+            highlight: "#f0e68c",
+            highlightText: "#a52a2a",
+          },
+          darkTheme: {
+            highlight: "#ffc40c",
+            highlightText: "#c40233",
+          },
+        },
+      }}
       noThemeChange={noThemeChange}
     >
       <ReaderModal />

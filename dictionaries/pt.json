@@ -56,6 +56,11 @@
     "PREV": "Anterior",
     "NEXT": "Próxima",
     "WPM": "Palavras por minuto",
-    "NO_BOOKS": "Você ainda não tem nenhum livro, clique no botão acima para começar!"
+    "NO_BOOKS": "Você ainda não tem nenhum livro, clique no botão acima para começar!",
+    "NO_SELECTION": "Nenhuma texto selecionado"
+  },
+
+  "SCRIBERE": {
+    "EMPTY": "Escreva algo!"
   }
 }

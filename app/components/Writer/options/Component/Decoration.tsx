@@ -1,5 +1,10 @@
-import React, { useMemo } from "react";
-import { IText } from "../../interface";
+import { memo, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Code, atomOneLight, dracula } from "react-code-blocks";
+import { useTriggerState } from "react-trigger-state";
+import { useContextName } from "../../context/WriterContext";
+import { IDecoration } from "../../interface";
+import { DCode } from "./style";
+import { useGTTranslate } from "@geavila/gt-design";
 
 const STYLE_MAP = {
   bold: {
@@ -9,44 +14,197 @@ const STYLE_MAP = {
     fontStyle: "italic",
   },
   underline: {
-    textDecoration: "underline",
+    borderBottom: "0.1rem solid var(--contrast)",
   },
   strikethrough: {
     textDecoration: "line-through",
   },
   code: {
-    fontFamily: "monospace",
+    borderRadius: "0.2rem",
+  },
+  highlight: {
+    borderRadius: "0.2rem",
+    padding: "0.1rem 0.25rem",
+    backgroundColor: "var(--highlight)",
+    color: "var(--highlightText)",
   },
 };
 
-function Decoration({ options = [], value }: IText) {
-  const style = useMemo(
-    () =>
-      options.reduce((acc, item) => {
-        acc = {
-          ...acc,
-          ...STYLE_MAP[item],
-        };
+const Decoration = memo(
+  ({
+    options = [],
+    value,
+    id,
+    parentText,
+    info,
+    onlyOneBlockAndIsEmpty,
+  }: IDecoration) => {
+    const tagRef = useRef<HTMLDivElement>(null);
+    const name = useContextName();
+    const [currTheme] = useTriggerState({ name: "curr_theme" });
 
-        return acc;
-      }, {}),
-    [options]
-  );
+    const [decoration] = useTriggerState({
+      name: `${name}_decoration-${id}`,
+    });
 
-  const Tag = useMemo(() => {
-    if (options.includes("code")) return "code";
+    const style = useMemo(
+      () =>
+        options.reduce((acc, item) => {
+          acc = {
+            ...acc,
+            ...STYLE_MAP[item],
+          };
 
-    // returns a fragment
-    if (!options.length) return React.Fragment;
+          return acc;
+        }, {}),
+      [options]
+    );
 
-    return "span";
-  }, [options]);
+    useLayoutEffect(() => {
+      if (info.current.blockId !== id) return;
 
-  return (
-    <Tag onKeyUpCapture={() => console.log("o")} style={style}>
-      {value}
-    </Tag>
-  );
-}
+      const selection = window.getSelection();
+
+      const range = document.createRange();
+
+      let cursorPositionValue = info.current.selection;
+
+      let node = tagRef.current.childNodes[0];
+
+      // if there's a code option, the node is another element
+      if (options.includes("code")) {
+        const codeNodes = tagRef.current.childNodes[0].childNodes[0].childNodes;
+        const codeNodesArray = Array.from(codeNodes);
+
+        let nodeIndex = 0;
+        let nodePosition = 0;
+
+        node = codeNodesArray.find((item) => {
+          const letters = item.textContent?.split("") ?? [""];
+
+          const hasCursor = letters.some((_letter, index) => {
+            nodeIndex++;
+            if (nodeIndex === cursorPositionValue) {
+              nodePosition = index;
+              return true;
+            }
+          });
+
+          return hasCursor;
+        })?.childNodes[0];
+
+        cursorPositionValue = nodePosition + 1;
+      }
+
+      if (
+        (node == null || info.current.selection === -1) &&
+        onlyOneBlockAndIsEmpty === false
+      ) {
+        return;
+      }
+
+      if (onlyOneBlockAndIsEmpty) {
+        info.current.selection = 0;
+        cursorPositionValue = 0;
+      }
+
+      // if the cursorPositionValue is greater than the length of the text
+      // return the cursor to the end of the text
+      if (cursorPositionValue > value.length) {
+        cursorPositionValue = value.length;
+      }
+
+      range.setStart(node, cursorPositionValue);
+      range.setEnd(node, cursorPositionValue);
+
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }, [id, info, value, decoration, onlyOneBlockAndIsEmpty, options]);
+
+    const [isHighlight, setIsHighlight] = useState({
+      next: false,
+      prev: false,
+    });
+
+    useLayoutEffect(() => {
+      const nextSibling = tagRef.current.nextSibling;
+      let nextIsHighlight = false;
+      let prevIsHighlight = false;
+
+      // @ts-expect-error - uh
+      const nextId = nextSibling?.getAttribute("data-block-id");
+
+      if (nextId != null) {
+        const nextBlock = parentText.find(
+          (item) => item.id === parseFloat(nextId)
+        );
+
+        nextIsHighlight =
+          nextBlock?.options?.includes?.("highlight") ||
+          nextBlock?.options?.includes?.("code");
+      }
+
+      const prevSibling = tagRef.current.previousSibling;
+
+      // @ts-expect-error - uh
+      const prevId = prevSibling?.getAttribute("data-block-id");
+
+      if (prevId != null) {
+        const prevBlock = parentText.find(
+          (item) => item.id === parseFloat(prevId)
+        );
+
+        prevIsHighlight =
+          prevBlock?.options?.includes?.("highlight") ||
+          prevBlock?.options?.includes?.("code");
+      }
+
+      setIsHighlight({
+        next: nextIsHighlight,
+        prev: prevIsHighlight,
+      });
+    }, [parentText]);
+
+    const { translateThis } = useGTTranslate();
+
+    const tagOptions = {
+      ref: tagRef,
+      "data-block-id": id,
+      placeholder: onlyOneBlockAndIsEmpty && translateThis("SCRIBERE.EMPTY"),
+      className: onlyOneBlockAndIsEmpty && "placeholder",
+      style: {
+        ...style,
+        ...(isHighlight.next && {
+          borderTopRightRadius: "0px",
+          borderBottomRightRadius: "0px",
+          paddingRight: "0px",
+        }),
+        ...(isHighlight.prev && {
+          borderTopLeftRadius: "0px",
+          borderBottomLeftRadius: "0px",
+          paddingLeft: "0px",
+        }),
+      },
+    };
+
+    if (options.includes("code")) {
+      return (
+        <DCode {...tagOptions}>
+          <Code
+            {...tagOptions}
+            // @ts-expect-error - uh
+            text={value || " "}
+            language="javascript"
+            theme={currTheme === "darkTheme" ? dracula : atomOneLight}
+          />
+        </DCode>
+      );
+    }
+
+    return <span {...tagOptions}>{value || " "}</span>;
+  }
+);
+
+Decoration.displayName = "Decoration";
 
 export default Decoration;
