@@ -6,3 +6,12 @@
   content: attr(placeholder);
   color: gray;
 }
+
+.placeholder {
+  padding: 0 !important;
+  color: unset !important;
+  background-color: unset !important;
+  font-weight: unset !important;
+  border-bottom: unset !important;
+  text-decoration: unset !important;
+}
