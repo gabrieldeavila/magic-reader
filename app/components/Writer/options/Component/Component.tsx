@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   globalState,
   stateStorage,
@@ -21,10 +28,45 @@ function Component({ text, id }: IEditable) {
     blockId: 0,
   });
 
+  useEffect(() => {
+    const isFirstSelected = globalState.get("first_selection") === id;
+
+    if (!isFirstSelected) return;
+
+    const selection = window.getSelection();
+
+    const range = document.createRange();
+
+    const firstBlock = text[0].id;
+
+    const block = document.querySelector(`[data-block-id="${firstBlock}"]`)
+      ?.firstChild;
+
+    const isCodeBlock = block?.firstChild?.nodeName === "CODE";
+
+    if (!block) return;
+
+    if (isCodeBlock) {
+      range.setStart(block?.firstChild, 0);
+      range.setEnd(block?.firstChild, 0);
+    } else {
+      range.setStart(block, 0);
+      range.setEnd(block, 0);
+    }
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
   const verifySpecialChars = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === "Backspace") {
+      if (["Backspace", "Delete"].includes(event.key)) {
         event.preventDefault();
+
+        // returns if is deleting in the right or left side of the block
+        const deletingPosition = event.key === "Delete" ? 0 : -1;
+
         const selection = window.getSelection();
 
         let changedBlockId = parseFloat(
@@ -37,7 +79,7 @@ function Component({ text, id }: IEditable) {
 
         let baseValue = selection.anchorNode.parentElement.innerText;
 
-        let charToDelete = selection.anchorOffset - 1;
+        let charToDelete = selection.anchorOffset + deletingPosition;
 
         const isCodeBlock =
           selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
@@ -60,7 +102,7 @@ function Component({ text, id }: IEditable) {
 
           newIndex += selection.anchorOffset;
 
-          charToDelete = newIndex - 1;
+          charToDelete = newIndex + deletingPosition;
           changedBlockId = parseFloat(
             selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
               "data-block-id"
@@ -84,11 +126,31 @@ function Component({ text, id }: IEditable) {
 
           const prevBlockValue = prevBlock.value;
 
-          charToDelete = prevBlockValue.length - 1;
+          charToDelete = prevBlockValue.length + deletingPosition;
 
           baseValue = prevBlockValue;
 
           changedBlockId = prevBlock.id;
+        } else if (
+          charToDelete === baseValue.length &&
+          event.key === "Delete"
+        ) {
+          // gets the next block
+          const nextBlock = currText.find((_item, index) => {
+            const nextBlock = currText[index - 1];
+
+            return nextBlock?.id === changedBlockId;
+          });
+
+          if (!nextBlock) return;
+
+          const nextBlockValue = nextBlock.value;
+
+          baseValue = nextBlockValue;
+
+          charToDelete = 0;
+
+          changedBlockId = nextBlock.id;
         }
 
         const newValue =
@@ -205,6 +267,8 @@ function Component({ text, id }: IEditable) {
             text: newLineText,
           }
         );
+
+        globalState.set("first_selection", newId);
 
         stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
         stateStorage.set(contextName, newContent);
