@@ -61,8 +61,12 @@ function Component({ text, id }: IEditable) {
 
   const verifySpecialChars = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === "Backspace") {
+      if (["Backspace", "Delete"].includes(event.key)) {
         event.preventDefault();
+
+        // returns if is deleting in the right or left side of the block
+        const deletingPosition = event.key === "Delete" ? 0 : -1;
+
         const selection = window.getSelection();
 
         let changedBlockId = parseFloat(
@@ -75,7 +79,7 @@ function Component({ text, id }: IEditable) {
 
         let baseValue = selection.anchorNode.parentElement.innerText;
 
-        let charToDelete = selection.anchorOffset - 1;
+        let charToDelete = selection.anchorOffset + deletingPosition;
 
         const isCodeBlock =
           selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
@@ -98,7 +102,7 @@ function Component({ text, id }: IEditable) {
 
           newIndex += selection.anchorOffset;
 
-          charToDelete = newIndex - 1;
+          charToDelete = newIndex + deletingPosition;
           changedBlockId = parseFloat(
             selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
               "data-block-id"
@@ -122,11 +126,31 @@ function Component({ text, id }: IEditable) {
 
           const prevBlockValue = prevBlock.value;
 
-          charToDelete = prevBlockValue.length - 1;
+          charToDelete = prevBlockValue.length + deletingPosition;
 
           baseValue = prevBlockValue;
 
           changedBlockId = prevBlock.id;
+        } else if (
+          charToDelete === baseValue.length &&
+          event.key === "Delete"
+        ) {
+          // gets the next block
+          const nextBlock = currText.find((_item, index) => {
+            const nextBlock = currText[index - 1];
+
+            return nextBlock?.id === changedBlockId;
+          });
+
+          if (!nextBlock) return;
+
+          const nextBlockValue = nextBlock.value;
+
+          baseValue = nextBlockValue;
+
+          charToDelete = 0;
+
+          changedBlockId = nextBlock.id;
         }
 
         const newValue =
