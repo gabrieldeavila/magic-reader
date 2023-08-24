@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   globalState,
   stateStorage,
@@ -20,6 +27,37 @@ function Component({ text, id }: IEditable) {
     selection: 0,
     blockId: 0,
   });
+
+  useEffect(() => {
+    const isFirstSelected = globalState.get("first_selection") === id;
+
+    if (!isFirstSelected) return;
+
+    const selection = window.getSelection();
+
+    const range = document.createRange();
+
+    const firstBlock = text[0].id;
+
+    const block = document.querySelector(`[data-block-id="${firstBlock}"]`)
+      ?.firstChild;
+
+    const isCodeBlock = block?.firstChild?.nodeName === "CODE";
+
+    if (!block) return;
+
+    if (isCodeBlock) {
+      range.setStart(block?.firstChild, 0);
+      range.setEnd(block?.firstChild, 0);
+    } else {
+      range.setStart(block, 0);
+      range.setEnd(block, 0);
+    }
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const verifySpecialChars = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -205,6 +243,8 @@ function Component({ text, id }: IEditable) {
             text: newLineText,
           }
         );
+
+        globalState.set("first_selection", newId);
 
         stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
         stateStorage.set(contextName, newContent);
