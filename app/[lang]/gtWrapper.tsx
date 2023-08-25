@@ -30,12 +30,12 @@ function GTWrapper({
       themeConfig={{
         global: {
           theme: {
-            highlight: "#f0e68c",
-            highlightText: "#a52a2a",
+            highlight: "#B3E5FC",
+            highlightText: "#333333",
           },
           darkTheme: {
-            highlight: "#ffc40c",
-            highlightText: "#c40233",
+            highlight: "#0A192F",
+            highlightText: "#D3D3D3",
           },
         },
       }}
