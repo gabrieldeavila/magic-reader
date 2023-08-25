@@ -4,9 +4,6 @@ const nextConfig = {
   experimental: {
     appDir: true,
   },
-  eslint: {
-    dirs: ["app"], // Only run ESLint on the 'pages' and 'utils' directories during production builds (next build)
-  },
 };
 
 module.exports = nextConfig;
