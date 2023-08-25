@@ -170,7 +170,6 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
       return newAcc;
     }, []);
-    console.log("fuuck", options);
 
     setSelectedOptions(options);
   }, [getFirstAndLastNode, mimic, text]);

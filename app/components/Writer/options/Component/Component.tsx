@@ -84,6 +84,9 @@ function Component({ text, id }: IEditable) {
         const isCodeBlock =
           selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
 
+        const multipleBlocks = currText.length > 1;
+        console.log({ multipleBlocks, isCodeBlock });
+
         if (isCodeBlock) {
           const codeChilds = Array.from(
             selection.anchorNode.parentElement?.parentElement.childNodes
