@@ -50,6 +50,131 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
   const [positions, setPositions] = useState({});
 
+  const getFirstAndLastNode = useCallback(() => {
+    const selection = window.getSelection();
+
+    const anchor = selection.anchorNode?.parentElement;
+    const anchorOffset = selection.anchorOffset;
+
+    const focus = selection.focusNode?.parentElement;
+    const focusOffset = selection.focusOffset;
+
+    const areTheSame = anchor === focus;
+
+    // if are the same, checks if the anchorOffset is less than the focusOffset
+    const isAnchorOffsetLessThanFocusOffset =
+      areTheSame && anchorOffset < focusOffset;
+
+    // see which node is the first
+    // if the anchor is the first, then the focus is the last
+    const anchorComesFirst =
+      anchor?.compareDocumentPosition(focus) &
+        Node.DOCUMENT_POSITION_FOLLOWING || isAnchorOffsetLessThanFocusOffset;
+
+    const firstNodeIsCode = anchor?.parentElement?.tagName === "CODE";
+    const lastNodeIsCode = focus?.parentElement?.tagName === "CODE";
+
+    let firstNode = anchorComesFirst ? anchor : focus;
+    let lastNode = anchorComesFirst ? focus : anchor;
+
+    if (firstNodeIsCode) {
+      // gets the one being selected
+      firstNode = firstNode?.parentElement?.parentElement?.parentElement;
+    }
+
+    if (lastNodeIsCode) {
+      // gets the one being selected
+      lastNode = lastNode?.parentElement?.parentElement?.parentElement;
+    }
+
+    const prevSelectionRange = stateStorage.get("selection_range");
+
+    const firstNodeOffset =
+      prevSelectionRange?.start || anchorComesFirst
+        ? anchorOffset
+        : focusOffset;
+
+    const lastNodeOffset =
+      (prevSelectionRange?.end ||
+        (anchorComesFirst ? focusOffset : anchorOffset)) - 1;
+
+    const firstNodeId = parseFloat(firstNode?.getAttribute("data-block-id"));
+
+    const lastNodeId = parseFloat(lastNode?.getAttribute("data-block-id"));
+
+    let firstIdIndex = 0;
+
+    if (!firstNodeId || !lastNodeId) {
+      toast("LEGERE.NO_SELECTION", {
+        type: "error",
+      });
+
+      return {};
+    }
+
+    const firstNodeIndex = mimic.findIndex(({ id }) => {
+      if (id == firstNodeId) {
+        return firstIdIndex++ === firstNodeOffset;
+      }
+
+      return false;
+    });
+
+    let lastIdIndex = 0;
+
+    const lastNodeIndex = mimic.findIndex(({ id }) => {
+      if (id == lastNodeId) {
+        return lastIdIndex++ === lastNodeOffset;
+      }
+
+      return false;
+    });
+
+    return {
+      firstNodeIndex,
+      lastNodeIndex,
+      areTheSame,
+      firstNodeOffset,
+      lastNodeOffset,
+    };
+  }, [mimic, toast]);
+
+  const [selectedOptions, setSelectedOptions] = useState([]);
+
+  const handleColors = useCallback(() => {
+    const { firstNodeIndex, lastNodeIndex } = getFirstAndLastNode();
+
+    const selected = mimic.slice(firstNodeIndex, lastNodeIndex + 1);
+
+    // gets the ids of the selected (unique)
+    const selectedIds = selected.reduce((acc, item) => {
+      if (!acc.includes(item.id)) acc.push(item.id);
+
+      return acc;
+    }, []);
+
+    const selectedBlocks = text.filter(({ id }) => selectedIds.includes(id));
+
+    // gets the options that are in all the selected
+    const options = selectedBlocks.reduce((acc, item, index) => {
+      if (index === 0) {
+        acc.push(...item.options);
+        return acc;
+      }
+
+      const newAcc = [];
+
+      acc.forEach((option) => {
+        if (item.options.includes(option)) newAcc.push(option);
+      });
+
+      return newAcc;
+    }, []);
+    console.log("fuuck", options);
+
+    setSelectedOptions(options);
+  }, [getFirstAndLastNode, mimic, text]);
+
   useLayoutEffect(() => {
     // gets the position of the selected text
     const selection = window.getSelection();
@@ -57,10 +182,11 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
     if (!position) return;
 
+    handleColors();
+
     const width = ref.current?.getBoundingClientRect()?.width;
 
     const left = position.right + width;
-
     // sees if the popup is out of the screen
     const isOutOfScreen = window.innerWidth < left;
 
@@ -83,88 +209,17 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
     };
 
     setPositions(newPositions);
-  }, [updatePositions]);
+  }, [handleColors, updatePositions]);
 
   const addDecoration = useCallback(
     (decoration: string) => {
-      const selection = window.getSelection();
-
-      const anchor = selection.anchorNode?.parentElement;
-      const anchorOffset = selection.anchorOffset;
-
-      const focus = selection.focusNode?.parentElement;
-      const focusOffset = selection.focusOffset;
-
-      const areTheSame = anchor === focus;
-
-      // if are the same, checks if the anchorOffset is less than the focusOffset
-      const isAnchorOffsetLessThanFocusOffset =
-        areTheSame && anchorOffset < focusOffset;
-
-      // see which node is the first
-      // if the anchor is the first, then the focus is the last
-      const anchorComesFirst =
-        anchor?.compareDocumentPosition(focus) &
-          Node.DOCUMENT_POSITION_FOLLOWING || isAnchorOffsetLessThanFocusOffset;
-
-      const firstNodeIsCode = anchor?.parentElement?.tagName === "CODE";
-      const lastNodeIsCode = focus?.parentElement?.tagName === "CODE";
-
-      let firstNode = anchorComesFirst ? anchor : focus;
-      let lastNode = anchorComesFirst ? focus : anchor;
-
-      if (firstNodeIsCode) {
-        // gets the one being selected
-        firstNode = firstNode?.parentElement?.parentElement?.parentElement;
-      }
-
-      if (lastNodeIsCode) {
-        // gets the one being selected
-        lastNode = lastNode?.parentElement?.parentElement?.parentElement;
-      }
-
-      const prevSelectionRange = stateStorage.get("selection_range");
-
-      const firstNodeOffset =
-        prevSelectionRange?.start || anchorComesFirst
-          ? anchorOffset
-          : focusOffset;
-
-      const lastNodeOffset =
-        (prevSelectionRange?.end ||
-          (anchorComesFirst ? focusOffset : anchorOffset)) - 1;
-
-      const firstNodeId = parseFloat(firstNode?.getAttribute("data-block-id"));
-
-      const lastNodeId = parseFloat(lastNode?.getAttribute("data-block-id"));
-
-      let firstIdIndex = 0;
-
-      if (!firstNodeId || !lastNodeId) {
-        toast("LEGERE.NO_SELECTION", {
-          type: "error",
-        });
-
-        return;
-      }
-
-      const firstNodeIndex = mimic.findIndex(({ id }) => {
-        if (id == firstNodeId) {
-          return firstIdIndex++ === firstNodeOffset;
-        }
-
-        return false;
-      });
-
-      let lastIdIndex = 0;
-
-      const lastNodeIndex = mimic.findIndex(({ id }) => {
-        if (id == lastNodeId) {
-          return lastIdIndex++ === lastNodeOffset;
-        }
-
-        return false;
-      });
+      const {
+        firstNodeIndex,
+        areTheSame,
+        lastNodeIndex,
+        firstNodeOffset,
+        lastNodeOffset,
+      } = getFirstAndLastNode();
 
       if (firstNodeIndex === -1 || lastNodeIndex === -1) {
         toast("LEGERE.NO_SELECTION", {
@@ -460,7 +515,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
       handleUpdate(id, newText);
     },
-    [handleUpdate, id, mimic, text, toast]
+    [getFirstAndLastNode, handleUpdate, id, mimic, text, toast]
   );
 
   const bold = useCallback(() => {
@@ -496,29 +551,55 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
     >
       <WPopup.Content>
         <WPopup.Item>
-          <WPopup.B onClick={bold}>B</WPopup.B>
+          <WPopup.B
+            isSelected={selectedOptions.includes("bold")}
+            onClick={bold}
+          >
+            B
+          </WPopup.B>
         </WPopup.Item>
 
         <WPopup.Item>
-          <WPopup.I onClick={italic}>i</WPopup.I>
+          <WPopup.I
+            isSelected={selectedOptions.includes("italic")}
+            onClick={italic}
+          >
+            i
+          </WPopup.I>
         </WPopup.Item>
 
         <WPopup.Item>
-          <WPopup.U onClick={underline}>U</WPopup.U>
+          <WPopup.U
+            isSelected={selectedOptions.includes("underline")}
+            onClick={underline}
+          >
+            U
+          </WPopup.U>
         </WPopup.Item>
 
         <WPopup.Item>
-          <WPopup.S onClick={strikethrough}>S</WPopup.S>
+          <WPopup.S
+            isSelected={selectedOptions.includes("strikethrough")}
+            onClick={strikethrough}
+          >
+            S
+          </WPopup.S>
         </WPopup.Item>
 
         <WPopup.Item>
-          <WPopup.Code onClick={highlight}>
+          <WPopup.Code
+            isSelected={selectedOptions.includes("highlight")}
+            onClick={highlight}
+          >
             <PenTool size={14} />
           </WPopup.Code>
         </WPopup.Item>
 
         <WPopup.Item>
-          <WPopup.Code onClick={code}>
+          <WPopup.Code
+            isSelected={selectedOptions.includes("code")}
+            onClick={code}
+          >
             <Code size={14} />
           </WPopup.Code>
         </WPopup.Item>

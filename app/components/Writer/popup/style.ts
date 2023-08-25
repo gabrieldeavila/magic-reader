@@ -43,6 +43,14 @@ const Base = styled.button`
   margin: 0;
   outline: none;
   cursor: pointer;
+
+  /* if is selected, uses another color */
+  color: ${({ isSelected }: { isSelected: boolean }) =>
+    isSelected ? "var(--outline)" : "var(--contrast)"};
+  * {
+    color: ${({ isSelected }: { isSelected: boolean }) =>
+      isSelected ? "var(--outline)" : "var(--contrast)"};
+  }
 `;
 
 const Bold = styled(Base)`
