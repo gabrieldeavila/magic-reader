@@ -24,8 +24,8 @@ const DEFAULT_CONTENT: IWritterContent[] = [
   },
 ];
 
-function page() {
+function Scribere() {
   return <Writer content={DEFAULT_CONTENT} />;
 }
 
-export default page;
+export default Scribere;
