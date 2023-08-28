@@ -78,6 +78,7 @@ const WriterContextProvider = ({
     <WriterContext.Provider
       value={{ content, setContent, handleUpdate, contextName, deleteBlock }}
     >
+      <h1>oi</h1>
       {content.map((item, index) => {
         return <Component key={index} {...item} position={index} />;
       })}
