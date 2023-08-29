@@ -86,6 +86,8 @@ function usePositions({ text }: { text: IText[] }) {
       return {};
     }
 
+    console.log(firstNodeId, lastNodeId, mimic, selection);
+
     const firstNodeIndex = mimic.findIndex(({ id }) => {
       if (id == firstNodeId) {
         return firstIdIndex++ === firstNodeOffset;
@@ -126,8 +128,21 @@ function usePositions({ text }: { text: IText[] }) {
     }, []);
 
     const selectedBlocks = text.filter(({ id }) => selectedIds.includes(id));
+    console.log(selected, firstNodeIndex, lastNodeIndex);
 
-    return { selectedBlocks, firstNodeIndex, lastNodeIndex };
+    return {
+      selectedBlocks,
+      firstNodeIndex,
+      lastNodeIndex,
+      first: {
+        id: selected[0].id,
+        index: selected[0].index,
+      },
+      last: {
+        id: selected[selected.length - 1].id,
+        index: selected[selected.length - 1].index,
+      },
+    };
   }, [getFirstAndLastNode, mimic, text]);
 
   return { getFirstAndLastNode, getSelectedBlocks };
