@@ -18,6 +18,7 @@ import { IEditable, IWriterInfo } from "../../interface";
 import Popup from "../../popup/Popup";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
+import usePositions from "../../hooks/usePositions";
 
 function Component({ text, id }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
@@ -59,6 +60,14 @@ function Component({ text, id }: IEditable) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  const { getSelectedBlocks } = usePositions({ text });
+
+  const deleteMultipleLetters = useCallback(() => {
+    const { selectedBlocks, firstNodeIndex, lastNodeIndex } =
+      getSelectedBlocks();
+    console.log("hoh", selectedBlocks, firstNodeIndex, lastNodeIndex);
+  }, [getSelectedBlocks]);
+
   const verifySpecialChars = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (["Backspace", "Delete"].includes(event.key)) {
@@ -80,6 +89,13 @@ function Component({ text, id }: IEditable) {
         let baseValue = selection.anchorNode.parentElement.innerText;
 
         let charToDelete = selection.anchorOffset + deletingPosition;
+        // number of chars to delete
+        const numberOfChars = selection.toString().length;
+
+        if (numberOfChars) {
+          deleteMultipleLetters();
+          return;
+        }
 
         const isCodeBlock =
           selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
@@ -277,7 +293,14 @@ function Component({ text, id }: IEditable) {
         stateStorage.set(contextName, newContent);
       }
     },
-    [contextName, deleteBlock, handleUpdate, id, text]
+    [
+      contextName,
+      deleteBlock,
+      deleteMultipleLetters,
+      handleUpdate,
+      id,
+      text.length,
+    ]
   );
 
   const handleChange = useCallback(
