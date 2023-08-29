@@ -86,8 +86,6 @@ function usePositions({ text }: { text: IText[] }) {
       return {};
     }
 
-    console.log(firstNodeId, lastNodeId, mimic, selection);
-
     const firstNodeIndex = mimic.findIndex(({ id }) => {
       if (id == firstNodeId) {
         return firstIdIndex++ === firstNodeOffset;

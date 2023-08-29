@@ -18,7 +18,7 @@ import { IEditable, IWriterInfo } from "../../interface";
 import Popup from "../../popup/Popup";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
-import usePositions from "../../hooks/usePositions";
+import useDeleteMultiple from "../../hooks/useDeleteMultiple";
 
 function Component({ text, id }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
@@ -28,6 +28,8 @@ function Component({ text, id }: IEditable) {
     selection: 0,
     blockId: 0,
   });
+
+  const { deleteMultipleLetters } = useDeleteMultiple({ text, id, info });
 
   useEffect(() => {
     const isFirstSelected = globalState.get("first_selection") === id;
@@ -59,125 +61,6 @@ function Component({ text, id }: IEditable) {
     selection.addRange(range);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
-
-  const { getSelectedBlocks } = usePositions({ text });
-
-  const deleteMultipleLetters = useCallback(() => {
-    const { selectedBlocks, first, last } = getSelectedBlocks();
-
-    const newWords = [];
-
-    text.forEach((item) => {
-      const { id: blockId, value: blockValue } = item;
-
-      const isBlockSelected = selectedBlocks.some(({ id }) => id === blockId);
-      const isStartOrEndBlock = first.id === blockId || last.id === blockId;
-
-      if (isBlockSelected && !isStartOrEndBlock) {
-        return;
-      }
-
-      if (isBlockSelected && isStartOrEndBlock && first.id === last.id) {
-        const letters = blockValue.split("");
-
-        let newValue = "";
-
-        letters.forEach((item, index) => {
-          if (index < first.index || index >= last.index + 1) {
-            newValue += item;
-          }
-
-          return;
-        });
-
-        if (!newValue) {
-          return;
-        }
-
-        newWords.push({
-          ...item,
-          value: newValue,
-        });
-
-        return;
-      }
-
-      if (isBlockSelected && isStartOrEndBlock) {
-        if (first.id === blockId) {
-          const letters = blockValue.split("");
-
-          let newValue = "";
-
-          letters.forEach((item, index) => {
-            if (index < first.index) {
-              newValue += item;
-            }
-
-            return;
-          });
-
-          if (!newValue) {
-            return;
-          }
-
-          newWords.push({
-            ...item,
-            value: newValue,
-          });
-
-          return;
-        }
-
-        if (last.id === blockId) {
-          const letters = blockValue.split("");
-
-          let newValue = "";
-
-          letters.forEach((item, index) => {
-            if (index >= last.index + 1) {
-              newValue += item;
-            }
-
-            return;
-          });
-
-          if (!newValue) {
-            return;
-          }
-
-          newWords.push({
-            ...item,
-            value: newValue,
-          });
-
-          return;
-        }
-
-        return;
-      }
-
-      newWords.push(item);
-    });
-
-    // if there is no new words, add an empty block
-    if (!newWords.length) {
-      newWords.push({
-        id: Math.random(),
-        value: "",
-        options: [],
-      });
-    }
-
-    handleUpdate(id, newWords);
-
-    // changes also the cursor position
-    info.current = {
-      selection: first.index,
-      blockId: first.id,
-    };
-
-    stateStorage.set(`${contextName}_decoration-${first.id}`, new Date());
-  }, [contextName, getSelectedBlocks, handleUpdate, id, text]);
 
   const verifySpecialChars = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
