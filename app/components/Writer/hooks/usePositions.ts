@@ -51,24 +51,28 @@ function usePositions({ text }: { text: IText[] }) {
     let firstNode = anchorComesFirst ? anchor : focus;
     let lastNode = anchorComesFirst ? focus : anchor;
 
+    let firstCode, lastCode;
+
     if (firstNodeIsCode) {
       // gets the one being selected
+      firstCode = firstNode;
       firstNode = firstNode?.parentElement?.parentElement?.parentElement;
     }
 
     if (lastNodeIsCode) {
       // gets the one being selected
+      lastCode = lastNode;
       lastNode = lastNode?.parentElement?.parentElement?.parentElement;
     }
 
     const prevSelectionRange = stateStorage.get("selection_range");
 
-    const firstNodeOffset =
+    let firstNodeOffset =
       prevSelectionRange?.start || anchorComesFirst
         ? anchorOffset
         : focusOffset;
 
-    const lastNodeOffset =
+    let lastNodeOffset =
       (prevSelectionRange?.end ||
         (anchorComesFirst ? focusOffset : anchorOffset)) - 1;
 
@@ -76,6 +80,50 @@ function usePositions({ text }: { text: IText[] }) {
 
     const lastNodeId = parseFloat(lastNode?.getAttribute("data-block-id"));
 
+    const isCodeBlock = !!(
+      firstNode?.querySelector("code") || lastNode?.querySelector("code")
+    );
+
+    if (isCodeBlock) {
+      if (firstNode?.querySelector("code")) {
+        // const currBlock
+        const codeBlock = firstNode?.querySelector("code");
+        const children = Array.from(codeBlock.childNodes);
+        let firstIndex = 0;
+
+        children.find((child) => {
+          if (child === firstCode) {
+            return true;
+          }
+
+          // gets the length of the text and adds it to the index
+          firstIndex += child.textContent?.length || 0;
+
+          return false;
+        });
+
+        firstNodeOffset = firstIndex + firstNodeOffset;
+      }
+
+      if (lastNode?.querySelector("code")) {
+        const codeBlock = lastNode?.querySelector("code");
+        const children = Array.from(codeBlock.childNodes);
+        let lastIndex = 0;
+
+        children.find((child) => {
+          if (child === lastCode) {
+            return true;
+          }
+
+          // gets the length of the text and adds it to the index
+          lastIndex += child.textContent?.length || 0;
+
+          return false;
+        });
+
+        lastNodeOffset = lastIndex + lastNodeOffset;
+      }
+    }
     let firstIdIndex = 0;
 
     if (!firstNodeId || !lastNodeId) {
@@ -126,7 +174,6 @@ function usePositions({ text }: { text: IText[] }) {
     }, []);
 
     const selectedBlocks = text.filter(({ id }) => selectedIds.includes(id));
-    console.log(selected, firstNodeIndex, lastNodeIndex);
 
     return {
       selectedBlocks,
