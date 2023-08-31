@@ -213,8 +213,15 @@ function Component({ text, id }: IEditable) {
         // gets the current block id
         const selection = window.getSelection();
 
+        const isCodeBlock =
+          selection.anchorNode.parentElement?.parentElement?.tagName === "CODE";
+
         const changedBlockId = parseFloat(
-          selection.anchorNode.parentElement.getAttribute("data-block-id")
+          isCodeBlock
+            ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
+                "data-block-id"
+              )
+            : selection.anchorNode.parentElement.getAttribute("data-block-id")
         );
 
         const content = globalState.get(contextName);
