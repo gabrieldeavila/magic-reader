@@ -1,4 +1,3 @@
-import { useGTToastContext } from "@geavila/gt-design";
 import { useCallback, useMemo } from "react";
 import { stateStorage } from "react-trigger-state";
 import { IText } from "../interface";
@@ -22,8 +21,6 @@ function usePositions({ text }: { text: IText[] }) {
     [text]
   );
 
-  const { toast } = useGTToastContext();
-
   const getFirstAndLastNode = useCallback(() => {
     const selection = window.getSelection();
 
@@ -45,11 +42,11 @@ function usePositions({ text }: { text: IText[] }) {
       anchor?.compareDocumentPosition(focus) &
         Node.DOCUMENT_POSITION_FOLLOWING || isAnchorOffsetLessThanFocusOffset;
 
-    const firstNodeIsCode = anchor?.parentElement?.tagName === "CODE";
-    const lastNodeIsCode = focus?.parentElement?.tagName === "CODE";
-
     let firstNode = anchorComesFirst ? anchor : focus;
     let lastNode = anchorComesFirst ? focus : anchor;
+
+    const firstNodeIsCode = firstNode?.parentElement?.tagName === "CODE";
+    const lastNodeIsCode = lastNode?.parentElement?.tagName === "CODE";
 
     let firstCode, lastCode;
 
@@ -124,13 +121,10 @@ function usePositions({ text }: { text: IText[] }) {
         lastNodeOffset = lastIndex + lastNodeOffset;
       }
     }
+
     let firstIdIndex = 0;
 
     if (!firstNodeId || !lastNodeId) {
-      toast("LEGERE.NO_SELECTION", {
-        type: "error",
-      });
-
       return {};
     }
 
@@ -159,7 +153,7 @@ function usePositions({ text }: { text: IText[] }) {
       firstNodeOffset,
       lastNodeOffset,
     };
-  }, [mimic, toast]);
+  }, [mimic]);
 
   const getSelectedBlocks = useCallback(() => {
     const { firstNodeIndex, lastNodeIndex } = getFirstAndLastNode();

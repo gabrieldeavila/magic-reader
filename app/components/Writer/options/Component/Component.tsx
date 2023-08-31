@@ -40,7 +40,9 @@ function Component({ text, id }: IEditable) {
 
     const range = document.createRange();
 
-    const firstBlock = text[0].id;
+    const firstBlock = text?.[0]?.id;
+
+    if (!firstBlock) return;
 
     const block = document.querySelector(`[data-block-id="${firstBlock}"]`)
       ?.firstChild;
@@ -323,7 +325,7 @@ function Component({ text, id }: IEditable) {
           : selection.anchorNode.parentElement.getAttribute("data-block-id") ??
               // @ts-expect-error - this is a valid attribute
               selection.anchorNode.getAttribute?.("data-block-id") ??
-              text[0].id
+              text[0]?.id
       );
 
       const currText = globalState
@@ -406,69 +408,77 @@ function Component({ text, id }: IEditable) {
     )?.firstChild;
 
     // if it's a code block, get the first child
-    const isCodeBlock = startBlock?.firstChild?.nodeName === "CODE";
+    const isCodeBlock =
+      startBlock?.firstChild?.nodeName === "CODE" ||
+      endBlock?.firstChild?.nodeName === "CODE";
 
     if (isCodeBlock) {
-      startBlock = startBlock?.firstChild;
-      endBlock = endBlock?.firstChild;
+      if (startBlock?.firstChild?.nodeName === "CODE") {
+        startBlock = startBlock?.firstChild;
 
-      const startChilds = [];
+        const startChilds = [];
 
-      startBlock?.childNodes.forEach((item) => {
-        startChilds.push(item);
-      });
-
-      const endChilds = [];
-
-      endBlock?.childNodes.forEach((item) => {
-        endChilds.push(item);
-      });
-
-      let startIndex = -1;
-      let letterStartIndex = 0;
-
-      const newStart = startChilds?.find((item) => {
-        const letters = item.textContent?.split("") ?? [""];
-
-        const hasLetterIndex = letters.find((item, index) => {
-          startIndex++;
-          const isTheOne = startIndex === selectionRange.start;
-
-          if (isTheOne) {
-            letterStartIndex = index;
-          }
-
-          return isTheOne;
+        startBlock?.childNodes.forEach((item) => {
+          startChilds.push(item);
         });
 
-        return hasLetterIndex;
-      });
+        let startIndex = -1;
+        let letterStartIndex = 0;
 
-      let endIndex = -1;
-      let letterEndIndex = 0;
+        const newStart = startChilds?.find((item) => {
+          const letters = item.textContent?.split("") ?? [""];
 
-      const newEnd = endChilds?.find((item) => {
-        const letters = item.textContent?.split("") ?? [""];
+          const hasLetterIndex = letters.find((item, index) => {
+            startIndex++;
+            const isTheOne = startIndex === selectionRange.start;
 
-        const hasLetterIndex = letters.find((item, index) => {
-          endIndex++;
-          const isTheOne = endIndex === selectionRange.end - 1;
+            if (isTheOne) {
+              letterStartIndex = index;
+            }
 
-          if (isTheOne) {
-            letterEndIndex = index;
-          }
+            return isTheOne;
+          });
 
-          return isTheOne;
+          return hasLetterIndex;
         });
 
-        return hasLetterIndex;
-      });
+        startBlock = newStart?.firstChild;
+        selectionRange.start = letterStartIndex;
+      }
 
-      startBlock = newStart?.firstChild;
-      endBlock = newEnd?.firstChild;
+      if (endBlock?.firstChild?.nodeName === "CODE") {
+        endBlock = endBlock?.firstChild;
 
-      selectionRange.start = letterStartIndex;
-      selectionRange.end = letterEndIndex + 1;
+        const endChilds = [];
+
+        endBlock?.childNodes.forEach((item) => {
+          endChilds.push(item);
+        });
+
+        let endIndex = -1;
+        let letterEndIndex = 0;
+
+        const newEnd = endChilds?.find((item) => {
+          const letters = item.textContent?.split("") ?? [""];
+
+          const hasLetterIndex = letters.find((item, index) => {
+            endIndex++;
+            const isTheOne = endIndex === selectionRange.end - 1;
+
+            if (isTheOne) {
+              letterEndIndex = index;
+            }
+
+            return isTheOne;
+          });
+
+          return hasLetterIndex;
+        });
+
+        endBlock = newEnd?.firstChild;
+
+        selectionRange.end = letterEndIndex + 1;
+      }
     }
 
     if (!startBlock || !endBlock) {
