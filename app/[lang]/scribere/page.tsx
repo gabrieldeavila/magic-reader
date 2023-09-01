@@ -20,6 +20,11 @@ const DEFAULT_CONTENT: IWritterContent[] = [
         options: [],
         id: 3,
       },
+      {
+        value: " const a = b === c",
+        options: ["code"],
+        id: 4,
+      },
     ],
   },
 ];

@@ -14,11 +14,12 @@ import {
   useTriggerState,
 } from "react-trigger-state";
 import { useWriterContext } from "../../context/WriterContext";
+import useDeleteMultiple from "../../hooks/useDeleteMultiple";
 import { IEditable, IWriterInfo } from "../../interface";
 import Popup from "../../popup/Popup";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
-import useDeleteMultiple from "../../hooks/useDeleteMultiple";
+import usePositions from "../../hooks/usePositions";
 
 function Component({ text, id }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
@@ -303,6 +304,85 @@ function Component({ text, id }: IEditable) {
     ]
   );
 
+  const { getSelectedBlocks } = usePositions({ text });
+
+  const copyText = useCallback(() => {
+    const { selectedBlocks, last, first } = getSelectedBlocks();
+    let copyStuff = "";
+
+    selectedBlocks.forEach((item, index) => {
+      const { value, options } = item;
+
+      const isLast = index === selectedBlocks.length - 1;
+      const isFirst = index === 0;
+
+      const optionsCustom = {
+        bold: "**",
+        italic: "*",
+        underline: "__",
+        strikethrough: "~~",
+        code: "```",
+      };
+
+      const optionsToUse = options.reduce((acc, item) => {
+        if (optionsCustom[item]) {
+          acc.push(optionsCustom[item]);
+        }
+
+        return acc;
+      }, []);
+
+      const optionsRight = optionsToUse.join("");
+
+      const optionsLeft = optionsToUse.reverse().join("");
+
+      let usedValue = "";
+      const letters = value.split("");
+      if (isFirst) {
+        letters.forEach((item, index) => {
+          if (index > first.index - 1) {
+            usedValue += item;
+          }
+        });
+      } else if (isLast) {
+        letters.forEach((item, index) => {
+          if (index < last.index + 1) {
+            usedValue += item;
+          }
+        });
+      } else {
+        usedValue = value;
+      }
+
+      copyStuff += `${optionsLeft}${usedValue}${optionsRight}`;
+    });
+
+    // copy the text to the clipboard
+    navigator.clipboard.writeText(copyStuff);
+  }, [getSelectedBlocks]);
+
+  const handleCtrlEvents = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>, ctrlPressed: boolean) => {
+      if (!ctrlPressed) return false;
+
+      if (e.key === "x") {
+        e.preventDefault();
+        copyText();
+        deleteMultipleLetters();
+
+        return true;
+      } else if (e.key === "c") {
+        e.preventDefault();
+        copyText();
+
+        return true;
+      } else if (e.key === "v") {
+        return true;
+      }
+    },
+    [copyText, deleteMultipleLetters]
+  );
+
   const handleChange = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       // only accept letters, numbers, spaces and special characters
@@ -316,6 +396,12 @@ function Component({ text, id }: IEditable) {
         verifySpecialChars(event);
         return;
       }
+
+      const ctrlPressed = event.ctrlKey;
+
+      const avoidCtrl = handleCtrlEvents(event, ctrlPressed);
+
+      if (avoidCtrl) return;
 
       event.preventDefault();
 
@@ -386,7 +472,7 @@ function Component({ text, id }: IEditable) {
         blockId: changedBlockId,
       };
     },
-    [contextName, handleUpdate, id, text, verifySpecialChars]
+    [contextName, handleCtrlEvents, handleUpdate, id, text, verifySpecialChars]
   );
 
   const [selectionRange] = useTriggerState({
@@ -538,6 +624,12 @@ function Component({ text, id }: IEditable) {
     [text]
   );
 
+  const handlePaste = useCallback((e: React.ClipboardEvent<HTMLDivElement>) => {
+    e.preventDefault();
+
+    console.log("paste", e.target, e.clipboardData.getData("text/plain"));
+  }, []);
+
   return (
     <Editable
       ref={ref}
@@ -548,7 +640,9 @@ function Component({ text, id }: IEditable) {
       onDrop={preventDefault}
       onBlur={checkSelection}
       onFocus={checkSelection}
+      onClick={checkSelection}
       suppressContentEditableWarning
+      onPaste={handlePaste}
     >
       {text.map((item, index) => {
         return (
