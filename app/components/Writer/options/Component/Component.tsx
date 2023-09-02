@@ -20,6 +20,7 @@ import Popup from "../../popup/Popup";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
 import usePositions from "../../hooks/usePositions";
+import useGetCurrBlockId from "../../hooks/useGetCurrBlockId";
 
 const OPTIONS_CHARS = {
   bold: "**",
@@ -629,79 +630,143 @@ function Component({ text, id }: IEditable) {
     [text]
   );
 
-  const handlePaste = useCallback((e: React.ClipboardEvent<HTMLDivElement>) => {
-    e.preventDefault();
+  const { getBlockId } = useGetCurrBlockId();
 
-    const text = e.clipboardData.getData("text/plain");
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent<HTMLDivElement>) => {
+      e.preventDefault();
 
-    const selection = window.getSelection();
+      const copiedText = e.clipboardData.getData("text/plain");
 
-    console.log(text);
+      console.log(copiedText);
 
-    // transforms the text into an array of blocks
-    // ex.: "^^^**H**^^^^^^***ell***^^^^^^o^^^" -> [{ value: "H", options: ["highlight", "bold"] }, { value: "ell", options: ["highlight", "bold","italic"] }, { value: "o", options: ["highlight"] }]
+      // transforms the copiedText into an array of blocks
+      // ex.: "^^^**H**^^^^^^***ell***^^^^^^o^^^" -> [{ value: "H", options: ["highlight", "bold"] }, { value: "ell", options: ["highlight", "bold","italic"] }, { value: "o", options: ["highlight"] }]
 
-    const chars = text.split("");
+      const chars = copiedText.split("");
 
-    let currOption = "";
-    let endOption = "";
-    let newWords = "";
-    let searchingForTheEnd = false;
+      let currOption = "";
+      let endOption = "";
+      let newWords = "";
+      let searchingForTheEnd = false;
 
-    const newBlocks = [];
+      const newBlocks = [];
 
-    chars.forEach((item, index) => {
-      if (searchingForTheEnd) {
-        if (item === currOption[0]) {
-          endOption += item;
+      chars.forEach((item, index) => {
+        if (searchingForTheEnd) {
+          if (item === currOption[0]) {
+            endOption += item;
 
-          if (endOption === currOption) {
-            searchingForTheEnd = false;
-            newBlocks.push({
-              value: newWords,
-              options: [currOption],
-            });
+            if (endOption === currOption) {
+              searchingForTheEnd = false;
+              newBlocks.push({
+                value: newWords,
+                options: [currOption],
+              });
 
-            currOption = "";
-            newWords = "";
+              currOption = "";
+              newWords = "";
+              endOption = "";
+            }
+          } else {
+            newWords += endOption + item;
             endOption = "";
           }
-        } else {
-          newWords += endOption + item;
-          endOption = "";
+          return;
         }
-        return;
-      }
 
-      if (currOption || CHARS_VALUES.some((char) => char.includes(item))) {
-        currOption += item;
+        if (currOption || CHARS_VALUES.some((char) => char.includes(item))) {
+          currOption += item;
 
-        const isAKey = CHARS_VALUES.includes(currOption);
+          const isAKey = CHARS_VALUES.includes(currOption);
 
-        const isNextAKey = CHARS_VALUES.includes(currOption + chars[index + 1]);
+          const isNextAKey = CHARS_VALUES.includes(
+            currOption + chars[index + 1]
+          );
 
-        // if the current option is a key and the next one is not, it means that the current option is the end of the option and the start of the word
-        if (isAKey && !isNextAKey) {
-          searchingForTheEnd = true;
+          // if the current option is a key and the next one is not, it means that the current option is the end of the option and the start of the word
+          if (isAKey && !isNextAKey) {
+            searchingForTheEnd = true;
 
-          if (newWords) {
-            newBlocks.push({
-              value: newWords,
-              options: [],
-            });
+            if (newWords) {
+              newBlocks.push({
+                value: newWords,
+                options: [],
+              });
 
-            newWords = "";
+              newWords = "";
+            }
           }
+
+          return;
         }
 
-        return;
+        newWords += item;
+      });
+
+      if (newWords) {
+        newBlocks.push({
+          value: newWords,
+          options: [],
+        });
       }
 
-      newWords += item;
-    });
+      const blocksFormatted = newBlocks.map((item) => {
+        const filteredOptions = [
+          ...CHARS_VALUES.filter((char) => item.value.includes(char)),
+          ...item.options,
+        ];
 
-    console.log(newBlocks);
-  }, []);
+        const newValue = filteredOptions.reduce((acc, char) => {
+          return acc.replaceAll(char, "");
+        }, item.value);
+
+        return {
+          value: newValue,
+          id: Math.random() + new Date().getTime(),
+          options: filteredOptions.map(
+            (char) => CHARS_KEYS[CHARS_VALUES.indexOf(char)]
+          ),
+        };
+      });
+
+      const { changedBlockId, currSelection } = getBlockId();
+
+      const newText = [];
+
+      // console.log(text, blocksFormatted);
+      text.forEach((item) => {
+        if (item.id !== changedBlockId) {
+          newText.push(item);
+          return;
+        }
+
+        const { value, options } = item;
+
+        const valueBefore = value.slice(0, currSelection);
+        const valueAfter = value.slice(currSelection);
+
+        newText.push({
+          value: valueBefore,
+          id: item.id,
+          options,
+        });
+
+        blocksFormatted.forEach((item) => {
+          newText.push(item);
+        });
+
+        newText.push({
+          value: valueAfter,
+          id: item.id + new Date().getTime(),
+          options,
+        });
+      });
+
+      handleUpdate(id, newText);
+    },
+    [getBlockId, handleUpdate, id, text]
+  );
 
   return (
     <Editable
