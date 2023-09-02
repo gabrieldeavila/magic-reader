@@ -323,12 +323,14 @@ function Component({ text, id }: IEditable) {
   const copyText = useCallback(() => {
     const { selectedBlocks, last, first } = getSelectedBlocks();
     let copyStuff = "";
+    console.log(selectedBlocks, last, first);
 
     selectedBlocks.forEach((item, index) => {
       const { value, options } = item;
 
       const isLast = index === selectedBlocks.length - 1;
       const isFirst = index === 0;
+      const isOnlyOne = selectedBlocks.length === 1;
 
       const optionsToUse = options.reduce((acc, item) => {
         if (OPTIONS_CHARS[item]) {
@@ -344,7 +346,14 @@ function Component({ text, id }: IEditable) {
 
       let usedValue = "";
       const letters = value.split("");
-      if (isFirst) {
+
+      if (isOnlyOne) {
+        letters.forEach((item, index) => {
+          if (index > first.index - 1 && index < last.index + 1) {
+            usedValue += item;
+          }
+        });
+      } else if (isFirst) {
         letters.forEach((item, index) => {
           if (index > first.index - 1) {
             usedValue += item;
