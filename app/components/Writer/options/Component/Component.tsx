@@ -21,6 +21,19 @@ import { Editable } from "../../style";
 import Decoration from "./Decoration";
 import usePositions from "../../hooks/usePositions";
 
+const OPTIONS_CHARS = {
+  bold: "**",
+  italic: "<<<",
+  underline: "__",
+  strikethrough: "~~",
+  code: "```",
+  highlight: "^^^",
+};
+
+const CHARS_KEYS = Object.keys(OPTIONS_CHARS);
+
+const CHARS_VALUES = Object.values(OPTIONS_CHARS);
+
 function Component({ text, id }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -316,17 +329,9 @@ function Component({ text, id }: IEditable) {
       const isLast = index === selectedBlocks.length - 1;
       const isFirst = index === 0;
 
-      const optionsCustom = {
-        bold: "**",
-        italic: "*",
-        underline: "__",
-        strikethrough: "~~",
-        code: "```",
-      };
-
       const optionsToUse = options.reduce((acc, item) => {
-        if (optionsCustom[item]) {
-          acc.push(optionsCustom[item]);
+        if (OPTIONS_CHARS[item]) {
+          acc.push(OPTIONS_CHARS[item]);
         }
 
         return acc;
@@ -627,7 +632,75 @@ function Component({ text, id }: IEditable) {
   const handlePaste = useCallback((e: React.ClipboardEvent<HTMLDivElement>) => {
     e.preventDefault();
 
-    console.log("paste", e.target, e.clipboardData.getData("text/plain"));
+    const text = e.clipboardData.getData("text/plain");
+
+    const selection = window.getSelection();
+
+    console.log(text);
+
+    // transforms the text into an array of blocks
+    // ex.: "^^^**H**^^^^^^***ell***^^^^^^o^^^" -> [{ value: "H", options: ["highlight", "bold"] }, { value: "ell", options: ["highlight", "bold","italic"] }, { value: "o", options: ["highlight"] }]
+
+    const chars = text.split("");
+
+    let currOption = "";
+    let endOption = "";
+    let newWords = "";
+    let searchingForTheEnd = false;
+
+    const newBlocks = [];
+
+    chars.forEach((item, index) => {
+      if (searchingForTheEnd) {
+        if (item === currOption[0]) {
+          endOption += item;
+
+          if (endOption === currOption) {
+            searchingForTheEnd = false;
+            newBlocks.push({
+              value: newWords,
+              options: [currOption],
+            });
+
+            currOption = "";
+            newWords = "";
+            endOption = "";
+          }
+        } else {
+          newWords += endOption + item;
+          endOption = "";
+        }
+        return;
+      }
+
+      if (currOption || CHARS_VALUES.some((char) => char.includes(item))) {
+        currOption += item;
+
+        const isAKey = CHARS_VALUES.includes(currOption);
+
+        const isNextAKey = CHARS_VALUES.includes(currOption + chars[index + 1]);
+
+        // if the current option is a key and the next one is not, it means that the current option is the end of the option and the start of the word
+        if (isAKey && !isNextAKey) {
+          searchingForTheEnd = true;
+
+          if (newWords) {
+            newBlocks.push({
+              value: newWords,
+              options: [],
+            });
+
+            newWords = "";
+          }
+        }
+
+        return;
+      }
+
+      newWords += item;
+    });
+
+    console.log(newBlocks);
   }, []);
 
   return (
