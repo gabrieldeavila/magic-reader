@@ -43,8 +43,6 @@ function useGetCurrBlockId() {
       currSelection += selection.anchorOffset;
     }
 
-    console.log(isCodeBlock, changedBlockId, selection.anchorNode);
-
     return { changedBlockId, currSelection };
   }, []);
 

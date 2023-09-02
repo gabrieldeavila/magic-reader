@@ -763,9 +763,22 @@ function Component({ text, id }: IEditable) {
         });
       });
 
+      const lastNewBlock = blocksFormatted[blocksFormatted.length - 1];
+
+      // add the lastNewBlock focus
+      info.current = {
+        selection: lastNewBlock.value.length,
+        blockId: lastNewBlock.id,
+      };
+
       handleUpdate(id, newText);
+
+      stateStorage.set(
+        `${contextName}_decoration-${lastNewBlock.id}`,
+        new Date()
+      );
     },
-    [getBlockId, handleUpdate, id, text]
+    [contextName, getBlockId, handleUpdate, id, text]
   );
 
   return (
