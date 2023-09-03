@@ -174,12 +174,12 @@ function usePositions({ text }: { text: IText[] }) {
       firstNodeIndex,
       lastNodeIndex,
       first: {
-        id: selected[0].id,
-        index: selected[0].index,
+        id: selected[0]?.id,
+        index: selected[0]?.index,
       },
       last: {
-        id: selected[selected.length - 1].id,
-        index: selected[selected.length - 1].index,
+        id: selected[selected.length - 1]?.id,
+        index: selected[selected.length - 1]?.index,
       },
     };
   }, [getFirstAndLastNode, mimic, text]);

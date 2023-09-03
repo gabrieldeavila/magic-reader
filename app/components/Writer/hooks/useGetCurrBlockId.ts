@@ -1,11 +1,19 @@
 import { useCallback } from "react";
+import { globalState } from "react-trigger-state";
+import { useWriterContext } from "../context/WriterContext";
 
 function useGetCurrBlockId() {
-  const getBlockId = useCallback(() => {
+  const { contextName } = useWriterContext();
+
+  const getBlockId = useCallback(({ textId }: { textId: number }) => {
     const selection = window.getSelection();
+    const currText = globalState
+      .get(contextName)
+      .find(({ id }) => id === textId).text;
 
     let changedBlockId = parseFloat(
-      selection.anchorNode.parentElement.getAttribute("data-block-id")
+      selection.anchorNode.parentElement.getAttribute("data-block-id") ||
+        currText[0].id
     );
 
     let currSelection = selection.anchorOffset;

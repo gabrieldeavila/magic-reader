@@ -422,72 +422,90 @@ function Component({ text, id }: IEditable) {
 
       const selection = window.getSelection();
 
-      const isCodeBlock =
-        selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
+      const numberOfChars = selection.toString().length;
 
-      const changedBlockId = parseFloat(
-        isCodeBlock
-          ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
-              "data-block-id"
-            )
-          : selection.anchorNode.parentElement.getAttribute("data-block-id") ??
-              // @ts-expect-error - this is a valid attribute
-              selection.anchorNode.getAttribute?.("data-block-id") ??
-              text[0]?.id
-      );
-
-      const currText = globalState
-        .get(contextName)
-        .find(({ id: textId }) => textId === id).text;
-
-      const block = currText.find(({ id }) => id === changedBlockId);
-
-      const baseValue = block?.value?.slice?.() ?? "";
-
-      let cursorPositionValue = selection.anchorOffset;
-
-      if (isCodeBlock) {
-        const codeChilds = Array.from(
-          selection.anchorNode.parentElement?.parentElement.childNodes
-        );
-
-        let codeNewIndex = 0;
-
-        codeChilds.find((item) => {
-          if (item !== selection.anchorNode.parentElement) {
-            codeNewIndex += item.textContent?.length ?? 0;
-            return false;
-          }
-
-          return true;
-        });
-
-        codeNewIndex += selection.anchorOffset;
-
-        cursorPositionValue = codeNewIndex;
+      if (numberOfChars) {
+        deleteMultipleLetters();
       }
 
-      const newValue =
-        baseValue.slice(0, cursorPositionValue) +
-        inputChar +
-        baseValue.slice(cursorPositionValue);
+      setTimeout(() => {
+        const selection = window.getSelection();
+        const currText = globalState
+          .get(contextName)
+          .find(({ id: textId }) => textId === id).text;
 
-      const newText = currText.map((item) => {
-        if (item.id === changedBlockId) {
-          item.value = newValue;
+        const isCodeBlock =
+          selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
+
+        const changedBlockId = parseFloat(
+          isCodeBlock
+            ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
+                "data-block-id"
+              )
+            : selection.anchorNode.parentElement.getAttribute(
+                "data-block-id"
+              ) ??
+                // @ts-expect-error - this is a valid attribute
+                selection.anchorNode.getAttribute?.("data-block-id") ??
+                currText[0]?.id
+        );
+
+        const block = currText.find(({ id }) => id === changedBlockId);
+
+        const baseValue = block?.value?.slice?.() ?? "";
+
+        let cursorPositionValue = selection.anchorOffset;
+
+        if (isCodeBlock) {
+          const codeChilds = Array.from(
+            selection.anchorNode.parentElement?.parentElement.childNodes
+          );
+
+          let codeNewIndex = 0;
+
+          codeChilds.find((item) => {
+            if (item !== selection.anchorNode.parentElement) {
+              codeNewIndex += item.textContent?.length ?? 0;
+              return false;
+            }
+
+            return true;
+          });
+
+          codeNewIndex += selection.anchorOffset;
+
+          cursorPositionValue = codeNewIndex;
         }
 
-        return item;
+        const newValue =
+          baseValue.slice(0, cursorPositionValue) +
+          inputChar +
+          baseValue.slice(cursorPositionValue);
+
+        const newText = currText.map((item) => {
+          if (item.id === changedBlockId) {
+            item.value = newValue;
+          }
+
+          return item;
+        });
+
+        handleUpdate(id, newText);
+
+        info.current = {
+          selection: cursorPositionValue + 1,
+          blockId: changedBlockId,
+        };
       });
-
-      handleUpdate(id, newText);
-
-      info.current = {
-        selection: cursorPositionValue + 1,
-        blockId: changedBlockId,
-      };
     },
-    [contextName, handleCtrlEvents, handleUpdate, id, text, verifySpecialChars]
+    [
+      contextName,
+      deleteMultipleLetters,
+      handleCtrlEvents,
+      handleUpdate,
+      id,
+      verifySpecialChars,
+    ]
   );
 
   const [selectionRange] = useTriggerState({
@@ -646,148 +664,159 @@ function Component({ text, id }: IEditable) {
       e.preventDefault();
 
       const copiedText = e.clipboardData.getData("text/plain");
+      const selection = window.getSelection();
 
-      console.log(copiedText);
+      const numberOfChars = selection.toString().length;
 
-      // transforms the copiedText into an array of blocks
-      // ex.: "^^^**H**^^^^^^***ell***^^^^^^o^^^" -> [{ value: "H", options: ["highlight", "bold"] }, { value: "ell", options: ["highlight", "bold","italic"] }, { value: "o", options: ["highlight"] }]
-
-      const chars = copiedText.split("");
-
-      let currOption = "";
-      let endOption = "";
-      let newWords = "";
-      let searchingForTheEnd = false;
-
-      const newBlocks = [];
-
-      chars.forEach((item, index) => {
-        if (searchingForTheEnd) {
-          if (item === currOption[0]) {
-            endOption += item;
-
-            if (endOption === currOption) {
-              searchingForTheEnd = false;
-              newBlocks.push({
-                value: newWords,
-                options: [currOption],
-              });
-
-              currOption = "";
-              newWords = "";
-              endOption = "";
-            }
-          } else {
-            newWords += endOption + item;
-            endOption = "";
-          }
-          return;
-        }
-
-        if (currOption || CHARS_VALUES.some((char) => char.includes(item))) {
-          currOption += item;
-
-          const isAKey = CHARS_VALUES.includes(currOption);
-
-          const isNextAKey = CHARS_VALUES.includes(
-            currOption + chars[index + 1]
-          );
-
-          // if the current option is a key and the next one is not, it means that the current option is the end of the option and the start of the word
-          if (isAKey && !isNextAKey) {
-            searchingForTheEnd = true;
-
-            if (newWords) {
-              newBlocks.push({
-                value: newWords,
-                options: [],
-              });
-
-              newWords = "";
-            }
-          }
-
-          return;
-        }
-
-        newWords += item;
-      });
-
-      if (newWords) {
-        newBlocks.push({
-          value: newWords,
-          options: [],
-        });
+      if (numberOfChars) {
+        deleteMultipleLetters();
       }
 
-      const blocksFormatted = newBlocks.map((item) => {
-        const filteredOptions = [
-          ...CHARS_VALUES.filter((char) => item.value.includes(char)),
-          ...item.options,
-        ];
+      setTimeout(() => {
+        const { changedBlockId, currSelection } = getBlockId({ textId: id });
 
-        const newValue = filteredOptions.reduce((acc, char) => {
-          return acc.replaceAll(char, "");
-        }, item.value);
+        const currText = globalState
+          .get(contextName)
+          .find(({ id: textId }) => textId === id).text;
 
-        return {
-          value: newValue,
-          id: Math.random() + new Date().getTime(),
-          options: filteredOptions.map(
-            (char) => CHARS_KEYS[CHARS_VALUES.indexOf(char)]
-          ),
-        };
-      });
+        // transforms the copiedText into an array of blocks
+        // ex.: "^^^**H**^^^^^^***ell***^^^^^^o^^^" -> [{ value: "H", options: ["highlight", "bold"] }, { value: "ell", options: ["highlight", "bold","italic"] }, { value: "o", options: ["highlight"] }]
 
-      const { changedBlockId, currSelection } = getBlockId();
+        const chars = copiedText.split("");
 
-      const newText = [];
+        let currOption = "";
+        let endOption = "";
+        let newWords = "";
+        let searchingForTheEnd = false;
 
-      // console.log(text, blocksFormatted);
-      text.forEach((item) => {
-        if (item.id !== changedBlockId) {
-          newText.push(item);
-          return;
+        const newBlocks = [];
+
+        chars.forEach((item, index) => {
+          if (searchingForTheEnd) {
+            if (item === currOption[0]) {
+              endOption += item;
+
+              if (endOption === currOption) {
+                searchingForTheEnd = false;
+                newBlocks.push({
+                  value: newWords,
+                  options: [currOption],
+                });
+
+                currOption = "";
+                newWords = "";
+                endOption = "";
+              }
+            } else {
+              newWords += endOption + item;
+              endOption = "";
+            }
+            return;
+          }
+
+          if (currOption || CHARS_VALUES.some((char) => char.includes(item))) {
+            currOption += item;
+
+            const isAKey = CHARS_VALUES.includes(currOption);
+
+            const isNextAKey = CHARS_VALUES.includes(
+              currOption + chars[index + 1]
+            );
+
+            // if the current option is a key and the next one is not, it means that the current option is the end of the option and the start of the word
+            if (isAKey && !isNextAKey) {
+              searchingForTheEnd = true;
+
+              if (newWords) {
+                newBlocks.push({
+                  value: newWords,
+                  options: [],
+                });
+
+                newWords = "";
+              }
+            }
+
+            return;
+          }
+
+          newWords += item;
+        });
+
+        if (newWords) {
+          newBlocks.push({
+            value: newWords,
+            options: [],
+          });
         }
 
-        const { value, options } = item;
+        const blocksFormatted = newBlocks.map((item) => {
+          const filteredOptions = [
+            ...CHARS_VALUES.filter((char) => item.value.includes(char)),
+            ...item.options,
+          ];
 
-        const valueBefore = value.slice(0, currSelection);
-        const valueAfter = value.slice(currSelection);
+          const newValue = filteredOptions.reduce((acc, char) => {
+            return acc.replaceAll(char, "");
+          }, item.value);
 
-        newText.push({
-          value: valueBefore,
-          id: item.id,
-          options,
+          return {
+            value: newValue,
+            id: Math.random() + new Date().getTime(),
+            options: filteredOptions.map(
+              (char) => CHARS_KEYS[CHARS_VALUES.indexOf(char)]
+            ),
+          };
         });
 
-        blocksFormatted.forEach((item) => {
-          newText.push(item);
+        const newText = [];
+        console.log(changedBlockId);
+
+        currText.forEach((item) => {
+          if (item.id !== changedBlockId) {
+            newText.push(item);
+            return;
+          }
+
+          const { value, options } = item;
+
+          const valueBefore = value.slice(0, currSelection);
+          const valueAfter = value.slice(currSelection);
+
+          newText.push({
+            value: valueBefore,
+            id: item.id,
+            options,
+          });
+
+          blocksFormatted.forEach((item) => {
+            newText.push(item);
+          });
+
+          newText.push({
+            value: valueAfter,
+            id: item.id + new Date().getTime(),
+            options,
+          });
         });
 
-        newText.push({
-          value: valueAfter,
-          id: item.id + new Date().getTime(),
-          options,
-        });
+        const lastNewBlock = blocksFormatted[blocksFormatted.length - 1];
+
+        // add the lastNewBlock focus
+        info.current = {
+          selection: lastNewBlock.value.length,
+          blockId: lastNewBlock.id,
+        };
+
+        handleUpdate(id, newText);
+
+        stateStorage.set(
+          `${contextName}_decoration-${lastNewBlock.id}`,
+          new Date()
+        );
       });
-
-      const lastNewBlock = blocksFormatted[blocksFormatted.length - 1];
-
-      // add the lastNewBlock focus
-      info.current = {
-        selection: lastNewBlock.value.length,
-        blockId: lastNewBlock.id,
-      };
-
-      handleUpdate(id, newText);
-
-      stateStorage.set(
-        `${contextName}_decoration-${lastNewBlock.id}`,
-        new Date()
-      );
     },
-    [contextName, getBlockId, handleUpdate, id, text]
+    [contextName, deleteMultipleLetters, getBlockId, handleUpdate, id]
   );
 
   return (
