@@ -4,7 +4,13 @@
 
 .placeholder::after {
   content: attr(placeholder);
+  opacity: 0;
   color: gray;
+  transition: opacity 0.2s ease-in-out;
+}
+
+div:focus .placeholder::after {
+  opacity: 1;
 }
 
 .placeholder {
