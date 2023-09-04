@@ -14,10 +14,26 @@ import {
   useTriggerState,
 } from "react-trigger-state";
 import { useWriterContext } from "../../context/WriterContext";
+import useDeleteMultiple from "../../hooks/useDeleteMultiple";
 import { IEditable, IWriterInfo } from "../../interface";
 import Popup from "../../popup/Popup";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
+import usePositions from "../../hooks/usePositions";
+import useGetCurrBlockId from "../../hooks/useGetCurrBlockId";
+
+const OPTIONS_CHARS = {
+  bold: "**",
+  italic: "<<<",
+  underline: "__",
+  strikethrough: "~~",
+  code: "```",
+  highlight: "^^^",
+};
+
+const CHARS_KEYS = Object.keys(OPTIONS_CHARS);
+
+const CHARS_VALUES = Object.values(OPTIONS_CHARS);
 
 function Component({ text, id }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
@@ -28,6 +44,8 @@ function Component({ text, id }: IEditable) {
     blockId: 0,
   });
 
+  const { deleteMultipleLetters } = useDeleteMultiple({ text, id, info });
+
   useEffect(() => {
     const isFirstSelected = globalState.get("first_selection") === id;
 
@@ -37,7 +55,9 @@ function Component({ text, id }: IEditable) {
 
     const range = document.createRange();
 
-    const firstBlock = text[0].id;
+    const firstBlock = text?.[0]?.id;
+
+    if (!firstBlock) return;
 
     const block = document.querySelector(`[data-block-id="${firstBlock}"]`)
       ?.firstChild;
@@ -80,12 +100,16 @@ function Component({ text, id }: IEditable) {
         let baseValue = selection.anchorNode.parentElement.innerText;
 
         let charToDelete = selection.anchorOffset + deletingPosition;
+        // number of chars to delete
+        const numberOfChars = selection.toString().length;
+
+        if (numberOfChars) {
+          deleteMultipleLetters();
+          return;
+        }
 
         const isCodeBlock =
           selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
-
-        const multipleBlocks = currText.length > 1;
-        console.log({ multipleBlocks, isCodeBlock });
 
         if (isCodeBlock) {
           const codeChilds = Array.from(
@@ -204,8 +228,15 @@ function Component({ text, id }: IEditable) {
         // gets the current block id
         const selection = window.getSelection();
 
+        const isCodeBlock =
+          selection.anchorNode.parentElement?.parentElement?.tagName === "CODE";
+
         const changedBlockId = parseFloat(
-          selection.anchorNode.parentElement.getAttribute("data-block-id")
+          isCodeBlock
+            ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
+                "data-block-id"
+              )
+            : selection.anchorNode.parentElement.getAttribute("data-block-id")
         );
 
         const content = globalState.get(contextName);
@@ -277,93 +308,237 @@ function Component({ text, id }: IEditable) {
         stateStorage.set(contextName, newContent);
       }
     },
-    [contextName, deleteBlock, handleUpdate, id, text]
+    [
+      contextName,
+      deleteBlock,
+      deleteMultipleLetters,
+      handleUpdate,
+      id,
+      text.length,
+    ]
+  );
+
+  const { getSelectedBlocks } = usePositions({ text });
+
+  const copyText = useCallback(() => {
+    const { selectedBlocks, last, first } = getSelectedBlocks();
+    let copyStuff = "";
+
+    selectedBlocks.forEach((item, index) => {
+      const { value, options } = item;
+
+      const isLast = index === selectedBlocks.length - 1;
+      const isFirst = index === 0;
+      const isOnlyOne = selectedBlocks.length === 1;
+
+      const optionsToUse = options.reduce((acc, item) => {
+        if (OPTIONS_CHARS[item]) {
+          acc.push(OPTIONS_CHARS[item]);
+        }
+
+        return acc;
+      }, []);
+
+      const optionsRight = optionsToUse.join("");
+
+      const optionsLeft = optionsToUse.reverse().join("");
+
+      let usedValue = "";
+      const letters = value.split("");
+
+      if (isOnlyOne) {
+        letters.forEach((item, index) => {
+          if (index > first.index - 1 && index < last.index + 1) {
+            usedValue += item;
+          }
+        });
+      } else if (isFirst) {
+        letters.forEach((item, index) => {
+          if (index > first.index - 1) {
+            usedValue += item;
+          }
+        });
+      } else if (isLast) {
+        letters.forEach((item, index) => {
+          if (index < last.index + 1) {
+            usedValue += item;
+          }
+        });
+      } else {
+        usedValue = value;
+      }
+
+      copyStuff += `${optionsLeft}${usedValue}${optionsRight}`;
+    });
+
+    // copy the text to the clipboard
+    navigator.clipboard.writeText(copyStuff);
+  }, [getSelectedBlocks]);
+
+  const handleCtrlEvents = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>, ctrlPressed: boolean) => {
+      if (!ctrlPressed) return false;
+
+      if (e.key === "x") {
+        e.preventDefault();
+        copyText();
+        deleteMultipleLetters();
+
+        return true;
+      } else if (e.key === "c") {
+        e.preventDefault();
+        copyText();
+
+        return true;
+      } else if (e.key === "v") {
+        return true;
+      }
+    },
+    [copyText, deleteMultipleLetters]
+  );
+
+  const verifyForAccents = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      const accents = ["Quote", "BracketLeft"];
+
+      const lastChar = globalState.get("last_char");
+
+      const isLastAccented = accents.includes(lastChar);
+      const nowTheCharIsAccented = accents.includes(event.code);
+      let valueToReturn: string | false = false;
+
+      if (isLastAccented && nowTheCharIsAccented && lastChar === event.code) {
+        const isShiftPressed = event.shiftKey;
+
+        const accentsOptions = {
+          Quote: isShiftPressed ? "^" : "~",
+          BracketLeft: isShiftPressed ? "`" : "´",
+        };
+
+        valueToReturn = accentsOptions[lastChar];
+      }
+
+      globalState.set("last_char", event.code);
+
+      return valueToReturn;
+    },
+    []
   );
 
   const handleChange = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
-      // only accept letters, numbers, spaces and special characters
-      const allowedChars = /^[a-zA-Z0-9\s~`!@#$%^&*()_+={}[\]:;"'<>,.?/\\|-]+$/;
+      // only accept letters, numbers, spaces, special characters and accents
+      const allowedChars =
+        /^[a-zA-Z0-9\s~`!@#$%^&*()_+={}[\]:;"'<>,.?/\\|-À-ÖØ-öø-ÿ|~]+$/;
 
-      const inputChar = event.key;
+      let inputChar = event.key;
 
       const isAllowed = allowedChars.test(inputChar) && event.key.length === 1;
 
-      if (!isAllowed) {
+      const newChar = verifyForAccents(event);
+
+      if (!isAllowed && newChar !== false) {
+        inputChar = newChar;
+      } else if (!isAllowed) {
         verifySpecialChars(event);
         return;
       }
+
+      const ctrlPressed = event.ctrlKey;
+
+      const avoidCtrl = handleCtrlEvents(event, ctrlPressed);
+
+      if (avoidCtrl) return;
 
       event.preventDefault();
 
       const selection = window.getSelection();
 
-      const isCodeBlock =
-        selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
+      const numberOfChars = selection.toString().length;
 
-      const changedBlockId = parseFloat(
-        isCodeBlock
-          ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
-              "data-block-id"
-            )
-          : selection.anchorNode.parentElement.getAttribute("data-block-id") ??
-              // @ts-expect-error - this is a valid attribute
-              selection.anchorNode.getAttribute?.("data-block-id") ??
-              text[0].id
-      );
-
-      const currText = globalState
-        .get(contextName)
-        .find(({ id: textId }) => textId === id).text;
-
-      const block = currText.find(({ id }) => id === changedBlockId);
-
-      const baseValue = block?.value?.slice?.() ?? "";
-
-      let cursorPositionValue = selection.anchorOffset;
-
-      if (isCodeBlock) {
-        const codeChilds = Array.from(
-          selection.anchorNode.parentElement?.parentElement.childNodes
-        );
-
-        let codeNewIndex = 0;
-
-        codeChilds.find((item) => {
-          if (item !== selection.anchorNode.parentElement) {
-            codeNewIndex += item.textContent?.length ?? 0;
-            return false;
-          }
-
-          return true;
-        });
-
-        codeNewIndex += selection.anchorOffset;
-
-        cursorPositionValue = codeNewIndex;
+      if (numberOfChars) {
+        deleteMultipleLetters();
       }
 
-      const newValue =
-        baseValue.slice(0, cursorPositionValue) +
-        inputChar +
-        baseValue.slice(cursorPositionValue);
+      setTimeout(() => {
+        const selection = window.getSelection();
+        const currText = globalState
+          .get(contextName)
+          .find(({ id: textId }) => textId === id).text;
 
-      const newText = currText.map((item) => {
-        if (item.id === changedBlockId) {
-          item.value = newValue;
+        const isCodeBlock =
+          selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
+
+        const changedBlockId = parseFloat(
+          isCodeBlock
+            ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
+                "data-block-id"
+              )
+            : selection.anchorNode.parentElement.getAttribute(
+                "data-block-id"
+              ) ??
+                // @ts-expect-error - this is a valid attribute
+                selection.anchorNode.getAttribute?.("data-block-id") ??
+                currText[0]?.id
+        );
+
+        const block = currText.find(({ id }) => id === changedBlockId);
+
+        const baseValue = block?.value?.slice?.() ?? "";
+
+        let cursorPositionValue = selection.anchorOffset;
+
+        if (isCodeBlock) {
+          const codeChilds = Array.from(
+            selection.anchorNode.parentElement?.parentElement.childNodes
+          );
+
+          let codeNewIndex = 0;
+
+          codeChilds.find((item) => {
+            if (item !== selection.anchorNode.parentElement) {
+              codeNewIndex += item.textContent?.length ?? 0;
+              return false;
+            }
+
+            return true;
+          });
+
+          codeNewIndex += selection.anchorOffset;
+
+          cursorPositionValue = codeNewIndex;
         }
 
-        return item;
+        const newValue =
+          baseValue.slice(0, cursorPositionValue) +
+          inputChar +
+          baseValue.slice(cursorPositionValue);
+
+        const newText = currText.map((item) => {
+          if (item.id === changedBlockId) {
+            item.value = newValue;
+          }
+
+          return item;
+        });
+
+        handleUpdate(id, newText);
+
+        info.current = {
+          selection: cursorPositionValue + 1,
+          blockId: changedBlockId,
+        };
       });
-
-      handleUpdate(id, newText);
-
-      info.current = {
-        selection: cursorPositionValue + 1,
-        blockId: changedBlockId,
-      };
     },
-    [contextName, handleUpdate, id, text, verifySpecialChars]
+    [
+      contextName,
+      deleteMultipleLetters,
+      handleCtrlEvents,
+      handleUpdate,
+      id,
+      verifyForAccents,
+      verifySpecialChars,
+    ]
   );
 
   const [selectionRange] = useTriggerState({
@@ -392,69 +567,77 @@ function Component({ text, id }: IEditable) {
     )?.firstChild;
 
     // if it's a code block, get the first child
-    const isCodeBlock = startBlock?.firstChild?.nodeName === "CODE";
+    const isCodeBlock =
+      startBlock?.firstChild?.nodeName === "CODE" ||
+      endBlock?.firstChild?.nodeName === "CODE";
 
     if (isCodeBlock) {
-      startBlock = startBlock?.firstChild;
-      endBlock = endBlock?.firstChild;
+      if (startBlock?.firstChild?.nodeName === "CODE") {
+        startBlock = startBlock?.firstChild;
 
-      const startChilds = [];
+        const startChilds = [];
 
-      startBlock?.childNodes.forEach((item) => {
-        startChilds.push(item);
-      });
-
-      const endChilds = [];
-
-      endBlock?.childNodes.forEach((item) => {
-        endChilds.push(item);
-      });
-
-      let startIndex = -1;
-      let letterStartIndex = 0;
-
-      const newStart = startChilds?.find((item) => {
-        const letters = item.textContent?.split("") ?? [""];
-
-        const hasLetterIndex = letters.find((item, index) => {
-          startIndex++;
-          const isTheOne = startIndex === selectionRange.start;
-
-          if (isTheOne) {
-            letterStartIndex = index;
-          }
-
-          return isTheOne;
+        startBlock?.childNodes.forEach((item) => {
+          startChilds.push(item);
         });
 
-        return hasLetterIndex;
-      });
+        let startIndex = -1;
+        let letterStartIndex = 0;
 
-      let endIndex = -1;
-      let letterEndIndex = 0;
+        const newStart = startChilds?.find((item) => {
+          const letters = item.textContent?.split("") ?? [""];
 
-      const newEnd = endChilds?.find((item) => {
-        const letters = item.textContent?.split("") ?? [""];
+          const hasLetterIndex = letters.find((item, index) => {
+            startIndex++;
+            const isTheOne = startIndex === selectionRange.start;
 
-        const hasLetterIndex = letters.find((item, index) => {
-          endIndex++;
-          const isTheOne = endIndex === selectionRange.end - 1;
+            if (isTheOne) {
+              letterStartIndex = index;
+            }
 
-          if (isTheOne) {
-            letterEndIndex = index;
-          }
+            return isTheOne;
+          });
 
-          return isTheOne;
+          return hasLetterIndex;
         });
 
-        return hasLetterIndex;
-      });
+        startBlock = newStart?.firstChild;
+        selectionRange.start = letterStartIndex;
+      }
 
-      startBlock = newStart?.firstChild;
-      endBlock = newEnd?.firstChild;
+      if (endBlock?.firstChild?.nodeName === "CODE") {
+        endBlock = endBlock?.firstChild;
 
-      selectionRange.start = letterStartIndex;
-      selectionRange.end = letterEndIndex + 1;
+        const endChilds = [];
+
+        endBlock?.childNodes.forEach((item) => {
+          endChilds.push(item);
+        });
+
+        let endIndex = -1;
+        let letterEndIndex = 0;
+
+        const newEnd = endChilds?.find((item) => {
+          const letters = item.textContent?.split("") ?? [""];
+
+          const hasLetterIndex = letters.find((item, index) => {
+            endIndex++;
+            const isTheOne = endIndex === selectionRange.end - 1;
+
+            if (isTheOne) {
+              letterEndIndex = index;
+            }
+
+            return isTheOne;
+          });
+
+          return hasLetterIndex;
+        });
+
+        endBlock = newEnd?.firstChild;
+
+        selectionRange.end = letterEndIndex + 1;
+      }
     }
 
     if (!startBlock || !endBlock) {
@@ -507,6 +690,167 @@ function Component({ text, id }: IEditable) {
     [text]
   );
 
+  const { getBlockId } = useGetCurrBlockId();
+
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent<HTMLDivElement>) => {
+      e.preventDefault();
+
+      const copiedText = e.clipboardData.getData("text/plain");
+      const selection = window.getSelection();
+
+      const numberOfChars = selection.toString().length;
+
+      if (numberOfChars) {
+        deleteMultipleLetters();
+      }
+
+      setTimeout(() => {
+        const { changedBlockId, currSelection } = getBlockId({ textId: id });
+
+        const currText = globalState
+          .get(contextName)
+          .find(({ id: textId }) => textId === id).text;
+
+        // transforms the copiedText into an array of blocks
+        // ex.: "^^^**H**^^^^^^***ell***^^^^^^o^^^" -> [{ value: "H", options: ["highlight", "bold"] }, { value: "ell", options: ["highlight", "bold","italic"] }, { value: "o", options: ["highlight"] }]
+
+        const chars = copiedText.split("");
+
+        let currOption = "";
+        let endOption = "";
+        let newWords = "";
+        let searchingForTheEnd = false;
+
+        const newBlocks = [];
+
+        chars.forEach((item, index) => {
+          if (searchingForTheEnd) {
+            if (item === currOption[0]) {
+              endOption += item;
+
+              if (endOption === currOption) {
+                searchingForTheEnd = false;
+                newBlocks.push({
+                  value: newWords,
+                  options: [currOption],
+                });
+
+                currOption = "";
+                newWords = "";
+                endOption = "";
+              }
+            } else {
+              newWords += endOption + item;
+              endOption = "";
+            }
+            return;
+          }
+
+          if (currOption || CHARS_VALUES.some((char) => char.includes(item))) {
+            currOption += item;
+
+            const isAKey = CHARS_VALUES.includes(currOption);
+
+            const isNextAKey = CHARS_VALUES.includes(
+              currOption + chars[index + 1]
+            );
+
+            // if the current option is a key and the next one is not, it means that the current option is the end of the option and the start of the word
+            if (isAKey && !isNextAKey) {
+              searchingForTheEnd = true;
+
+              if (newWords) {
+                newBlocks.push({
+                  value: newWords,
+                  options: [],
+                });
+
+                newWords = "";
+              }
+            }
+
+            return;
+          }
+
+          newWords += item;
+        });
+
+        if (newWords) {
+          newBlocks.push({
+            value: newWords,
+            options: [],
+          });
+        }
+
+        const blocksFormatted = newBlocks.map((item) => {
+          const filteredOptions = [
+            ...CHARS_VALUES.filter((char) => item.value.includes(char)),
+            ...item.options,
+          ];
+
+          const newValue = filteredOptions.reduce((acc, char) => {
+            return acc.replaceAll(char, "");
+          }, item.value);
+
+          return {
+            value: newValue,
+            id: Math.random() + new Date().getTime(),
+            options: filteredOptions.map(
+              (char) => CHARS_KEYS[CHARS_VALUES.indexOf(char)]
+            ),
+          };
+        });
+
+        const newText = [];
+
+        currText.forEach((item) => {
+          if (item.id !== changedBlockId) {
+            newText.push(item);
+            return;
+          }
+
+          const { value, options } = item;
+
+          const valueBefore = value.slice(0, currSelection);
+          const valueAfter = value.slice(currSelection);
+
+          newText.push({
+            value: valueBefore,
+            id: item.id,
+            options,
+          });
+
+          blocksFormatted.forEach((item) => {
+            newText.push(item);
+          });
+
+          newText.push({
+            value: valueAfter,
+            id: item.id + new Date().getTime(),
+            options,
+          });
+        });
+
+        const lastNewBlock = blocksFormatted[blocksFormatted.length - 1];
+
+        // add the lastNewBlock focus
+        info.current = {
+          selection: lastNewBlock.value.length,
+          blockId: lastNewBlock.id,
+        };
+
+        handleUpdate(id, newText);
+
+        stateStorage.set(
+          `${contextName}_decoration-${lastNewBlock.id}`,
+          new Date()
+        );
+      });
+    },
+    [contextName, deleteMultipleLetters, getBlockId, handleUpdate, id]
+  );
+
   return (
     <Editable
       ref={ref}
@@ -517,7 +861,9 @@ function Component({ text, id }: IEditable) {
       onDrop={preventDefault}
       onBlur={checkSelection}
       onFocus={checkSelection}
+      onClick={checkSelection}
       suppressContentEditableWarning
+      onPaste={handlePaste}
     >
       {text.map((item, index) => {
         return (
