@@ -1,8 +1,18 @@
 "use client";
 
-import React, { createContext, useCallback, useMemo } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useMemo,
+  useRef
+} from "react";
 import { useTriggerState } from "react-trigger-state";
-import { IText, IWriterContext, IWritterContent } from "../interface";
+import {
+  IText,
+  IWriterContext,
+  IWriterInfo,
+  IWritterContent,
+} from "../interface";
 import Component from "../options/Component/Component";
 
 export const WriterContext = createContext<IWriterContext>({
@@ -14,7 +24,16 @@ export const WriterContext = createContext<IWriterContext>({
   deleteBlock: (textId: number, blockId: number) => {
     console.log(textId, blockId);
   },
+  deleteLine: (textId: number) => {
+    console.log(textId);
+  },
   contextName: "writter_context",
+  info: {
+    current: {
+      selection: 0,
+      blockId: 0,
+    },
+  },
 });
 
 export const useWriterContext = () => React.useContext(WriterContext);
@@ -33,6 +52,11 @@ const WriterContextProvider = ({
   });
 
   const contextName = useMemo(() => `${name}_writter_context`, [name]);
+
+  const info = useRef<IWriterInfo>({
+    selection: 0,
+    blockId: 0,
+  });
 
   const handleUpdate = useCallback(
     (textId: number, text: IText[]) => {
@@ -74,9 +98,30 @@ const WriterContextProvider = ({
     [setContent]
   );
 
+  const deleteLine = useCallback(
+    (textId: number) => {
+      setContent((prev) => {
+        const newContent = [...prev];
+
+        const blocks = newContent.filter(({ id }) => id !== textId);
+
+        return blocks;
+      });
+    },
+    [setContent]
+  );
+
   return (
     <WriterContext.Provider
-      value={{ content, setContent, handleUpdate, contextName, deleteBlock }}
+      value={{
+        content,
+        setContent,
+        handleUpdate,
+        contextName,
+        deleteBlock,
+        deleteLine,
+        info,
+      }}
     >
       {content.map((item, index) => {
         return <Component key={index} {...item} position={index} />;

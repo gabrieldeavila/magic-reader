@@ -41,7 +41,9 @@ export interface IWriterContext {
   setContent: React.Dispatch<React.SetStateAction<IWritterContent[]>>;
   handleUpdate: (textId: number, value: IText[]) => void;
   deleteBlock: (textId: number, blockId: number) => void;
+  deleteLine: (textId: number) => void;
   contextName: string;
+  info: React.MutableRefObject<IWriterInfo>;
 }
 
 export interface InputEvent extends React.KeyboardEvent<HTMLInputElement> {}

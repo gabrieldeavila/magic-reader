@@ -15,12 +15,12 @@ import {
 } from "react-trigger-state";
 import { useWriterContext } from "../../context/WriterContext";
 import useDeleteMultiple from "../../hooks/useDeleteMultiple";
-import { IEditable, IWriterInfo } from "../../interface";
+import useGetCurrBlockId from "../../hooks/useGetCurrBlockId";
+import usePositions from "../../hooks/usePositions";
+import { IEditable } from "../../interface";
 import Popup from "../../popup/Popup";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
-import usePositions from "../../hooks/usePositions";
-import useGetCurrBlockId from "../../hooks/useGetCurrBlockId";
 
 const OPTIONS_CHARS = {
   bold: "**",
@@ -38,11 +38,8 @@ const CHARS_VALUES = Object.values(OPTIONS_CHARS);
 function Component({ text, id }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
 
-  const { contextName, handleUpdate, deleteBlock } = useWriterContext();
-  const info = useRef<IWriterInfo>({
-    selection: 0,
-    blockId: 0,
-  });
+  const { contextName, handleUpdate, deleteBlock, deleteLine, info } =
+    useWriterContext();
 
   const { deleteMultipleLetters } = useDeleteMultiple({ text, id, info });
 
@@ -83,7 +80,6 @@ function Component({ text, id }: IEditable) {
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (["Backspace", "Delete"].includes(event.key)) {
         event.preventDefault();
-
         // returns if is deleting in the right or left side of the block
         const deletingPosition = event.key === "Delete" ? 0 : -1;
 
@@ -142,7 +138,7 @@ function Component({ text, id }: IEditable) {
 
         // if the charToDelete is -1, it means that the cursor is at the beginning of the block
         // and we need to delete the previous block
-        if (charToDelete === -1) {
+        if (charToDelete === -1 && currText.length > 1) {
           const prevBlock = currText.find((_item, index) => {
             const nextBlock = currText[index + 1];
 
@@ -191,16 +187,52 @@ function Component({ text, id }: IEditable) {
           return item;
         });
 
-        // if the current block is empty and there are more than one block
-        if (newValue.length === 0 && text.length > 1) {
-          deleteBlock(id, changedBlockId);
+        const content = globalState.get(contextName);
+        const blockIndex = content.findIndex(({ id: newId }) => id === newId);
+        const block = content[blockIndex];
+        const prevValue = block.text[block.text.length - 1].value;
 
+        // if the current block is empty and there are more than one block
+        if (
+          (prevValue.length === 0 ||
+            (prevValue.length === 1 && prevValue === " ")) &&
+          content.length > 1 &&
+          block.text.length === 1
+        ) {
+          const prevBlock = content[blockIndex - 1] ?? content[blockIndex + 1];
+
+          deleteLine(id);
+
+          if (!prevBlock) return;
+          const prevLine = prevBlock.text[prevBlock.text.length - 1];
+
+          // if is going up, the selection will be the last char of the prev block
+          // otherwise, it will be the first char of the prev block
+          const newSelection = content[blockIndex - 1]
+            ? prevLine.value?.length
+            : 0;
+
+          info.current = {
+            selection: newSelection,
+            blockId: prevLine.id,
+          };
+
+          stateStorage.set(
+            `${contextName}_decoration-${prevLine.id}`,
+            new Date()
+          );
+          return;
+        }
+
+        if (newValue.length === 0 && text.length > 1) {
           // the prev block is the last item before the current block
           const prevBlock = currText.find((_item, index) => {
             const nextBlock = currText[index + 1];
 
             return nextBlock?.id === changedBlockId;
           });
+
+          deleteBlock(id, changedBlockId);
 
           if (!prevBlock) return;
 
@@ -216,6 +248,7 @@ function Component({ text, id }: IEditable) {
           return;
         }
 
+        // if the newText is
         handleUpdate(id, newText);
 
         info.current = {
@@ -345,9 +378,11 @@ function Component({ text, id }: IEditable) {
     [
       contextName,
       deleteBlock,
+      deleteLine,
       deleteMultipleLetters,
       handleUpdate,
       id,
+      info,
       text.length,
     ]
   );
@@ -572,6 +607,7 @@ function Component({ text, id }: IEditable) {
       handleCtrlEvents,
       handleUpdate,
       id,
+      info,
       verifyForAccents,
       verifySpecialChars,
     ]
@@ -685,7 +721,7 @@ function Component({ text, id }: IEditable) {
 
     selection.removeAllRanges();
     selection.addRange(range);
-  }, [selectionRange]);
+  }, [info, selectionRange]);
 
   const [showPopup, setShowPopup] = useState(false);
 
@@ -884,7 +920,7 @@ function Component({ text, id }: IEditable) {
         );
       });
     },
-    [contextName, deleteMultipleLetters, getBlockId, handleUpdate, id]
+    [contextName, deleteMultipleLetters, getBlockId, handleUpdate, id, info]
   );
 
   return (
