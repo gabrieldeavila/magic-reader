@@ -323,7 +323,6 @@ function Component({ text, id }: IEditable) {
   const copyText = useCallback(() => {
     const { selectedBlocks, last, first } = getSelectedBlocks();
     let copyStuff = "";
-    console.log(selectedBlocks, last, first);
 
     selectedBlocks.forEach((item, index) => {
       const { value, options } = item;
@@ -398,16 +397,49 @@ function Component({ text, id }: IEditable) {
     [copyText, deleteMultipleLetters]
   );
 
+  const verifyForAccents = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      const accents = ["Quote", "BracketLeft"];
+
+      const lastChar = globalState.get("last_char");
+
+      const isLastAccented = accents.includes(lastChar);
+      const nowTheCharIsAccented = accents.includes(event.code);
+      let valueToReturn: string | false = false;
+
+      if (isLastAccented && nowTheCharIsAccented && lastChar === event.code) {
+        const isShiftPressed = event.shiftKey;
+
+        const accentsOptions = {
+          Quote: isShiftPressed ? "^" : "~",
+          BracketLeft: isShiftPressed ? "`" : "´",
+        };
+
+        valueToReturn = accentsOptions[lastChar];
+      }
+
+      globalState.set("last_char", event.code);
+
+      return valueToReturn;
+    },
+    []
+  );
+
   const handleChange = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
-      // only accept letters, numbers, spaces and special characters
-      const allowedChars = /^[a-zA-Z0-9\s~`!@#$%^&*()_+={}[\]:;"'<>,.?/\\|-]+$/;
+      // only accept letters, numbers, spaces, special characters and accents
+      const allowedChars =
+        /^[a-zA-Z0-9\s~`!@#$%^&*()_+={}[\]:;"'<>,.?/\\|-À-ÖØ-öø-ÿ|~]+$/;
 
-      const inputChar = event.key;
+      let inputChar = event.key;
 
       const isAllowed = allowedChars.test(inputChar) && event.key.length === 1;
 
-      if (!isAllowed) {
+      const newChar = verifyForAccents(event);
+
+      if (!isAllowed && newChar !== false) {
+        inputChar = newChar;
+      } else if (!isAllowed) {
         verifySpecialChars(event);
         return;
       }
@@ -504,6 +536,7 @@ function Component({ text, id }: IEditable) {
       handleCtrlEvents,
       handleUpdate,
       id,
+      verifyForAccents,
       verifySpecialChars,
     ]
   );
@@ -770,7 +803,6 @@ function Component({ text, id }: IEditable) {
         });
 
         const newText = [];
-        console.log(changedBlockId);
 
         currText.forEach((item) => {
           if (item.id !== changedBlockId) {
