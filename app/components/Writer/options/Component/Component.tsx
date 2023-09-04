@@ -224,6 +224,40 @@ function Component({ text, id }: IEditable) {
         };
       } else if (event.key === "Enter") {
         event.preventDefault();
+        const isCtrlPressed = event.ctrlKey;
+
+        if (isCtrlPressed) {
+          const newId = Math.random();
+          const newText = {
+            id: newId,
+            text: [
+              {
+                id: Math.random(),
+                value: "",
+                options: [],
+              },
+            ],
+          };
+          const content = globalState.get(contextName);
+
+          // gets current block id and place the new block after it
+          const newContent = content.reduce((acc, item) => {
+            if (item.id === id) {
+              acc.push(item);
+              acc.push(newText);
+            } else {
+              acc.push(item);
+            }
+
+            return acc;
+          }, []);
+
+          globalState.set("first_selection", newId);
+
+          stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
+          stateStorage.set(contextName, newContent);
+          return;
+        }
 
         // gets the current block id
         const selection = window.getSelection();
@@ -390,9 +424,11 @@ function Component({ text, id }: IEditable) {
         copyText();
 
         return true;
-      } else if (e.key === "v") {
+      } else if (["v", "r"].includes(e.key)) {
         return true;
       }
+
+      return false;
     },
     [copyText, deleteMultipleLetters]
   );
