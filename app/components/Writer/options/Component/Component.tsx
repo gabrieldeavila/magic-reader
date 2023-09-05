@@ -348,14 +348,18 @@ function Component({ text, id }: IEditable) {
         // gets the current block id
         const selection = window.getSelection();
 
+        // is codeblock if there is no data-block-id in the parent element
         const isCodeBlock =
-          selection.anchorNode.parentElement?.parentElement?.tagName === "CODE";
+          !selection.anchorNode.parentElement.getAttribute("data-block-id");
 
         const changedBlockId = parseFloat(
           isCodeBlock
             ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
                 "data-block-id"
-              )
+              ) ||
+                selection.anchorNode.parentElement.parentElement.getAttribute(
+                  "data-block-id"
+                )
             : selection.anchorNode.parentElement.getAttribute("data-block-id")
         );
 
@@ -367,8 +371,31 @@ function Component({ text, id }: IEditable) {
 
         const baseValue = block?.value?.slice?.() ?? "";
 
+        let currSelection = selection.anchorOffset;
+
+        if (isCodeBlock) {
+          const codeChilds = Array.from(
+            selection.anchorNode.parentElement?.parentElement.childNodes
+          );
+
+          let codeNewIndex = 0;
+
+          codeChilds.find((item) => {
+            if (item !== selection.anchorNode.parentElement) {
+              codeNewIndex += item.textContent?.length ?? 0;
+              return false;
+            }
+
+            return true;
+          });
+
+          codeNewIndex += selection.anchorOffset;
+
+          currSelection = codeNewIndex;
+        }
+
         // will create a new block with the text after the cursor
-        const newValue = baseValue.slice(selection.anchorOffset);
+        const newValue = baseValue.slice(currSelection);
 
         let foundBlock = false;
 
@@ -376,7 +403,7 @@ function Component({ text, id }: IEditable) {
         const { prevText, newLineText } = currText.reduce(
           (acc, item) => {
             if (item.id === changedBlockId) {
-              item.value = baseValue.slice(0, selection.anchorOffset);
+              item.value = baseValue.slice(0, currSelection);
             }
 
             if (foundBlock) {
