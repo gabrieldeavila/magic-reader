@@ -80,10 +80,63 @@ function Component({ text, id }: IEditable) {
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (["Backspace", "Delete"].includes(event.key)) {
         event.preventDefault();
+
         // returns if is deleting in the right or left side of the block
         const deletingPosition = event.key === "Delete" ? 0 : -1;
 
         const selection = window.getSelection();
+
+        // if both the anchorNode and the focusNode are 0, and the key is backspace, it means we have to mix the current block with the previous one
+
+        if (
+          selection.anchorNode === selection.focusNode &&
+          selection.anchorOffset === selection.focusOffset &&
+          selection.focusOffset === 0 &&
+          event.key === "Backspace"
+        ) {
+          const content = globalState.get(contextName);
+
+          const currTextIndex = content.findIndex(
+            ({ id: textId }) => id === textId
+          );
+
+          const nextBlockIndex = currTextIndex - 1;
+
+          const currText = content[currTextIndex].text;
+
+          const prevBlock = content[currTextIndex - 1];
+
+          if (!prevBlock) return;
+
+          const newContent = content.reduce((acc, item, index) => {
+            if (index === currTextIndex) {
+              return acc;
+            }
+
+            if (index === nextBlockIndex) {
+              acc.push({
+                ...item,
+                text: [...item.text, ...currText],
+              });
+            }
+
+            return acc;
+          }, []);
+
+          const currTextLastValue = currText[currText.length - 1];
+
+          info.current = {
+            selection: currTextLastValue.value.length,
+            blockId: currTextLastValue.id,
+          };
+
+          stateStorage.set(
+            `${contextName}_decoration-${prevBlock.id}`,
+            new Date()
+          );
+          stateStorage.set(contextName, newContent);
+          return;
+        }
 
         let changedBlockId = parseFloat(
           selection.anchorNode.parentElement.getAttribute("data-block-id")
