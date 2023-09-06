@@ -252,12 +252,14 @@ function Component({ text, id }: IEditable) {
           content.length > 1 &&
           block.text.length === 1
         ) {
-          const prevBlock = content[blockIndex - 1] ?? content[blockIndex + 1];
+          const newBlockIndex = blockIndex - 1;
+
+          const newBlock = content[newBlockIndex];
 
           deleteLine(id);
 
-          if (!prevBlock) return;
-          const prevLine = prevBlock.text[prevBlock.text.length - 1];
+          if (!newBlock) return;
+          const prevLine = newBlock.text[newBlock.text.length - 1];
 
           // if is going up, the selection will be the last char of the prev block
           // otherwise, it will be the first char of the prev block
@@ -354,7 +356,7 @@ function Component({ text, id }: IEditable) {
 
         const changedBlockId = parseFloat(
           isCodeBlock
-            ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
+            ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement?.getAttribute?.(
                 "data-block-id"
               ) ||
                 selection.anchorNode.parentElement.parentElement.getAttribute(
