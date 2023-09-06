@@ -87,7 +87,6 @@ function Component({ text, id }: IEditable) {
         const selection = window.getSelection();
 
         // if both the anchorNode and the focusNode are 0, and the key is backspace, it means we have to mix the current block with the previous one
-
         if (
           selection.anchorNode === selection.focusNode &&
           selection.anchorOffset === selection.focusOffset &&
@@ -118,16 +117,18 @@ function Component({ text, id }: IEditable) {
                 ...item,
                 text: [...item.text, ...currText],
               });
+            } else {
+              acc.push(item);
             }
 
             return acc;
           }, []);
 
-          const currTextLastValue = currText[currText.length - 1];
+          const currTextFirstValue = currText[0];
 
           info.current = {
-            selection: currTextLastValue.value.length,
-            blockId: currTextLastValue.id,
+            selection: 0,
+            blockId: currTextFirstValue.id,
           };
 
           stateStorage.set(
@@ -137,14 +138,17 @@ function Component({ text, id }: IEditable) {
           stateStorage.set(contextName, newContent);
           return;
         }
+        const content = globalState.get(contextName);
+
+        const currTextIndex = content.findIndex(
+          ({ id: textId }) => id === textId
+        );
+
+        const currText = content[currTextIndex].text;
 
         let changedBlockId = parseFloat(
           selection.anchorNode.parentElement.getAttribute("data-block-id")
         );
-
-        const currText = globalState
-          .get(contextName)
-          .find(({ id: textId }) => textId === id).text;
 
         let baseValue = selection.anchorNode.parentElement.innerText;
 
@@ -187,6 +191,57 @@ function Component({ text, id }: IEditable) {
 
           baseValue =
             selection.anchorNode.parentElement.parentElement.innerText;
+        }
+
+        const isTheLastBlock =
+          currText[currText.length - 1].id === changedBlockId;
+
+        // now if is the delete key, we have to mix the current block with the next one
+        if (
+          selection.anchorNode === selection.focusNode &&
+          selection.anchorOffset === selection.focusOffset &&
+          selection.focusOffset === selection.focusNode.textContent.length &&
+          event.key === "Delete" &&
+          isTheLastBlock
+        ) {
+          const nextBlockIndex = currTextIndex + 1;
+
+          const nextBlock = content[currTextIndex + 1];
+
+          if (!nextBlock) return;
+          const newContent = content.reduce((acc, item, index) => {
+            if (index === currTextIndex) {
+              return acc;
+            }
+
+            if (index === nextBlockIndex) {
+              acc.push({
+                ...item,
+                text: [...currText, ...item.text],
+              });
+            } else {
+              acc.push(item);
+            }
+
+            return acc;
+          }, []);
+
+          const currTextLastValue = currText[currText.length - 1];
+
+          info.current = {
+            selection: currTextLastValue?.value?.length,
+            blockId: currTextLastValue?.id,
+          };
+          globalState.set("first_selection", null);
+
+          stateStorage.set(contextName, newContent);
+
+          stateStorage.set(
+            `${contextName}_decoration-${currTextLastValue.id}`,
+            new Date()
+          );
+
+          return;
         }
 
         // if the charToDelete is -1, it means that the cursor is at the beginning of the block
@@ -240,7 +295,6 @@ function Component({ text, id }: IEditable) {
           return item;
         });
 
-        const content = globalState.get(contextName);
         const blockIndex = content.findIndex(({ id: newId }) => id === newId);
         const block = content[blockIndex];
         const prevValue = block.text[block.text.length - 1].value;
