@@ -380,6 +380,7 @@ function Component({ text, id }: IEditable) {
               },
             ],
           };
+
           const content = globalState.get(contextName);
 
           // gets current block id and place the new block after it
@@ -469,11 +470,14 @@ function Component({ text, id }: IEditable) {
             }
 
             if (item.id === changedBlockId) {
-              acc.newLineText.push({
-                ...item,
-                id: Math.random(),
-                value: newValue,
-              });
+              // prevents from adding white spaces
+              if (newValue.length > 0) {
+                acc.newLineText.push({
+                  ...item,
+                  id: Math.random(),
+                  value: newValue,
+                });
+              }
 
               foundBlock = true;
             }
@@ -496,6 +500,14 @@ function Component({ text, id }: IEditable) {
 
         const newId = Math.random();
 
+        if (newLineText.length === 0) {
+          newLineText.push({
+            id: Math.random(),
+            value: "",
+            options: [],
+          });
+        }
+
         newContent.splice(
           content.findIndex(({ id: textId }) => textId === id) + 1,
           0,
@@ -505,7 +517,12 @@ function Component({ text, id }: IEditable) {
           }
         );
 
-        globalState.set("first_selection", newId);
+        stateStorage.set("first_selection", newId);
+
+        info.current = {
+          selection: 0,
+          blockId: newId,
+        };
 
         stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
         stateStorage.set(contextName, newContent);
