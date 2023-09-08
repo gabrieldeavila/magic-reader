@@ -35,7 +35,7 @@ const CHARS_KEYS = Object.keys(OPTIONS_CHARS);
 
 const CHARS_VALUES = Object.values(OPTIONS_CHARS);
 
-function Component({ text, id }: IEditable) {
+function Component({ text, id, position }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
 
   const { contextName, handleUpdate, deleteBlock, deleteLine, info } =
@@ -526,6 +526,46 @@ function Component({ text, id }: IEditable) {
 
         stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
         stateStorage.set(contextName, newContent);
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+
+        // see if we can go up in the curr block or if we gotta change the line
+        // gets the text of the current block
+        const textOfEvent = event.target;
+        // @ts-expect-error - this is a valid attribute
+        const targetBounds = textOfEvent.getBoundingClientRect?.();
+        const targetY = targetBounds?.y ?? 0;
+
+        const selection = window.getSelection();
+        const selectionBounds =
+          selection.anchorNode.parentElement?.getBoundingClientRect?.();
+        const selectionY = selectionBounds?.y ?? 0;
+
+        // if the diff is less than 10, it means that the cursor is in the last line of the block
+        const isLastLine = selectionY - targetY < 10;
+
+        if (!isLastLine) return;
+
+        const newCursorPosition = selection.anchorOffset;
+
+        const content = globalState.get(contextName);
+
+        const nextBlock = content.find((__, index) => index === position - 1);
+
+        info.current = {
+          selection: newCursorPosition,
+          blockId: nextBlock?.text?.[0]?.id ?? 0,
+        };
+
+        setTimeout(() => {
+          stateStorage.set(
+            `${contextName}_decoration-${nextBlock?.text?.[0]?.id ?? 0}`,
+            new Date()
+          );
+
+          globalState.set("first_selection", nextBlock?.text?.[0]?.id ?? 0);
+        });
+        return;
       }
     },
     [
@@ -536,6 +576,7 @@ function Component({ text, id }: IEditable) {
       handleUpdate,
       id,
       info,
+      position,
       text.length,
     ]
   );
