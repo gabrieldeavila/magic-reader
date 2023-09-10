@@ -591,7 +591,7 @@ function Component({ text, id, position }: IEditable) {
             lastLineIndex = lineChilds.length - lastLineIndex;
           }
 
-          // gets if is the last line
+          // returns if is the last line
           return isTheOne;
         });
 
@@ -604,15 +604,36 @@ function Component({ text, id, position }: IEditable) {
         });
 
         // get the diff between the last block and the end of the line
-        const lastBlock = blocksOfTheLastLine[0];
+        const lastBlock = blocksOfTheLastLine[0] ?? startLastLineBlock;
         const lastBlockBounds = lastBlock?.getBoundingClientRect?.();
         const lastBlockDiff = newLineBounds?.right - lastBlockBounds?.right;
 
         // now that we know the width of the blocks of the last line, we can get the width of the last line
         // therefore, we subtract the width of the blocks of the last line from the total width of the line
         // and also the blank space between the last block and the end of the line
-        const lastLineWidth =
+        let lastLineWidth =
           newLineBounds?.width - lastLineBlocksWidth - lastBlockDiff - 5;
+
+        // if there are none blocksOfTheLastLine, it means that the lastBlockDiff is using two lines
+        // therefore, we need to get the width of the last line
+        if (blocksOfTheLastLine.length === 0) {
+          // Get the text content of the element
+          const textContent = lastBlock.textContent;
+
+          // Create a range that includes only the last letter
+          const range = document.createRange();
+          range.setStart(lastBlock.firstChild, textContent.length - 1);
+          range.setEnd(lastBlock.firstChild, textContent.length);
+
+          // Get the bounding rectangle of the last letter
+          const lastLetterBounds = range.getBoundingClientRect();
+          const lastLetterRight = lastLetterBounds?.right ?? 0;
+
+          // gets only the width being used by the text
+          lastLineWidth = newLineBounds?.width - (newLineBounds?.width - lastLetterRight);
+        }
+
+        console.log(blocksOfTheLastLine, lastLineWidth, newLineBounds);
 
         // we also need to get the width of each letter of the startLastLineBlock
         const letters =
@@ -679,11 +700,11 @@ function Component({ text, id, position }: IEditable) {
             lastLineIndex = lineChilds.length - 1;
           }
 
-          cursorPositionRelativeLastLine = beforeLastLength;
+          cursorPositionRelativeLastLine = beforeLastLength + 1;
         }
 
         info.current = {
-          selection: cursorPositionRelativeLastLine,
+          selection: cursorPositionRelativeLastLine + 1,
           blockId: newLine?.text?.[lastLineIndex]?.id ?? 0,
         };
 
