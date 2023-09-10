@@ -76,6 +76,8 @@ const Decoration = memo(
         const codeNodes =
           tagRef.current.childNodes[0]?.childNodes[0]?.childNodes;
 
+        if (!codeNodes) return;
+
         const codeNodesArray = Array.from(codeNodes);
 
         let nodeIndex = 0;

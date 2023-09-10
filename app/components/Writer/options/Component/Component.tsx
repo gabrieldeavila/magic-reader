@@ -76,6 +76,9 @@ function Component({ text, id, position }: IEditable) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  const { getSelectedBlocks } = usePositions({ text });
+  const { getBlockId } = useGetCurrBlockId();
+
   const verifySpecialChars = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (["Backspace", "Delete"].includes(event.key)) {
@@ -527,8 +530,6 @@ function Component({ text, id, position }: IEditable) {
         stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
         stateStorage.set(contextName, newContent);
       } else if (event.key === "ArrowUp") {
-        event.preventDefault();
-
         // see if we can go up in the curr block or if we gotta change the line
         // gets the text of the current block
         const textOfEvent = event.target;
@@ -545,25 +546,159 @@ function Component({ text, id, position }: IEditable) {
         const isLastLine = selectionY - targetY < 10;
 
         if (!isLastLine) return;
+        event.preventDefault();
 
-        const newCursorPosition = selection.anchorOffset;
+        const { changedBlockId, currSelection } = getBlockId({ textId: id });
+
+        let cursorRelativePosition = currSelection;
+
+        text.find(({ id: textId, value }) => {
+          if (textId === changedBlockId) {
+            return true;
+          }
+
+          cursorRelativePosition += value.length;
+
+          return false;
+        });
 
         const content = globalState.get(contextName);
 
-        const nextBlock = content.find((__, index) => index === position - 1);
+        const newLine = content.find((__, index) => index === position - 1);
+        const newLineContent = document.querySelector(
+          `[data-line-id="${newLine?.id ?? 0}"]`
+        );
+        const newLineBounds = newLineContent?.getBoundingClientRect?.();
+        const lineChilds = Array.from(
+          newLineContent?.childNodes ?? []
+        ).reverse();
+
+        const blocksOfTheLastLine = [];
+        let lastLineIndex = 1;
+
+        const startLastLineBlock = lineChilds.find((item) => {
+          // @ts-expect-error - this is a valid attribute!!
+          const itemBounds = item.getBoundingClientRect?.();
+
+          const isTheOne =
+            Math.abs(newLineBounds?.bottom - itemBounds?.bottom) < 10 &&
+            Math.abs(itemBounds?.left - newLineBounds?.left) < 10;
+
+          if (!isTheOne) {
+            blocksOfTheLastLine.push(item);
+            lastLineIndex++;
+          } else {
+            lastLineIndex = lineChilds.length - lastLineIndex;
+          }
+
+          // gets if is the last line
+          return isTheOne;
+        });
+
+        let lastLineBlocksWidth = 0;
+
+        blocksOfTheLastLine.forEach((item) => {
+          const itemBounds = item.getBoundingClientRect?.();
+
+          lastLineBlocksWidth += itemBounds?.width ?? 0;
+        });
+
+        // get the diff between the last block and the end of the line
+        const lastBlock = blocksOfTheLastLine[0];
+        const lastBlockBounds = lastBlock?.getBoundingClientRect?.();
+        const lastBlockDiff = newLineBounds?.right - lastBlockBounds?.right;
+
+        // now that we know the width of the blocks of the last line, we can get the width of the last line
+        // therefore, we subtract the width of the blocks of the last line from the total width of the line
+        // and also the blank space between the last block and the end of the line
+        const lastLineWidth =
+          newLineBounds?.width - lastLineBlocksWidth - lastBlockDiff - 5;
+
+        // we also need to get the width of each letter of the startLastLineBlock
+        const letters =
+          startLastLineBlock?.textContent?.split("")?.reverse() ?? [];
+
+        // now we go until the width of the letters reaches the lastLineWidth
+        const lettersLastLine = [];
+        let lettersCurrWidth = 0;
+        letters.find((item) => {
+          // we copy the startLastLineBlock style to the letter
+          const letter = document.createElement("span");
+          letter.innerText = item;
+
+          // @ts-expect-error - this works fine
+          letter.style = startLastLineBlock?.style?.cssText ?? "";
+          document.body.appendChild(letter);
+          lettersLastLine.push(item);
+          lettersCurrWidth += letter.getBoundingClientRect?.()?.width ?? 0;
+
+          document.body.removeChild(letter);
+
+          return lettersCurrWidth > lastLineWidth;
+        });
+
+        // now we get the cursor position relative to the last line
+        let cursorPositionRelativeLastLine =
+          letters.length - lettersLastLine.length + cursorRelativePosition;
+
+        if (lettersLastLine.length < cursorRelativePosition) {
+          let blocksLength = lettersLastLine.length;
+          // we need to know how many letters are in the blocks before the rightLastBlock
+          let beforeLastLength = blocksLength;
+
+          // searchs for the blocksOfTheLastLine that fits the cursorPositionRelativeLastLine
+          const blocksOfTheLastLineReversed = blocksOfTheLastLine.reverse();
+
+          let rightLastBlock = blocksOfTheLastLineReversed.find(
+            (item, index) => {
+              const letters = item.textContent?.split("") ?? [""];
+              let numOfLettersToMatch = -1;
+
+              const hasLetterIndex = letters.find((__, letterIndex) => {
+                blocksLength++;
+                numOfLettersToMatch = letterIndex;
+
+                return blocksLength === cursorRelativePosition;
+              });
+
+              // changes the lastLineIndex
+              if (hasLetterIndex) {
+                lastLineIndex = lastLineIndex + index + 1;
+                beforeLastLength = numOfLettersToMatch;
+              }
+
+              return hasLetterIndex;
+            }
+          );
+
+          // if there is no rightLastBlock, it means that the cursor is at the end of the line
+          // so we get the last block
+          if (!rightLastBlock) {
+            rightLastBlock = lineChilds[0];
+
+            lastLineIndex = lineChilds.length - 1;
+          }
+
+          cursorPositionRelativeLastLine = beforeLastLength;
+        }
 
         info.current = {
-          selection: newCursorPosition,
-          blockId: nextBlock?.text?.[0]?.id ?? 0,
+          selection: cursorPositionRelativeLastLine,
+          blockId: newLine?.text?.[lastLineIndex]?.id ?? 0,
         };
 
         setTimeout(() => {
           stateStorage.set(
-            `${contextName}_decoration-${nextBlock?.text?.[0]?.id ?? 0}`,
+            `${contextName}_decoration-${
+              newLine?.text?.[lastLineIndex]?.id ?? 0
+            }`,
             new Date()
           );
 
-          globalState.set("first_selection", nextBlock?.text?.[0]?.id ?? 0);
+          globalState.set(
+            "first_selection",
+            newLine?.text?.[lastLineIndex]?.id ?? 0
+          );
         });
         return;
       }
@@ -573,15 +708,14 @@ function Component({ text, id, position }: IEditable) {
       deleteBlock,
       deleteLine,
       deleteMultipleLetters,
+      getBlockId,
       handleUpdate,
       id,
       info,
       position,
-      text.length,
+      text,
     ]
   );
-
-  const { getSelectedBlocks } = usePositions({ text });
 
   const copyText = useCallback(() => {
     const { selectedBlocks, last, first } = getSelectedBlocks();
@@ -956,8 +1090,6 @@ function Component({ text, id, position }: IEditable) {
     [text]
   );
 
-  const { getBlockId } = useGetCurrBlockId();
-
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement>) => {
       e.preventDefault();
@@ -1128,8 +1260,9 @@ function Component({ text, id, position }: IEditable) {
       onBlur={checkSelection}
       onFocus={checkSelection}
       onClick={checkSelection}
-      suppressContentEditableWarning
       onPaste={handlePaste}
+      data-line-id={id}
+      suppressContentEditableWarning
     >
       {text.map((item, index) => {
         return (
