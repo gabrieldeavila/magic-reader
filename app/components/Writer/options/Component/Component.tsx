@@ -542,8 +542,14 @@ function Component({ text, id, position }: IEditable) {
         // if the diff is less than 10, it means that the cursor is in the last line of the block
         // create a range of the selection
         const range = document.createRange();
+        // gets the length of the text, if the cursor is at the end of the text, it will be the length of the text
+        const textLength = selection.anchorNode.textContent?.length ?? 0;
+
+        const rangeStart =
+          textLength === selection.anchorOffset ? selection.anchorOffset : selection.anchorOffset + 1;
+
         // and add only the char before the cursor
-        range.setStart(selection.anchorNode, selection.anchorOffset + 1);
+        range.setStart(selection.anchorNode, rangeStart);
         const rangeBounds = range.getBoundingClientRect?.();
 
         const isLastLine = rangeBounds.y - targetY < 10;
