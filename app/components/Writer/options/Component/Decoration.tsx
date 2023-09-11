@@ -73,11 +73,16 @@ const Decoration = memo(
 
       // if there's a code option, the node is another element
       if (options.includes("code")) {
-        const codeNodes = tagRef.current.childNodes[0].childNodes[0].childNodes;
+        const codeNodes =
+          tagRef.current.childNodes[0]?.childNodes[0]?.childNodes;
+
+        if (!codeNodes) return;
+
         const codeNodesArray = Array.from(codeNodes);
 
         let nodeIndex = 0;
         let nodePosition = 0;
+        let hasFound = false;
 
         node = codeNodesArray.find((item) => {
           const letters = item.textContent?.split("") ?? [""];
@@ -86,12 +91,17 @@ const Decoration = memo(
             nodeIndex++;
             if (nodeIndex === cursorPositionValue) {
               nodePosition = index;
+              hasFound = true;
               return true;
             }
           });
 
           return hasCursor;
         })?.childNodes[0];
+
+        if (!hasFound) {
+          node = codeNodesArray[codeNodesArray.length - 1]?.childNodes[0];
+        }
 
         cursorPositionValue = nodePosition + 1;
       }
@@ -187,11 +197,10 @@ const Decoration = memo(
       },
     };
 
-    if (options.includes("code")) {
+    if (options.includes("code") && value.length > 0) {
       return (
         <DCode {...tagOptions}>
           <Code
-            {...tagOptions}
             // @ts-expect-error - uh
             text={value || " "}
             language="javascript"

@@ -184,7 +184,11 @@ function usePositions({ text }: { text: IText[] }) {
     };
   }, [getFirstAndLastNode, mimic, text]);
 
-  return { getFirstAndLastNode, getSelectedBlocks };
+  const getBlockId = useCallback(() => {
+    console.log(getFirstAndLastNode());
+  }, [getFirstAndLastNode]);
+
+  return { getFirstAndLastNode, getSelectedBlocks, getBlockId };
 }
 
 export default usePositions;
