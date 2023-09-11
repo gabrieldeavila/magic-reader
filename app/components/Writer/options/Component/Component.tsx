@@ -538,14 +538,17 @@ function Component({ text, id, position }: IEditable) {
         const targetY = targetBounds?.y ?? 0;
 
         const selection = window.getSelection();
-        const selectionBounds =
-          selection.anchorNode.parentElement?.getBoundingClientRect?.();
-        const selectionY = selectionBounds?.y ?? 0;
 
         // if the diff is less than 10, it means that the cursor is in the last line of the block
-        const isLastLine = selectionY - targetY < 10;
+        // create a range of the selection
+        const range = document.createRange();
+        // and add only the char before the cursor
+        range.setStart(selection.anchorNode, selection.anchorOffset + 1);
+        const rangeBounds = range.getBoundingClientRect?.();
 
-        if (!isLastLine) return;
+        const isLastLine = rangeBounds.y - targetY < 10;
+
+        if (!isLastLine || position === 0) return;
         event.preventDefault();
 
         const { changedBlockId, currSelection } = getBlockId({ textId: id });
@@ -630,10 +633,9 @@ function Component({ text, id, position }: IEditable) {
           const lastLetterRight = lastLetterBounds?.right ?? 0;
 
           // gets only the width being used by the text
-          lastLineWidth = newLineBounds?.width - (newLineBounds?.width - lastLetterRight);
+          lastLineWidth =
+            newLineBounds?.width - (newLineBounds?.width - lastLetterRight);
         }
-
-        console.log(blocksOfTheLastLine, lastLineWidth, newLineBounds);
 
         // we also need to get the width of each letter of the startLastLineBlock
         const letters =
@@ -662,7 +664,10 @@ function Component({ text, id, position }: IEditable) {
         let cursorPositionRelativeLastLine =
           letters.length - lettersLastLine.length + cursorRelativePosition;
 
-        if (lettersLastLine.length < cursorRelativePosition) {
+        if (
+          lettersLastLine.length < cursorRelativePosition &&
+          blocksOfTheLastLine.length
+        ) {
           let blocksLength = lettersLastLine.length;
           // we need to know how many letters are in the blocks before the rightLastBlock
           let beforeLastLength = blocksLength;
@@ -722,6 +727,21 @@ function Component({ text, id, position }: IEditable) {
           );
         });
         return;
+      } else if (event.key === "ArrowDown") {
+        // // see if we can go down in the curr block or if we gotta change the line
+        // // gets the text of the current block
+        // const textOfEvent = event.target;
+        // // @ts-expect-error - this is a valid attribute
+        // const targetBounds = textOfEvent.getBoundingClientRect?.();
+        // const targetY = targetBounds?.y ?? 0;
+        // const selection = window.getSelection();
+        // const selectionBounds =
+        //   selection.anchorNode.parentElement?.getBoundingClientRect?.();
+        // const selectionY = selectionBounds?.y ?? 0;
+        // // if the diff is less than 10, it means that the cursor is in the last line of the block
+        // const isLastLine = targetY - selectionY < 10;
+        // if (!isLastLine) return;
+        // console.log("oh");
       }
     },
     [
