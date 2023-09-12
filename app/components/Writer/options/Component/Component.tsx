@@ -546,7 +546,9 @@ function Component({ text, id, position }: IEditable) {
         const textLength = selection.anchorNode.textContent?.length ?? 0;
 
         const rangeStart =
-          textLength === selection.anchorOffset ? selection.anchorOffset : selection.anchorOffset + 1;
+          textLength === selection.anchorOffset
+            ? selection.anchorOffset
+            : selection.anchorOffset + 1;
 
         // and add only the char before the cursor
         range.setStart(selection.anchorNode, rangeStart);
@@ -734,20 +736,138 @@ function Component({ text, id, position }: IEditable) {
         });
         return;
       } else if (event.key === "ArrowDown") {
-        // // see if we can go down in the curr block or if we gotta change the line
-        // // gets the text of the current block
-        // const textOfEvent = event.target;
-        // // @ts-expect-error - this is a valid attribute
-        // const targetBounds = textOfEvent.getBoundingClientRect?.();
-        // const targetY = targetBounds?.y ?? 0;
-        // const selection = window.getSelection();
-        // const selectionBounds =
-        //   selection.anchorNode.parentElement?.getBoundingClientRect?.();
-        // const selectionY = selectionBounds?.y ?? 0;
-        // // if the diff is less than 10, it means that the cursor is in the last line of the block
-        // const isLastLine = targetY - selectionY < 10;
-        // if (!isLastLine) return;
-        // console.log("oh");
+        // see if we can go up in the curr block or if we gotta change the line
+        // gets the text of the current block
+        const textOfEvent = event.target;
+        // @ts-expect-error - this is a valid attribute
+        const targetBounds = textOfEvent.getBoundingClientRect?.();
+        const targetBottom = targetBounds?.bottom ?? 0;
+
+        const selection = window.getSelection();
+
+        // if the diff is less than 10, it means that the cursor is in the last line of the block
+        // create a range of the selection
+        const range = document.createRange();
+        // gets the length of the text, if the cursor is at the end of the text, it will be the length of the text
+        const textLength = selection.anchorNode.textContent?.length ?? 0;
+
+        const rangeStart =
+          textLength === selection.anchorOffset
+            ? selection.anchorOffset
+            : selection.anchorOffset + 1;
+
+        // and add only the char before the cursor
+        range.setStart(selection.anchorNode, rangeStart);
+        const rangeBounds = range.getBoundingClientRect?.();
+
+        const isLastLine = Math.abs(targetBottom - rangeBounds.bottom) < 10;
+
+        if (!isLastLine || position === text.length - 1) return;
+
+        event.preventDefault();
+
+        const { changedBlockId, currSelection } = getBlockId({ textId: id });
+
+        const cursorRelativePosition = currSelection;
+
+        const currLineContent = document.querySelector(
+          `[data-line-id="${id}"]`
+        );
+        const currLineBounds = currLineContent?.getBoundingClientRect?.();
+        const lineChilds = Array.from(
+          currLineContent?.childNodes ?? []
+        ).reverse();
+
+        console.log(currLineContent, lineChilds);
+
+        const blockIndex = lineChilds.findIndex((item) => {
+          // @ts-expect-error - this is a valid attribute
+          const blockId = item.getAttribute?.("data-block-id");
+
+          return blockId === changedBlockId.toString();
+        });
+
+        // gets only the block and the blocks before the current block
+        const blocksOfTheLastLine = lineChilds.slice(blockIndex);
+
+        // now counts how many letters are before reaching the start of the line
+        console.log(blockIndex, blocksOfTheLastLine);
+        let lettersBefore = 1;
+
+        blocksOfTheLastLine.find((item, index) => {
+          let letters = item.textContent?.split("") ?? [""];
+
+          if (index === 0) {
+            // only get the letters before the cursor
+            letters = letters.slice(0, cursorRelativePosition);
+          }
+
+          letters = letters.reverse();
+
+          const lettersIsInTheStartOfTheLine = letters.find((letter, key) => {
+            key = letters.length - key - 1;
+            // creates a range of the letter
+            // console.log(letter, item, item.firstChild, key);
+
+            const range = document.createRange();
+            range.setStart(item.firstChild, key);
+            range.setEnd(item.firstChild, key + 1);
+
+            // gets the bounds of the letter
+            const bounds = range.getBoundingClientRect?.();
+
+            // console.log(bounds, currLineBounds);
+
+            const isTheOne = Math.abs(bounds?.left - currLineBounds?.left) < 10;
+            if (!isTheOne) {
+              lettersBefore++;
+            }
+
+            return isTheOne;
+          });
+
+          return lettersIsInTheStartOfTheLine;
+        });
+
+        const nextLine = globalState.get(contextName).find((__, index) => {
+          return index === position + 1;
+        });
+
+        const newText = nextLine?.text;
+
+        if (!newText) return;
+
+        let nextLineIndex = -1;
+        let nextLineBlockIndex = 0;
+
+        const nextBlock = newText.find((item) => {
+          const valueLetters = item.value?.split("") ?? [""];
+
+          const isTheOne = valueLetters.find((__, index) => {
+            nextLineBlockIndex = index;
+
+            nextLineIndex++;
+            return nextLineIndex === lettersBefore;
+          });
+
+          return isTheOne;
+        });
+
+        info.current = {
+          selection: nextLineBlockIndex,
+          blockId: nextBlock?.id ?? 0,
+        };
+
+        setTimeout(() => {
+          stateStorage.set(
+            `${contextName}_decoration-${nextBlock?.id ?? 0}`,
+            new Date()
+          );
+
+          globalState.set("first_selection", nextBlock?.id ?? 0);
+        });
+
+        return;
       }
     },
     [
