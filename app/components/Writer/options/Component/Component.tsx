@@ -809,16 +809,12 @@ function Component({ text, id, position }: IEditable) {
           const lettersIsInTheStartOfTheLine = letters.find((letter, key) => {
             key = letters.length - key - 1;
             // creates a range of the letter
-            // console.log(letter, item, item.firstChild, key);
-
             const range = document.createRange();
             range.setStart(item.firstChild, key);
             range.setEnd(item.firstChild, key + 1);
 
             // gets the bounds of the letter
             const bounds = range.getBoundingClientRect?.();
-
-            // console.log(bounds, currLineBounds);
 
             const isTheOne = Math.abs(bounds?.left - currLineBounds?.left) < 10;
             if (!isTheOne) {
@@ -840,9 +836,9 @@ function Component({ text, id, position }: IEditable) {
         if (!newText) return;
 
         let nextLineIndex = -1;
-        let nextLineBlockIndex = 0;
+        let nextLineBlockIndex = -1;
 
-        const nextBlock = newText.find((item) => {
+        let nextBlock = newText.find((item) => {
           const valueLetters = item.value?.split("") ?? [""];
 
           const isTheOne = valueLetters.find((__, index) => {
@@ -854,6 +850,11 @@ function Component({ text, id, position }: IEditable) {
 
           return isTheOne;
         });
+
+        if (nextBlock == null) {
+          nextBlock = newText[newText.length - 1];
+          nextLineBlockIndex = nextBlock.value?.length ?? 0;
+        }
 
         info.current = {
           selection: nextLineBlockIndex,
