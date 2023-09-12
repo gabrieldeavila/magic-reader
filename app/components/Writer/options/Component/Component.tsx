@@ -778,8 +778,6 @@ function Component({ text, id, position }: IEditable) {
           currLineContent?.childNodes ?? []
         ).reverse();
 
-        console.log(currLineContent, lineChilds);
-
         const blockIndex = lineChilds.findIndex((item) => {
           // @ts-expect-error - this is a valid attribute
           const blockId = item.getAttribute?.("data-block-id");
@@ -791,7 +789,6 @@ function Component({ text, id, position }: IEditable) {
         const blocksOfTheLastLine = lineChilds.slice(blockIndex);
 
         // now counts how many letters are before reaching the start of the line
-        console.log(blockIndex, blocksOfTheLastLine);
         let lettersBefore = 1;
 
         blocksOfTheLastLine.find((item, index) => {
@@ -803,6 +800,11 @@ function Component({ text, id, position }: IEditable) {
           }
 
           letters = letters.reverse();
+
+          // iterates over the item until it finds the child that is a text
+          while (item.firstChild?.nodeName !== "#text") {
+            item = item.firstChild;
+          }
 
           const lettersIsInTheStartOfTheLine = letters.find((letter, key) => {
             key = letters.length - key - 1;
