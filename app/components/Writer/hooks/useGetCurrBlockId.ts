@@ -51,8 +51,8 @@ function useGetCurrBlockId() {
       currSelection += selection.anchorOffset;
     }
 
-    return { changedBlockId, currSelection };
-  }, []);
+    return { changedBlockId, currSelection, isCodeBlock };
+  }, [contextName]);
 
   return { getBlockId };
 }

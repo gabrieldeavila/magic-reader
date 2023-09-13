@@ -559,7 +559,9 @@ function Component({ text, id, position }: IEditable) {
         if (!isLastLine || position === 0) return;
         event.preventDefault();
 
-        const { changedBlockId, currSelection } = getBlockId({ textId: id });
+        const { changedBlockId, currSelection } = getBlockId({
+          textId: id,
+        });
 
         let cursorRelativePosition = currSelection;
 
@@ -615,7 +617,7 @@ function Component({ text, id, position }: IEditable) {
         });
 
         // get the diff between the last block and the end of the line
-        const lastBlock = blocksOfTheLastLine[0] ?? startLastLineBlock;
+        let lastBlock = blocksOfTheLastLine[0] ?? startLastLineBlock;
         const lastBlockBounds = lastBlock?.getBoundingClientRect?.();
         const lastBlockDiff = newLineBounds?.right - lastBlockBounds?.right;
 
@@ -630,11 +632,43 @@ function Component({ text, id, position }: IEditable) {
         if (blocksOfTheLastLine.length === 0) {
           // Get the text content of the element
           const textContent = lastBlock.textContent;
+          let textLength = textContent?.length ?? 0;
+
+          // if it's a code block, we need to find the first text child
+          // and also it needs to be in the last letter
+          if (lastBlock.firstChild.nodeName !== "#text") {
+            const codeBlock = Array.from(
+              lastBlock.firstChild.firstChild.children
+            );
+            let codeBlockIndex = 0;
+
+            codeBlock.find((item) => {
+              // @ts-expect-error - this is a valid attribute
+              const letters = item.textContent?.split("") ?? [""];
+              const hasLetter = letters.find((__, index) => {
+                const isTheOne = codeBlockIndex === textContent.length - 1;
+
+                if (isTheOne) {
+                  textLength = index === 0 ? 1 : index + 1;
+                }
+
+                codeBlockIndex++;
+
+                return isTheOne;
+              });
+
+              if (hasLetter) {
+                lastBlock = item;
+              }
+
+              return hasLetter;
+            });
+          }
 
           // Create a range that includes only the last letter
           const range = document.createRange();
-          range.setStart(lastBlock.firstChild, textContent.length - 1);
-          range.setEnd(lastBlock.firstChild, textContent.length);
+          range.setStart(lastBlock.firstChild, textLength - 1);
+          range.setEnd(lastBlock.firstChild, textLength);
 
           // Get the bounding rectangle of the last letter
           const lastLetterBounds = range.getBoundingClientRect();
@@ -717,7 +751,7 @@ function Component({ text, id, position }: IEditable) {
         }
 
         info.current = {
-          selection: cursorPositionRelativeLastLine + 1,
+          selection: cursorPositionRelativeLastLine,
           blockId: newLine?.text?.[lastLineIndex]?.id ?? 0,
         };
 
@@ -768,7 +802,7 @@ function Component({ text, id, position }: IEditable) {
 
         const { changedBlockId, currSelection } = getBlockId({ textId: id });
 
-        const cursorRelativePosition = currSelection;
+        let cursorRelativePosition = currSelection;
 
         const currLineContent = document.querySelector(
           `[data-line-id="${id}"]`
@@ -794,17 +828,39 @@ function Component({ text, id, position }: IEditable) {
         blocksOfTheLastLine.find((item, index) => {
           let letters = item.textContent?.split("") ?? [""];
 
+          if (item.firstChild?.nodeName !== "#text") {
+            const childs = Array.from(
+              item.firstChild?.firstChild?.childNodes ?? []
+            );
+
+            let newCursorRelativePosition = 0;
+            let newLetters = 0;
+
+            // gets the child that has the cursorRelativePosition
+            const child = childs.find((item) => {
+              const childLetters = item.textContent?.split("") ?? [""];
+
+              const isTheOne = childLetters.find((__, key) => {
+                newCursorRelativePosition = key + 1;
+                newLetters++;
+
+                return newLetters === cursorRelativePosition;
+              });
+
+              return isTheOne;
+            });
+
+            letters = child?.textContent?.split("") ?? [""];
+            cursorRelativePosition = newCursorRelativePosition;
+            item = child;
+          }
+
           if (index === 0) {
             // only get the letters before the cursor
-            letters = letters.slice(0, cursorRelativePosition);
+            letters = letters.slice(0, cursorRelativePosition + 1);
           }
 
           letters = letters.reverse();
-
-          // iterates over the item until it finds the child that is a text
-          while (item.firstChild?.nodeName !== "#text") {
-            item = item.firstChild;
-          }
 
           const lettersIsInTheStartOfTheLine = letters.find((letter, key) => {
             key = letters.length - key - 1;
@@ -817,6 +873,7 @@ function Component({ text, id, position }: IEditable) {
             const bounds = range.getBoundingClientRect?.();
 
             const isTheOne = Math.abs(bounds?.left - currLineBounds?.left) < 10;
+
             if (!isTheOne) {
               lettersBefore++;
             }
@@ -843,7 +900,6 @@ function Component({ text, id, position }: IEditable) {
 
           const isTheOne = valueLetters.find((__, index) => {
             nextLineBlockIndex = index;
-
             nextLineIndex++;
             return nextLineIndex === lettersBefore;
           });
@@ -854,6 +910,8 @@ function Component({ text, id, position }: IEditable) {
         if (nextBlock == null) {
           nextBlock = newText[newText.length - 1];
           nextLineBlockIndex = nextBlock.value?.length ?? 0;
+        } else {
+          nextLineBlockIndex--;
         }
 
         info.current = {
