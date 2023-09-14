@@ -607,6 +607,8 @@ function Component({ text, id, position }: IEditable) {
           // returns if is the last line
           return isTheOne;
         });
+        let isCodeBlock =
+          startLastLineBlock?.firstChild?.firstChild?.nodeName === "CODE";
 
         let lastLineBlocksWidth = 0;
 
@@ -625,7 +627,7 @@ function Component({ text, id, position }: IEditable) {
         // therefore, we subtract the width of the blocks of the last line from the total width of the line
         // and also the blank space between the last block and the end of the line
         let lastLineWidth =
-          newLineBounds?.width - lastLineBlocksWidth - lastBlockDiff - 5;
+          newLineBounds?.width - lastBlockDiff - (isCodeBlock ? 15 : 5) - lastLineBlocksWidth;
 
         // if there are none blocksOfTheLastLine, it means that the lastBlockDiff is using two lines
         // therefore, we need to get the width of the last line
@@ -637,6 +639,8 @@ function Component({ text, id, position }: IEditable) {
           // if it's a code block, we need to find the first text child
           // and also it needs to be in the last letter
           if (lastBlock.firstChild.nodeName !== "#text") {
+            isCodeBlock = true;
+
             const codeBlock = Array.from(
               lastBlock.firstChild.firstChild.children
             );
@@ -649,7 +653,7 @@ function Component({ text, id, position }: IEditable) {
                 const isTheOne = codeBlockIndex === textContent.length - 1;
 
                 if (isTheOne) {
-                  textLength = index === 0 ? 1 : index + 1;
+                  textLength = index === 0 ? 1 : index;
                 }
 
                 codeBlockIndex++;
@@ -693,12 +697,17 @@ function Component({ text, id, position }: IEditable) {
 
           // @ts-expect-error - this works fine
           letter.style = startLastLineBlock?.style?.cssText ?? "";
+
+          // if it is code, add fira code
+          if (isCodeBlock) {
+            letter.style.fontFamily = "Fira Code";
+          }
+
           document.body.appendChild(letter);
           lettersLastLine.push(item);
           lettersCurrWidth += letter.getBoundingClientRect?.()?.width ?? 0;
 
           document.body.removeChild(letter);
-
           return lettersCurrWidth > lastLineWidth;
         });
 
@@ -795,6 +804,7 @@ function Component({ text, id, position }: IEditable) {
         const rangeBounds = range.getBoundingClientRect?.();
 
         const isLastLine = Math.abs(targetBottom - rangeBounds.bottom) < 10;
+        console.log(targetBottom, range, Math.abs(targetBottom - rangeBounds.bottom));
 
         if (!isLastLine || position === text.length - 1) return;
 
