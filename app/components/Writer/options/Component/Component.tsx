@@ -627,7 +627,10 @@ function Component({ text, id, position }: IEditable) {
         // therefore, we subtract the width of the blocks of the last line from the total width of the line
         // and also the blank space between the last block and the end of the line
         let lastLineWidth =
-          newLineBounds?.width - lastBlockDiff - (isCodeBlock ? 15 : 5) - lastLineBlocksWidth;
+          newLineBounds?.width -
+          lastBlockDiff -
+          (isCodeBlock ? 15 : 5) -
+          lastLineBlocksWidth;
 
         // if there are none blocksOfTheLastLine, it means that the lastBlockDiff is using two lines
         // therefore, we need to get the width of the last line
@@ -804,7 +807,11 @@ function Component({ text, id, position }: IEditable) {
         const rangeBounds = range.getBoundingClientRect?.();
 
         const isLastLine = Math.abs(targetBottom - rangeBounds.bottom) < 10;
-        console.log(targetBottom, range, Math.abs(targetBottom - rangeBounds.bottom));
+        console.log(
+          targetBottom,
+          range,
+          Math.abs(targetBottom - rangeBounds.bottom)
+        );
 
         if (!isLastLine || position === text.length - 1) return;
 
@@ -939,6 +946,7 @@ function Component({ text, id, position }: IEditable) {
         });
 
         return;
+      } else if (event.key === "ArrowLeft") {
       }
     },
     [
