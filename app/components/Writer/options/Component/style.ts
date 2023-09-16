@@ -12,3 +12,8 @@ export const DCode = styled.span`
     white-space: break-spaces !important;
   }
 `;
+
+export const ReadWrite = styled.div`
+  -webkit-user-modify: read-write-plaintext-only;
+  outline: none;
+`;

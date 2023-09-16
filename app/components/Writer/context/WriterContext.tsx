@@ -1,11 +1,6 @@
 "use client";
 
-import React, {
-  createContext,
-  useCallback,
-  useMemo,
-  useRef
-} from "react";
+import React, { createContext, useCallback, useMemo, useRef } from "react";
 import { useTriggerState } from "react-trigger-state";
 import {
   IText,
@@ -14,6 +9,7 @@ import {
   IWritterContent,
 } from "../interface";
 import Component from "../options/Component/Component";
+import { ReadWrite } from "../options/Component/style";
 
 export const WriterContext = createContext<IWriterContext>({
   content: [],
@@ -123,9 +119,11 @@ const WriterContextProvider = ({
         info,
       }}
     >
-      {content.map((item, index) => {
-        return <Component key={index} {...item} position={index} />;
-      })}
+      <ReadWrite>
+        {content.map((item, index) => {
+          return <Component key={index} {...item} position={index} />;
+        })}
+      </ReadWrite>
     </WriterContext.Provider>
   );
 };
