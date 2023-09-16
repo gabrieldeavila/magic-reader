@@ -5,54 +5,72 @@ import { useWriterContext } from "../context/WriterContext";
 function useGetCurrBlockId() {
   const { contextName } = useWriterContext();
 
-  const getBlockId = useCallback(({ textId }: { textId: number }) => {
-    const selection = window.getSelection();
-    const currText = globalState
-      .get(contextName)
-      .find(({ id }) => id === textId).text;
+  const getBlockId = useCallback(
+    ({ textId }: { textId?: number }) => {
+      const selection = window.getSelection();
 
-    let changedBlockId = parseFloat(
-      selection.anchorNode.parentElement.getAttribute("data-block-id") ||
-        currText[0].id
-    );
+      // get the closest data-scribere
+      const closestScribere =
+        selection.anchorNode?.parentElement?.closest?.("[data-scribere]");
 
-    let currSelection = selection.anchorOffset;
+      const dataLineId =
+        textId || closestScribere?.getAttribute?.("data-line-id");
 
-    const isCodeBlock =
-      selection.anchorNode.parentElement?.parentElement.tagName === "CODE" ||
-      // @ts-expect-error - we know that anchorNode is not null
-      selection.anchorNode?.tagName === "CODE";
+      const currText = !textId
+        ? null
+        : globalState.get(contextName).find(({ id }) => id === dataLineId)
+            ?.text;
 
-    if (isCodeBlock) {
-      changedBlockId = parseFloat(
-        selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
-          "data-block-id"
-        ) ||
-          selection.anchorNode.parentElement.parentElement.getAttribute(
+      let changedBlockId = parseFloat(
+        selection.anchorNode?.parentElement?.getAttribute?.("data-block-id") ||
+          currText?.[0]?.id
+      );
+
+      let currSelection = selection.anchorOffset;
+
+      const isCodeBlock =
+        selection.anchorNode?.parentElement?.parentElement?.tagName === "CODE" ||
+        // @ts-expect-error - we know that anchorNode is not null
+        selection.anchorNode?.tagName === "CODE";
+
+      if (isCodeBlock) {
+        changedBlockId = parseFloat(
+          selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
             "data-block-id"
-          )
-      );
+          ) ||
+            selection.anchorNode.parentElement.parentElement.getAttribute(
+              "data-block-id"
+            )
+        );
 
-      const codeChilds = Array.from(
-        selection.anchorNode.parentElement?.parentElement.childNodes
-      );
+        const codeChilds = Array.from(
+          selection.anchorNode.parentElement?.parentElement.childNodes
+        );
 
-      currSelection = 0;
+        currSelection = 0;
 
-      codeChilds.find((item) => {
-        if (item !== selection.anchorNode.parentElement) {
-          currSelection += item.textContent?.length ?? 0;
-          return false;
-        }
+        codeChilds.find((item) => {
+          if (item !== selection.anchorNode.parentElement) {
+            currSelection += item.textContent?.length ?? 0;
+            return false;
+          }
 
-        return true;
-      });
+          return true;
+        });
 
-      currSelection += selection.anchorOffset;
-    }
+        currSelection += selection.anchorOffset;
+      }
 
-    return { changedBlockId, currSelection, isCodeBlock };
-  }, [contextName]);
+      return {
+        changedBlockId,
+        currSelection,
+        isCodeBlock,
+        closestScribere,
+        dataLineId,
+      };
+    },
+    [contextName]
+  );
 
   return { getBlockId };
 }

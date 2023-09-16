@@ -37,6 +37,10 @@ const CHARS_VALUES = Object.values(OPTIONS_CHARS);
 
 function Component({ text, id }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
+  const [keyDownEv] = useTriggerState({
+    name: `key_down_ev-${id}`,
+    initial: null,
+  });
 
   const { contextName, handleUpdate, deleteBlock, deleteLine, info } =
     useWriterContext();
@@ -531,7 +535,16 @@ function Component({ text, id }: IEditable) {
         stateStorage.set(contextName, newContent);
       }
     },
-    [contextName, deleteBlock, deleteLine, deleteMultipleLetters, handleUpdate, id, info, text]
+    [
+      contextName,
+      deleteBlock,
+      deleteLine,
+      deleteMultipleLetters,
+      handleUpdate,
+      id,
+      info,
+      text,
+    ]
   );
 
   const copyText = useCallback(() => {
@@ -1066,19 +1079,67 @@ function Component({ text, id }: IEditable) {
     [contextName, deleteMultipleLetters, getBlockId, handleUpdate, id, info]
   );
 
+  useEffect(() => {
+    if (keyDownEv == null) return;
+
+    handleChange(keyDownEv.e);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyDownEv]);
+
+  const [blurEv] = useTriggerState({
+    name: `blur_ev-${id}`,
+    initial: null,
+  });
+
+  useEffect(() => {
+    if (blurEv == null) return;
+
+    checkSelection();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blurEv]);
+
+  const [dragEv] = useTriggerState({
+    name: `drag_ev-${id}`,
+    initial: null,
+  });
+
+  useEffect(() => {
+    if (dragEv == null) return;
+
+    preventDefault(dragEv.e);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dragEv]);
+
+  const [selectEv] = useTriggerState({
+    name: `select_ev-${id}`,
+    initial: null,
+  });
+
+  useEffect(() => {
+    if (selectEv == null) return;
+
+    handleSelect(selectEv.e);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectEv]);
+
+  const [pasteEv] = useTriggerState({
+    name: `paste_ev-${id}`,
+    initial: null,
+  });
+
+  useEffect(() => {
+    if (pasteEv == null) return;
+
+    handlePaste(pasteEv.e);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pasteEv]);
+
   return (
     <Editable
       ref={ref}
-      onKeyDown={handleChange}
       contentEditable
-      onSelectCapture={handleSelect}
-      onDragStart={preventDefault}
-      onDrop={preventDefault}
-      onBlur={checkSelection}
-      onFocus={checkSelection}
-      onClick={checkSelection}
-      onPaste={handlePaste}
       data-line-id={id}
+      data-scribere
       suppressContentEditableWarning
     >
       {text.map((item, index) => {

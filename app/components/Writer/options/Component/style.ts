@@ -14,6 +14,5 @@ export const DCode = styled.span`
 `;
 
 export const ReadWrite = styled.div`
-  -webkit-user-modify: read-write-plaintext-only;
   outline: none;
 `;

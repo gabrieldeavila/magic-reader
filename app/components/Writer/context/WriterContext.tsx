@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useCallback, useMemo, useRef } from "react";
-import { useTriggerState } from "react-trigger-state";
+import { stateStorage, useTriggerState } from "react-trigger-state";
 import {
   IText,
   IWriterContext,
@@ -10,6 +10,7 @@ import {
 } from "../interface";
 import Component from "../options/Component/Component";
 import { ReadWrite } from "../options/Component/style";
+import useGetCurrBlockId from "../hooks/useGetCurrBlockId";
 
 export const WriterContext = createContext<IWriterContext>({
   content: [],
@@ -107,6 +108,48 @@ const WriterContextProvider = ({
     [setContent]
   );
 
+  const { getBlockId } = useGetCurrBlockId();
+
+  const handleKeyDown = useCallback(
+    (e) => {
+      const { dataLineId } = getBlockId({});
+      stateStorage.set(`key_down_ev-${dataLineId}`, { e, date: new Date() });
+    },
+    [getBlockId]
+  );
+
+  const handleBlur = useCallback(
+    (e) => {
+      const { dataLineId } = getBlockId({});
+      stateStorage.set(`blur_ev-${dataLineId}`, { e, date: new Date() });
+    },
+    [getBlockId]
+  );
+
+  const handleDrag = useCallback(
+    (e) => {
+      const { dataLineId } = getBlockId({});
+      stateStorage.set(`drag_ev-${dataLineId}`, { e, date: new Date() });
+    },
+    [getBlockId]
+  );
+
+  const handleSelect = useCallback(
+    (e) => {
+      const { dataLineId } = getBlockId({});
+      stateStorage.set(`select_ev-${dataLineId}`, { e, date: new Date() });
+    },
+    [getBlockId]
+  );
+
+  const handlePaste = useCallback(
+    (e) => {
+      const { dataLineId } = getBlockId({});
+      stateStorage.set(`paste_ev-${dataLineId}`, { e, date: new Date() });
+    },
+    [getBlockId]
+  );
+
   return (
     <WriterContext.Provider
       value={{
@@ -119,7 +162,18 @@ const WriterContextProvider = ({
         info,
       }}
     >
-      <ReadWrite>
+      <ReadWrite
+        contentEditable
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        onFocus={handleBlur}
+        onClick={handleBlur}
+        onDragStart={handleDrag}
+        onDrop={handleDrag}
+        onSelectCapture={handleSelect}
+        onPaste={handlePaste}
+        suppressContentEditableWarning
+      >
         {content.map((item, index) => {
           return <Component key={index} {...item} position={index} />;
         })}
