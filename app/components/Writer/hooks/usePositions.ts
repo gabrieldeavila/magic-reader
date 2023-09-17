@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { stateStorage } from "react-trigger-state";
 import { IText } from "../interface";
+import useLinesBetween from "./useLinesBetween";
 
 function usePositions({ text }: { text: IText[] }) {
   const mimic = useMemo(
@@ -24,6 +25,8 @@ function usePositions({ text }: { text: IText[] }) {
       }, []),
     [text]
   );
+
+  const { getLinesBettween } = useLinesBetween();
 
   const getFirstAndLastNode = useCallback(() => {
     const selection = window.getSelection();
@@ -132,7 +135,28 @@ function usePositions({ text }: { text: IText[] }) {
       return {};
     }
 
-    const firstNodeIndex = mimic.findIndex(({ id }) => {
+    const areFromDiffLines =
+      firstNode?.closest("[data-line-id]") !==
+      lastNode?.closest("[data-line-id]");
+
+    let letters = mimic;
+    let multiLineInfo = { selectedBlocks: [] };
+
+    if (areFromDiffLines) {
+      const { newMimic, ...props } = getLinesBettween({
+        firstLineId: parseFloat(
+          firstNode?.closest("[data-line-id]")?.getAttribute("data-line-id")
+        ),
+        lastLineId: parseFloat(
+          lastNode?.closest("[data-line-id]")?.getAttribute("data-line-id")
+        ),
+      });
+
+      letters = newMimic;
+      multiLineInfo = props;
+    }
+
+    const firstNodeIndex = letters.findIndex(({ id }) => {
       if (id == firstNodeId) {
         return firstIdIndex++ === firstNodeOffset;
       }
@@ -142,7 +166,7 @@ function usePositions({ text }: { text: IText[] }) {
 
     let lastIdIndex = 0;
 
-    const lastNodeIndex = mimic.findIndex(({ id }) => {
+    const lastNodeIndex = letters.findIndex(({ id }) => {
       if (id == lastNodeId) {
         return lastIdIndex++ === lastNodeOffset;
       }
@@ -156,12 +180,21 @@ function usePositions({ text }: { text: IText[] }) {
       areTheSame,
       firstNodeOffset,
       lastNodeOffset,
+      selectedLetters: letters,
+      areFromDiffLines,
+      multiLineInfo,
     };
-  }, [mimic]);
+  }, [getLinesBettween, mimic]);
 
   const getSelectedBlocks = useCallback(() => {
-    const { firstNodeIndex, lastNodeIndex } = getFirstAndLastNode();
-    const selected = mimic.slice(firstNodeIndex, lastNodeIndex + 1);
+    const {
+      firstNodeIndex,
+      lastNodeIndex,
+      selectedLetters,
+      areFromDiffLines,
+      multiLineInfo,
+    } = getFirstAndLastNode();
+    const selected = selectedLetters.slice(firstNodeIndex, lastNodeIndex + 1);
 
     // gets the ids of the selected (unique)
     const selectedIds = selected.reduce((acc, item) => {
@@ -184,8 +217,11 @@ function usePositions({ text }: { text: IText[] }) {
         id: selected[selected.length - 1]?.id,
         index: selected[selected.length - 1]?.index,
       },
+      selectedLetters,
+      areFromDiffLines,
+      multiLineInfo,
     };
-  }, [getFirstAndLastNode, mimic, text]);
+  }, [getFirstAndLastNode, text]);
 
   return { getFirstAndLastNode, getSelectedBlocks };
 }
