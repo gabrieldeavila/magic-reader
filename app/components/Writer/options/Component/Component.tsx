@@ -547,8 +547,44 @@ function Component({ text, id }: IEditable) {
     ]
   );
 
+  const copyEntireBlock = useCallback(() => {
+    // copy all the text
+    const currText = globalState
+      .get(contextName)
+      .find(({ id: textId }) => textId === id).text;
+
+    const copyStuff = currText.reduce((acc, item) => {
+      const { value, options } = item;
+
+      const optionsToUse = options.reduce((acc, item) => {
+        if (OPTIONS_CHARS[item]) {
+          acc.push(OPTIONS_CHARS[item]);
+        }
+
+        return acc;
+      }, []);
+
+      const optionsRight = optionsToUse.join("");
+
+      const optionsLeft = optionsToUse.reverse().join("");
+
+      acc += `${optionsLeft}${value}${optionsRight}`;
+
+      return acc;
+    }, "");
+
+    // copy the text to the clipboard
+    navigator.clipboard.writeText(copyStuff);
+  }, [contextName, id]);
+
   const copyText = useCallback(() => {
+    if (!window.getSelection().toString().length) {
+      copyEntireBlock();
+      return;
+    }
+
     const { selectedBlocks, last, first } = getSelectedBlocks();
+
     let copyStuff = "";
 
     selectedBlocks.forEach((item, index) => {
@@ -600,7 +636,7 @@ function Component({ text, id }: IEditable) {
 
     // copy the text to the clipboard
     navigator.clipboard.writeText(copyStuff);
-  }, [getSelectedBlocks]);
+  }, [copyEntireBlock, getSelectedBlocks]);
 
   const handleCtrlEvents = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>, ctrlPressed: boolean) => {
@@ -609,7 +645,12 @@ function Component({ text, id }: IEditable) {
       if (e.key === "x") {
         e.preventDefault();
         copyText();
-        deleteMultipleLetters();
+        const length = window.getSelection().toString().length;
+        if (length > 0) {
+          deleteMultipleLetters();
+        } else {
+          deleteLine(id);
+        }
 
         return true;
       } else if (e.key === "c") {
@@ -623,7 +664,7 @@ function Component({ text, id }: IEditable) {
 
       return false;
     },
-    [copyText, deleteMultipleLetters]
+    [copyText, deleteLine, deleteMultipleLetters, id]
   );
 
   const verifyForAccents = useCallback(
@@ -938,7 +979,9 @@ function Component({ text, id }: IEditable) {
 
         const currText = globalState
           .get(contextName)
-          .find(({ id: textId }) => textId === id).text;
+          .find(({ id: textId }) => textId === id)?.text;
+
+        if (!currText) return;
 
         // transforms the copiedText into an array of blocks
         // ex.: "^^^**H**^^^^^^***ell***^^^^^^o^^^" -> [{ value: "H", options: ["highlight", "bold"] }, { value: "ell", options: ["highlight", "bold","italic"] }, { value: "o", options: ["highlight"] }]

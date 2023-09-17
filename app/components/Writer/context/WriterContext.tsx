@@ -100,6 +100,20 @@ const WriterContextProvider = ({
       setContent((prev) => {
         const newContent = [...prev];
 
+        // if there is only one, keeps the line, but with one block
+        if (newContent.length === 1) {
+          const blocks = newContent.find(({ id }) => id === textId);
+
+          blocks.text = [{ id: new Date().getTime(), value: "", options: [] }];
+          console.log(blocks, [blocks]);
+          info.current = {
+            selection: 0,
+            blockId: blocks.text[0].id,
+          };
+
+          return [blocks];
+        }
+
         const blocks = newContent.filter(({ id }) => id !== textId);
 
         return blocks;
