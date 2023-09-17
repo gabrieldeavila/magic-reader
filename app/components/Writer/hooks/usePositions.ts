@@ -6,7 +6,11 @@ function usePositions({ text }: { text: IText[] }) {
   const mimic = useMemo(
     () =>
       text.reduce((acc, item) => {
-        const words = item.value.split("");
+        let words = item.value.split("");
+
+        if (!words.length) {
+          words = [""];
+        }
 
         words.forEach((letter, index) => {
           acc.push({
@@ -157,7 +161,6 @@ function usePositions({ text }: { text: IText[] }) {
 
   const getSelectedBlocks = useCallback(() => {
     const { firstNodeIndex, lastNodeIndex } = getFirstAndLastNode();
-
     const selected = mimic.slice(firstNodeIndex, lastNodeIndex + 1);
 
     // gets the ids of the selected (unique)

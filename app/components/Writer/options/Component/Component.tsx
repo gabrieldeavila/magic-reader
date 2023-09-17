@@ -942,7 +942,6 @@ function Component({ text, id }: IEditable) {
 
         // transforms the copiedText into an array of blocks
         // ex.: "^^^**H**^^^^^^***ell***^^^^^^o^^^" -> [{ value: "H", options: ["highlight", "bold"] }, { value: "ell", options: ["highlight", "bold","italic"] }, { value: "o", options: ["highlight"] }]
-
         const chars = copiedText.split("");
 
         let currOption = "";
@@ -1062,10 +1061,12 @@ function Component({ text, id }: IEditable) {
 
         const lastNewBlock = blocksFormatted[blocksFormatted.length - 1];
 
+        if (lastNewBlock == null) return;
+
         // add the lastNewBlock focus
         info.current = {
-          selection: lastNewBlock.value.length,
-          blockId: lastNewBlock.id,
+          selection: lastNewBlock?.value?.length,
+          blockId: lastNewBlock?.id,
         };
 
         handleUpdate(id, newText);
