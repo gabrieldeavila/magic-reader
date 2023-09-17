@@ -956,9 +956,14 @@ function Component({ text, id }: IEditable) {
     ev.preventDefault();
   }, []);
 
+  const [hasFocusId] = useTriggerState({
+    name: `has_focus_ev-${id}`,
+    initial: false,
+  });
+
   const onlyOneBlockAndIsEmpty = useMemo(
-    () => text.length === 1 && text[0].value.length === 0,
-    [text]
+    () => hasFocusId && text.length === 1 && text[0].value.length === 0,
+    [hasFocusId, text]
   );
 
   const handlePaste = useCallback(

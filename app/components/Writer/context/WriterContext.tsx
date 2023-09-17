@@ -1,7 +1,11 @@
 "use client";
 
 import React, { createContext, useCallback, useMemo, useRef } from "react";
-import { stateStorage, useTriggerState } from "react-trigger-state";
+import {
+  globalState,
+  stateStorage,
+  useTriggerState,
+} from "react-trigger-state";
 import {
   IText,
   IWriterContext,
@@ -151,7 +155,17 @@ const WriterContextProvider = ({
   const handleSelect = useCallback(
     (e) => {
       const { dataLineId } = getBlockId({});
+      const prevSelected = globalState.get("prev-selected");
+
+      if (prevSelected !== dataLineId) {
+        stateStorage.set(`has_focus_ev-${prevSelected}`, false);
+      }
+
+      stateStorage.set(`has_focus_ev-${dataLineId}`, true);
+
       stateStorage.set(`select_ev-${dataLineId}`, { e, date: new Date() });
+
+      globalState.set("prev-selected", dataLineId);
     },
     [getBlockId]
   );
