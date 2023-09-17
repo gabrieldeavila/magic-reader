@@ -56,9 +56,9 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
   const [selectedOptions, setSelectedOptions] = useState([]);
 
   const handleColors = useCallback(() => {
-    const { firstNodeIndex, lastNodeIndex } = getFirstAndLastNode();
+    const { firstNodeIndex, lastNodeIndex, selectedLetters, areFromDiffLines, multiLineInfo } = getFirstAndLastNode();
 
-    const selected = mimic.slice(firstNodeIndex, lastNodeIndex + 1);
+    const selected = selectedLetters.slice(firstNodeIndex, lastNodeIndex + 1);
 
     // gets the ids of the selected (unique)
     const selectedIds = selected.reduce((acc, item) => {
@@ -67,7 +67,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
       return acc;
     }, []);
 
-    const selectedBlocks = text.filter(({ id }) => selectedIds.includes(id));
+    const selectedBlocks = (areFromDiffLines ? multiLineInfo.selectedBlocks : text).filter(({ id }) => selectedIds.includes(id));
 
     // gets the options that are in all the selected
     const options = selectedBlocks.reduce((acc, item, index) => {
@@ -86,13 +86,13 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
     }, []);
 
     setSelectedOptions(options);
-  }, [getFirstAndLastNode, mimic, text]);
+  }, [getFirstAndLastNode, text]);
 
   useLayoutEffect(() => {
     // gets the position of the selected text
     const selection = window.getSelection();
     const position = selection?.getRangeAt(0)?.getBoundingClientRect?.();
-
+    
     if (!position) return;
 
     handleColors();

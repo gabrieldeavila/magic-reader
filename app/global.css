@@ -2,15 +2,22 @@
   font-family: var(--font-kanit);
 }
 
-.placeholder::after {
-  content: attr(placeholder);
-  opacity: 0;
-  color: gray;
-  transition: opacity 0.2s ease-in-out;
+/* create an animation from opacity 0 to 1 */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-div:focus .placeholder::after {
-  opacity: 1;
+.placeholder::after {
+  content: attr(placeholder);
+  color: gray;
+  /* add animation */
+  animation: fade-in 0.3s ease-in-out forwards;
 }
 
 .placeholder {

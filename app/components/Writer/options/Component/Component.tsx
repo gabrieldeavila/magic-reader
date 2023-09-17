@@ -35,8 +35,12 @@ const CHARS_KEYS = Object.keys(OPTIONS_CHARS);
 
 const CHARS_VALUES = Object.values(OPTIONS_CHARS);
 
-function Component({ text, id, position }: IEditable) {
+function Component({ text, id }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
+  const [keyDownEv] = useTriggerState({
+    name: `key_down_ev-${id}`,
+    initial: null,
+  });
 
   const { contextName, handleUpdate, deleteBlock, deleteLine, info } =
     useWriterContext();
@@ -529,225 +533,6 @@ function Component({ text, id, position }: IEditable) {
 
         stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
         stateStorage.set(contextName, newContent);
-      } else if (event.key === "ArrowUp") {
-        // see if we can go up in the curr block or if we gotta change the line
-        // gets the text of the current block
-        const textOfEvent = event.target;
-        // @ts-expect-error - this is a valid attribute
-        const targetBounds = textOfEvent.getBoundingClientRect?.();
-        const targetY = targetBounds?.y ?? 0;
-
-        const selection = window.getSelection();
-
-        // if the diff is less than 10, it means that the cursor is in the last line of the block
-        // create a range of the selection
-        const range = document.createRange();
-        // gets the length of the text, if the cursor is at the end of the text, it will be the length of the text
-        const textLength = selection.anchorNode.textContent?.length ?? 0;
-
-        const rangeStart =
-          textLength === selection.anchorOffset ? selection.anchorOffset : selection.anchorOffset + 1;
-
-        // and add only the char before the cursor
-        range.setStart(selection.anchorNode, rangeStart);
-        const rangeBounds = range.getBoundingClientRect?.();
-
-        const isLastLine = rangeBounds.y - targetY < 10;
-
-        if (!isLastLine || position === 0) return;
-        event.preventDefault();
-
-        const { changedBlockId, currSelection } = getBlockId({ textId: id });
-
-        let cursorRelativePosition = currSelection;
-
-        text.find(({ id: textId, value }) => {
-          if (textId === changedBlockId) {
-            return true;
-          }
-
-          cursorRelativePosition += value.length;
-
-          return false;
-        });
-
-        const content = globalState.get(contextName);
-
-        const newLine = content.find((__, index) => index === position - 1);
-        const newLineContent = document.querySelector(
-          `[data-line-id="${newLine?.id ?? 0}"]`
-        );
-        const newLineBounds = newLineContent?.getBoundingClientRect?.();
-        const lineChilds = Array.from(
-          newLineContent?.childNodes ?? []
-        ).reverse();
-
-        const blocksOfTheLastLine = [];
-        let lastLineIndex = 1;
-
-        const startLastLineBlock = lineChilds.find((item) => {
-          // @ts-expect-error - this is a valid attribute!!
-          const itemBounds = item.getBoundingClientRect?.();
-
-          const isTheOne =
-            Math.abs(newLineBounds?.bottom - itemBounds?.bottom) < 10 &&
-            Math.abs(itemBounds?.left - newLineBounds?.left) < 10;
-
-          if (!isTheOne) {
-            blocksOfTheLastLine.push(item);
-            lastLineIndex++;
-          } else {
-            lastLineIndex = lineChilds.length - lastLineIndex;
-          }
-
-          // returns if is the last line
-          return isTheOne;
-        });
-
-        let lastLineBlocksWidth = 0;
-
-        blocksOfTheLastLine.forEach((item) => {
-          const itemBounds = item.getBoundingClientRect?.();
-
-          lastLineBlocksWidth += itemBounds?.width ?? 0;
-        });
-
-        // get the diff between the last block and the end of the line
-        const lastBlock = blocksOfTheLastLine[0] ?? startLastLineBlock;
-        const lastBlockBounds = lastBlock?.getBoundingClientRect?.();
-        const lastBlockDiff = newLineBounds?.right - lastBlockBounds?.right;
-
-        // now that we know the width of the blocks of the last line, we can get the width of the last line
-        // therefore, we subtract the width of the blocks of the last line from the total width of the line
-        // and also the blank space between the last block and the end of the line
-        let lastLineWidth =
-          newLineBounds?.width - lastLineBlocksWidth - lastBlockDiff - 5;
-
-        // if there are none blocksOfTheLastLine, it means that the lastBlockDiff is using two lines
-        // therefore, we need to get the width of the last line
-        if (blocksOfTheLastLine.length === 0) {
-          // Get the text content of the element
-          const textContent = lastBlock.textContent;
-
-          // Create a range that includes only the last letter
-          const range = document.createRange();
-          range.setStart(lastBlock.firstChild, textContent.length - 1);
-          range.setEnd(lastBlock.firstChild, textContent.length);
-
-          // Get the bounding rectangle of the last letter
-          const lastLetterBounds = range.getBoundingClientRect();
-          const lastLetterRight = lastLetterBounds?.right ?? 0;
-
-          // gets only the width being used by the text
-          lastLineWidth =
-            newLineBounds?.width - (newLineBounds?.width - lastLetterRight);
-        }
-
-        // we also need to get the width of each letter of the startLastLineBlock
-        const letters =
-          startLastLineBlock?.textContent?.split("")?.reverse() ?? [];
-
-        // now we go until the width of the letters reaches the lastLineWidth
-        const lettersLastLine = [];
-        let lettersCurrWidth = 0;
-        letters.find((item) => {
-          // we copy the startLastLineBlock style to the letter
-          const letter = document.createElement("span");
-          letter.innerText = item;
-
-          // @ts-expect-error - this works fine
-          letter.style = startLastLineBlock?.style?.cssText ?? "";
-          document.body.appendChild(letter);
-          lettersLastLine.push(item);
-          lettersCurrWidth += letter.getBoundingClientRect?.()?.width ?? 0;
-
-          document.body.removeChild(letter);
-
-          return lettersCurrWidth > lastLineWidth;
-        });
-
-        // now we get the cursor position relative to the last line
-        let cursorPositionRelativeLastLine =
-          letters.length - lettersLastLine.length + cursorRelativePosition;
-
-        if (
-          lettersLastLine.length < cursorRelativePosition &&
-          blocksOfTheLastLine.length
-        ) {
-          let blocksLength = lettersLastLine.length;
-          // we need to know how many letters are in the blocks before the rightLastBlock
-          let beforeLastLength = blocksLength;
-
-          // searchs for the blocksOfTheLastLine that fits the cursorPositionRelativeLastLine
-          const blocksOfTheLastLineReversed = blocksOfTheLastLine.reverse();
-
-          let rightLastBlock = blocksOfTheLastLineReversed.find(
-            (item, index) => {
-              const letters = item.textContent?.split("") ?? [""];
-              let numOfLettersToMatch = -1;
-
-              const hasLetterIndex = letters.find((__, letterIndex) => {
-                blocksLength++;
-                numOfLettersToMatch = letterIndex;
-
-                return blocksLength === cursorRelativePosition;
-              });
-
-              // changes the lastLineIndex
-              if (hasLetterIndex) {
-                lastLineIndex = lastLineIndex + index + 1;
-                beforeLastLength = numOfLettersToMatch;
-              }
-
-              return hasLetterIndex;
-            }
-          );
-
-          // if there is no rightLastBlock, it means that the cursor is at the end of the line
-          // so we get the last block
-          if (!rightLastBlock) {
-            rightLastBlock = lineChilds[0];
-
-            lastLineIndex = lineChilds.length - 1;
-          }
-
-          cursorPositionRelativeLastLine = beforeLastLength + 1;
-        }
-
-        info.current = {
-          selection: cursorPositionRelativeLastLine + 1,
-          blockId: newLine?.text?.[lastLineIndex]?.id ?? 0,
-        };
-
-        setTimeout(() => {
-          stateStorage.set(
-            `${contextName}_decoration-${
-              newLine?.text?.[lastLineIndex]?.id ?? 0
-            }`,
-            new Date()
-          );
-
-          globalState.set(
-            "first_selection",
-            newLine?.text?.[lastLineIndex]?.id ?? 0
-          );
-        });
-        return;
-      } else if (event.key === "ArrowDown") {
-        // // see if we can go down in the curr block or if we gotta change the line
-        // // gets the text of the current block
-        // const textOfEvent = event.target;
-        // // @ts-expect-error - this is a valid attribute
-        // const targetBounds = textOfEvent.getBoundingClientRect?.();
-        // const targetY = targetBounds?.y ?? 0;
-        // const selection = window.getSelection();
-        // const selectionBounds =
-        //   selection.anchorNode.parentElement?.getBoundingClientRect?.();
-        // const selectionY = selectionBounds?.y ?? 0;
-        // // if the diff is less than 10, it means that the cursor is in the last line of the block
-        // const isLastLine = targetY - selectionY < 10;
-        // if (!isLastLine) return;
-        // console.log("oh");
       }
     },
     [
@@ -755,17 +540,51 @@ function Component({ text, id, position }: IEditable) {
       deleteBlock,
       deleteLine,
       deleteMultipleLetters,
-      getBlockId,
       handleUpdate,
       id,
       info,
-      position,
       text,
     ]
   );
 
+  const copyEntireBlock = useCallback(() => {
+    // copy all the text
+    const currText = globalState
+      .get(contextName)
+      .find(({ id: textId }) => textId === id).text;
+
+    const copyStuff = currText.reduce((acc, item) => {
+      const { value, options } = item;
+
+      const optionsToUse = options.reduce((acc, item) => {
+        if (OPTIONS_CHARS[item]) {
+          acc.push(OPTIONS_CHARS[item]);
+        }
+
+        return acc;
+      }, []);
+
+      const optionsRight = optionsToUse.join("");
+
+      const optionsLeft = optionsToUse.reverse().join("");
+
+      acc += `${optionsLeft}${value}${optionsRight}`;
+
+      return acc;
+    }, "");
+
+    // copy the text to the clipboard
+    navigator.clipboard.writeText(copyStuff);
+  }, [contextName, id]);
+
   const copyText = useCallback(() => {
+    if (!window.getSelection().toString().length) {
+      copyEntireBlock();
+      return;
+    }
+
     const { selectedBlocks, last, first } = getSelectedBlocks();
+
     let copyStuff = "";
 
     selectedBlocks.forEach((item, index) => {
@@ -817,7 +636,7 @@ function Component({ text, id, position }: IEditable) {
 
     // copy the text to the clipboard
     navigator.clipboard.writeText(copyStuff);
-  }, [getSelectedBlocks]);
+  }, [copyEntireBlock, getSelectedBlocks]);
 
   const handleCtrlEvents = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>, ctrlPressed: boolean) => {
@@ -826,7 +645,12 @@ function Component({ text, id, position }: IEditable) {
       if (e.key === "x") {
         e.preventDefault();
         copyText();
-        deleteMultipleLetters();
+        const length = window.getSelection().toString().length;
+        if (length > 0) {
+          deleteMultipleLetters();
+        } else {
+          deleteLine(id);
+        }
 
         return true;
       } else if (e.key === "c") {
@@ -840,7 +664,7 @@ function Component({ text, id, position }: IEditable) {
 
       return false;
     },
-    [copyText, deleteMultipleLetters]
+    [copyText, deleteLine, deleteMultipleLetters, id]
   );
 
   const verifyForAccents = useCallback(
@@ -1132,9 +956,14 @@ function Component({ text, id, position }: IEditable) {
     ev.preventDefault();
   }, []);
 
+  const [hasFocusId] = useTriggerState({
+    name: `has_focus_ev-${id}`,
+    initial: false,
+  });
+
   const onlyOneBlockAndIsEmpty = useMemo(
-    () => text.length === 1 && text[0].value.length === 0,
-    [text]
+    () => hasFocusId && text.length === 1 && text[0].value.length === 0,
+    [hasFocusId, text]
   );
 
   const handlePaste = useCallback(
@@ -1155,11 +984,12 @@ function Component({ text, id, position }: IEditable) {
 
         const currText = globalState
           .get(contextName)
-          .find(({ id: textId }) => textId === id).text;
+          .find(({ id: textId }) => textId === id)?.text;
+
+        if (!currText) return;
 
         // transforms the copiedText into an array of blocks
         // ex.: "^^^**H**^^^^^^***ell***^^^^^^o^^^" -> [{ value: "H", options: ["highlight", "bold"] }, { value: "ell", options: ["highlight", "bold","italic"] }, { value: "o", options: ["highlight"] }]
-
         const chars = copiedText.split("");
 
         let currOption = "";
@@ -1279,10 +1109,12 @@ function Component({ text, id, position }: IEditable) {
 
         const lastNewBlock = blocksFormatted[blocksFormatted.length - 1];
 
+        if (lastNewBlock == null) return;
+
         // add the lastNewBlock focus
         info.current = {
-          selection: lastNewBlock.value.length,
-          blockId: lastNewBlock.id,
+          selection: lastNewBlock?.value?.length,
+          blockId: lastNewBlock?.id,
         };
 
         handleUpdate(id, newText);
@@ -1296,19 +1128,67 @@ function Component({ text, id, position }: IEditable) {
     [contextName, deleteMultipleLetters, getBlockId, handleUpdate, id, info]
   );
 
+  useEffect(() => {
+    if (keyDownEv == null) return;
+
+    handleChange(keyDownEv.e);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyDownEv]);
+
+  const [blurEv] = useTriggerState({
+    name: `blur_ev-${id}`,
+    initial: null,
+  });
+
+  useEffect(() => {
+    if (blurEv == null) return;
+
+    checkSelection();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blurEv]);
+
+  const [dragEv] = useTriggerState({
+    name: `drag_ev-${id}`,
+    initial: null,
+  });
+
+  useEffect(() => {
+    if (dragEv == null) return;
+
+    preventDefault(dragEv.e);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dragEv]);
+
+  const [selectEv] = useTriggerState({
+    name: `select_ev-${id}`,
+    initial: null,
+  });
+
+  useEffect(() => {
+    if (selectEv == null) return;
+
+    handleSelect(selectEv.e);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectEv]);
+
+  const [pasteEv] = useTriggerState({
+    name: `paste_ev-${id}`,
+    initial: null,
+  });
+
+  useEffect(() => {
+    if (pasteEv == null) return;
+
+    handlePaste(pasteEv.e);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pasteEv]);
+
   return (
     <Editable
       ref={ref}
-      onKeyDown={handleChange}
       contentEditable
-      onSelectCapture={handleSelect}
-      onDragStart={preventDefault}
-      onDrop={preventDefault}
-      onBlur={checkSelection}
-      onFocus={checkSelection}
-      onClick={checkSelection}
-      onPaste={handlePaste}
       data-line-id={id}
+      data-scribere
       suppressContentEditableWarning
     >
       {text.map((item, index) => {

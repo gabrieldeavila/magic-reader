@@ -12,3 +12,7 @@ export const DCode = styled.span`
     white-space: break-spaces !important;
   }
 `;
+
+export const ReadWrite = styled.div`
+  outline: none;
+`;

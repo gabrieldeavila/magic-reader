@@ -1,12 +1,11 @@
 "use client";
 
-import React, {
-  createContext,
-  useCallback,
-  useMemo,
-  useRef
-} from "react";
-import { useTriggerState } from "react-trigger-state";
+import React, { createContext, useCallback, useMemo, useRef } from "react";
+import {
+  globalState,
+  stateStorage,
+  useTriggerState,
+} from "react-trigger-state";
 import {
   IText,
   IWriterContext,
@@ -14,6 +13,8 @@ import {
   IWritterContent,
 } from "../interface";
 import Component from "../options/Component/Component";
+import { ReadWrite } from "../options/Component/style";
+import useGetCurrBlockId from "../hooks/useGetCurrBlockId";
 
 export const WriterContext = createContext<IWriterContext>({
   content: [],
@@ -103,12 +104,78 @@ const WriterContextProvider = ({
       setContent((prev) => {
         const newContent = [...prev];
 
+        // if there is only one, keeps the line, but with one block
+        if (newContent.length === 1) {
+          const blocks = newContent.find(({ id }) => id === textId);
+
+          blocks.text = [{ id: new Date().getTime(), value: "", options: [] }];
+          console.log(blocks, [blocks]);
+          info.current = {
+            selection: 0,
+            blockId: blocks.text[0].id,
+          };
+
+          return [blocks];
+        }
+
         const blocks = newContent.filter(({ id }) => id !== textId);
 
         return blocks;
       });
     },
     [setContent]
+  );
+
+  const { getBlockId } = useGetCurrBlockId();
+
+  const handleKeyDown = useCallback(
+    (e) => {
+      const { dataLineId } = getBlockId({});
+      stateStorage.set(`key_down_ev-${dataLineId}`, { e, date: new Date() });
+    },
+    [getBlockId]
+  );
+
+  const handleBlur = useCallback(
+    (e) => {
+      const { dataLineId } = getBlockId({});
+      stateStorage.set(`blur_ev-${dataLineId}`, { e, date: new Date() });
+    },
+    [getBlockId]
+  );
+
+  const handleDrag = useCallback(
+    (e) => {
+      const { dataLineId } = getBlockId({});
+      stateStorage.set(`drag_ev-${dataLineId}`, { e, date: new Date() });
+    },
+    [getBlockId]
+  );
+
+  const handleSelect = useCallback(
+    (e) => {
+      const { dataLineId } = getBlockId({});
+      const prevSelected = globalState.get("prev-selected");
+
+      if (prevSelected !== dataLineId) {
+        stateStorage.set(`has_focus_ev-${prevSelected}`, false);
+      }
+
+      stateStorage.set(`has_focus_ev-${dataLineId}`, true);
+
+      stateStorage.set(`select_ev-${dataLineId}`, { e, date: new Date() });
+
+      globalState.set("prev-selected", dataLineId);
+    },
+    [getBlockId]
+  );
+
+  const handlePaste = useCallback(
+    (e) => {
+      const { dataLineId } = getBlockId({});
+      stateStorage.set(`paste_ev-${dataLineId}`, { e, date: new Date() });
+    },
+    [getBlockId]
   );
 
   return (
@@ -123,9 +190,22 @@ const WriterContextProvider = ({
         info,
       }}
     >
-      {content.map((item, index) => {
-        return <Component key={index} {...item} position={index} />;
-      })}
+      <ReadWrite
+        contentEditable
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        onFocus={handleBlur}
+        onClick={handleBlur}
+        onDragStart={handleDrag}
+        onDrop={handleDrag}
+        onSelectCapture={handleSelect}
+        onPaste={handlePaste}
+        suppressContentEditableWarning
+      >
+        {content.map((item, index) => {
+          return <Component key={index} {...item} position={index} />;
+        })}
+      </ReadWrite>
     </WriterContext.Provider>
   );
 };
