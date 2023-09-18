@@ -35,7 +35,7 @@ const CHARS_KEYS = Object.keys(OPTIONS_CHARS);
 
 const CHARS_VALUES = Object.values(OPTIONS_CHARS);
 
-function Component({ text, id }: IEditable) {
+function Component({ text, id, position }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
   const [keyDownEv] = useTriggerState({
     name: `key_down_ev-${id}`,
@@ -649,7 +649,20 @@ function Component({ text, id }: IEditable) {
         if (length > 0) {
           deleteMultipleLetters();
         } else {
+          const nextLine = globalState.get(contextName)[position + 1]?.text[0];
+
           deleteLine(id);
+          if (nextLine) {
+            info.current = {
+              selection: 0,
+              blockId: nextLine.id,
+            };
+
+            stateStorage.set(
+              `${contextName}_decoration-${nextLine.id}`,
+              new Date()
+            );
+          }
         }
 
         return true;
@@ -664,7 +677,7 @@ function Component({ text, id }: IEditable) {
 
       return false;
     },
-    [copyText, deleteLine, deleteMultipleLetters, id]
+    [contextName, copyText, deleteLine, deleteMultipleLetters, id, info]
   );
 
   const verifyForAccents = useCallback(
@@ -1201,7 +1214,7 @@ function Component({ text, id }: IEditable) {
         );
       })}
 
-      {showPopup && <Popup id={id} text={text} parentRef={ref} />}
+      {showPopup && hasFocusId && <Popup id={id} text={text} parentRef={ref} />}
     </Editable>
   );
 }

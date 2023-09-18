@@ -109,7 +109,7 @@ const WriterContextProvider = ({
           const blocks = newContent.find(({ id }) => id === textId);
 
           blocks.text = [{ id: new Date().getTime(), value: "", options: [] }];
-          console.log(blocks, [blocks]);
+
           info.current = {
             selection: 0,
             blockId: blocks.text[0].id,
