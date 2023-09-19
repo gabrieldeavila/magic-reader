@@ -140,7 +140,7 @@ function usePositions({ text }: { text: IText[] }) {
       lastNode?.closest("[data-line-id]");
 
     let letters = mimic;
-    let multiLineInfo = { selectedBlocks: [] };
+    let multiLineInfo = { selectedBlocks: [], linesBetween: [] };
 
     if (areFromDiffLines) {
       const { newMimic, ...props } = getLinesBettween({

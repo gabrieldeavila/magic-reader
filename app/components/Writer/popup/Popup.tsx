@@ -56,9 +56,15 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
   const [selectedOptions, setSelectedOptions] = useState([]);
 
   const handleColors = useCallback(() => {
-    const { firstNodeIndex, lastNodeIndex, selectedLetters, areFromDiffLines, multiLineInfo } = getFirstAndLastNode();
+    const {
+      firstNodeIndex,
+      lastNodeIndex,
+      selectedLetters,
+      areFromDiffLines,
+      multiLineInfo,
+    } = getFirstAndLastNode();
 
-    const selected = selectedLetters.slice(firstNodeIndex, lastNodeIndex + 1);
+    const selected = (selectedLetters ?? mimic).slice(firstNodeIndex, lastNodeIndex + 1);
 
     // gets the ids of the selected (unique)
     const selectedIds = selected.reduce((acc, item) => {
@@ -67,7 +73,9 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
       return acc;
     }, []);
 
-    const selectedBlocks = (areFromDiffLines ? multiLineInfo.selectedBlocks : text).filter(({ id }) => selectedIds.includes(id));
+    const selectedBlocks = (
+      areFromDiffLines ? multiLineInfo.selectedBlocks : text
+    ).filter(({ id }) => selectedIds.includes(id));
 
     // gets the options that are in all the selected
     const options = selectedBlocks.reduce((acc, item, index) => {
@@ -86,13 +94,13 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
     }, []);
 
     setSelectedOptions(options);
-  }, [getFirstAndLastNode, text]);
+  }, [getFirstAndLastNode, mimic, text]);
 
   useLayoutEffect(() => {
     // gets the position of the selected text
     const selection = window.getSelection();
     const position = selection?.getRangeAt(0)?.getBoundingClientRect?.();
-    
+
     if (!position) return;
 
     handleColors();
@@ -124,27 +132,18 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
     setPositions(newPositions);
   }, [handleColors, updatePositions]);
 
-  const addDecoration = useCallback(
-    (decoration: string) => {
-      const {
-        firstNodeIndex,
-        areTheSame,
-        lastNodeIndex,
-        firstNodeOffset,
-        lastNodeOffset,
-      } = getFirstAndLastNode();
-
-      if (firstNodeIndex === -1 || lastNodeIndex === -1) {
-        toast("LEGERE.NO_SELECTION", {
-          type: "error",
-        });
-
-        return;
-      }
-
-      // gets the letters between the first and last node
-      const selected = mimic.slice(firstNodeIndex, lastNodeIndex + 1);
-
+  const doTheDecoration = useCallback(
+    ({
+      decoration,
+      firstNodeIndex,
+      lastNodeIndex,
+      letters,
+      areTheSame,
+      firstNodeOffset,
+      lastNodeOffset,
+      id,
+      selected,
+    }) => {
       const wordsBeforeSelected = [];
       const wordsAfterSelected = [];
 
@@ -152,7 +151,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
       let wordsSelected = [];
 
       if (selected.length) {
-        wordsSelected = text.filter((item) => {
+        wordsSelected = letters.filter((item) => {
           const { id } = item;
 
           const isSelected = selected.some(
@@ -428,7 +427,92 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
       handleUpdate(id, newText);
     },
-    [getFirstAndLastNode, handleUpdate, id, mimic, text, toast]
+    [handleUpdate]
+  );
+
+  const addDecoration = useCallback(
+    (decoration: string) => {
+      const {
+        firstNodeIndex,
+        areTheSame,
+        lastNodeIndex,
+        firstNodeOffset,
+        lastNodeOffset,
+        areFromDiffLines,
+        multiLineInfo,
+        selectedLetters,
+      } = getFirstAndLastNode();
+
+      if (firstNodeIndex === -1 || lastNodeIndex === -1) {
+        toast("LEGERE.NO_SELECTION", {
+          type: "error",
+        });
+
+        return;
+      }
+
+      if (areFromDiffLines) {
+        const { linesBetween, selectedBlocks } = multiLineInfo;
+        console.log(multiLineInfo);
+
+        const firstLine = selectedBlocks[0];
+        const lastLine = selectedBlocks[selectedBlocks.length - 1];
+
+        let startIndex = 0;
+        linesBetween.forEach((line, index) => {
+          // removes the old startIndex
+          const linesLetters = selectedLetters.slice(startIndex);
+          startIndex = 0;
+
+          const currId = linesLetters[startIndex].lineId;
+
+          const fromToLastIndex = linesLetters.findIndex((__, index) => {
+            // gets when ends the first line, that is, when the next id is different
+            if (index === linesLetters.length - 1) return true;
+
+            const nextId = linesLetters[index + 1]?.lineId;
+
+            return nextId !== currId;
+          });
+
+          startIndex = fromToLastIndex + 1;
+
+          if (index === 0) {
+            console.log(firstNodeOffset);
+            console.log(selectedLetters, selectedLetters.slice(firstNodeOffset, fromToLastIndex));
+
+            doTheDecoration({
+              decoration,
+              firstNodeIndex,
+              lastNodeIndex: line.text.length - 1,
+              letters: line.text,
+              areTheSame: line.text.length === 1,
+              firstNodeOffset,
+              lastNodeOffset: 0,
+              id: line.id,
+              selected: selectedLetters.slice(firstNodeOffset, fromToLastIndex),
+            });
+          }
+        });
+
+        return;
+      }
+
+      const selected = mimic.slice(firstNodeIndex, lastNodeIndex + 1);
+
+      doTheDecoration({
+        decoration,
+        firstNodeIndex,
+        lastNodeIndex,
+        letters: text,
+        areTheSame,
+        firstNodeOffset,
+        lastNodeOffset,
+        id,
+        selected,
+      });
+    },
+    [doTheDecoration, getFirstAndLastNode, id, mimic, text, toast]
   );
 
   const bold = useCallback(() => {

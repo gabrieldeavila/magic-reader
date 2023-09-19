@@ -677,7 +677,7 @@ function Component({ text, id, position }: IEditable) {
 
       return false;
     },
-    [contextName, copyText, deleteLine, deleteMultipleLetters, id, info]
+    [contextName, copyText, deleteLine, deleteMultipleLetters, id, info, position]
   );
 
   const verifyForAccents = useCallback(
