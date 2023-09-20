@@ -467,24 +467,19 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         const lastLine = selectedBlocks[selectedBlocks.length - 1];
 
         let startIndex = 0;
+        // sum the length of the lines between
+        let stuffToBeSliced = 0;
+
         linesBetween.forEach((line, index) => {
           // removes the old startIndex
-          const linesLetters = selected.slice(startIndex);
+          stuffToBeSliced += startIndex;
+          const linesLetters = selected.slice(stuffToBeSliced);
+
           startIndex = 0;
 
           const currId = linesLetters[startIndex]?.lineId;
 
           if (!currId) {
-            console.log(
-              linesLetters,
-              startIndex,
-              line,
-              selected,
-              areFromDiffLines,
-              selectedLetters,
-              firstNodeIndex,
-              lastNodeIndex
-            );
             return;
           }
 
@@ -500,6 +495,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
           startIndex = fromToLastIndex + 1;
 
           const decSelected = linesLetters.slice(0, startIndex);
+          console.log(decSelected);
 
           doTheDecoration({
             decoration,
