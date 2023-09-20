@@ -9,12 +9,12 @@ type TOptions =
 export interface IText {
   options?: TOptions[];
   value: string;
-  id: number;
+  id: string;
 }
 
 export interface IWritterContent {
   text: IText[];
-  id: number;
+  id: string;
 }
 
 export interface IWriter {
@@ -54,7 +54,7 @@ export interface ISetRange extends IEditable, IEditableProps {
 
 export interface IWriterInfo {
   selection: number;
-  blockId: number;
+  blockId: string;
 }
 
 export interface IDecoration extends IText {

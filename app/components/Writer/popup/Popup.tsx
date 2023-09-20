@@ -8,11 +8,12 @@ import {
   useState,
 } from "react";
 import { Code, PenTool } from "react-feather";
-import { stateStorage, useTriggerState } from "react-trigger-state";
+import { useTriggerState } from "react-trigger-state";
+import uuid from "../../../utils/uuid";
 import { useWriterContext } from "../context/WriterContext";
+import usePositions from "../hooks/usePositions";
 import { IPopup } from "../interface";
 import WPopup from "./style";
-import usePositions from "../hooks/usePositions";
 
 const Popup = memo(({ id, text, parentRef }: IPopup) => {
   const { toast } = useGTToastContext();
@@ -63,8 +64,10 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
       areFromDiffLines,
       multiLineInfo,
     } = getFirstAndLastNode();
-
-    const selected = (selectedLetters ?? mimic).slice(firstNodeIndex, lastNodeIndex + 1);
+    const selected = (selectedLetters ?? mimic).slice(
+      firstNodeIndex,
+      lastNodeIndex + 1
+    );
 
     // gets the ids of the selected (unique)
     const selectedIds = selected.reduce((acc, item) => {
@@ -170,9 +173,10 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         });
       }
 
-      const allAlreadyHaveOption = wordsSelected.every(({ options }) =>
-        options.includes(decoration)
-      );
+      // const allAlreadyHaveOption = wordsSelected.every(({ options }) =>
+      // options.includes(decoration)
+      // );
+      const allAlreadyHaveOption = selectedOptions.includes(decoration);
 
       // removes the first and last selected
       const selectedWithoutFirstAndLast = wordsSelected
@@ -366,10 +370,10 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
       }
 
       // now, give unique ids to the words
-      const newText = finalWords.map((item, index) => {
+      const newText = finalWords.map((item) => {
         return {
           ...item,
-          id: parseInt(`${new Date().getTime()}${index}`),
+          id: uuid(),
         };
       });
 
@@ -418,16 +422,16 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         return letterIndex !== -1;
       });
 
-      stateStorage.set("selection_range", {
-        start: newFirstNodeIndex,
-        end: newLastNodeIndex,
-        startBlockId,
-        endBlockId,
-      });
+      // stateStorage.set("selection_range", {
+      //   start: newFirstNodeIndex,
+      //   end: newLastNodeIndex,
+      //   startBlockId,
+      //   endBlockId,
+      // });
 
       handleUpdate(id, newText);
     },
-    [handleUpdate]
+    [handleUpdate, selectedOptions]
   );
 
   const addDecoration = useCallback(
@@ -451,9 +455,13 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         return;
       }
 
+      const selected = (areFromDiffLines ? selectedLetters : mimic).slice(
+        firstNodeIndex,
+        lastNodeIndex + 1
+      );
+
       if (areFromDiffLines) {
         const { linesBetween, selectedBlocks } = multiLineInfo;
-        console.log(multiLineInfo);
 
         const firstLine = selectedBlocks[0];
         const lastLine = selectedBlocks[selectedBlocks.length - 1];
@@ -461,10 +469,24 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         let startIndex = 0;
         linesBetween.forEach((line, index) => {
           // removes the old startIndex
-          const linesLetters = selectedLetters.slice(startIndex);
+          const linesLetters = selected.slice(startIndex);
           startIndex = 0;
 
-          const currId = linesLetters[startIndex].lineId;
+          const currId = linesLetters[startIndex]?.lineId;
+
+          if (!currId) {
+            console.log(
+              linesLetters,
+              startIndex,
+              line,
+              selected,
+              areFromDiffLines,
+              selectedLetters,
+              firstNodeIndex,
+              lastNodeIndex
+            );
+            return;
+          }
 
           const fromToLastIndex = linesLetters.findIndex((__, index) => {
             // gets when ends the first line, that is, when the next id is different
@@ -477,28 +499,23 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
           startIndex = fromToLastIndex + 1;
 
-          if (index === 0) {
-            console.log(firstNodeOffset);
-            console.log(selectedLetters, selectedLetters.slice(firstNodeOffset, fromToLastIndex));
+          const decSelected = linesLetters.slice(0, startIndex);
 
-            doTheDecoration({
-              decoration,
-              firstNodeIndex,
-              lastNodeIndex: line.text.length - 1,
-              letters: line.text,
-              areTheSame: line.text.length === 1,
-              firstNodeOffset,
-              lastNodeOffset: 0,
-              id: line.id,
-              selected: selectedLetters.slice(firstNodeOffset, fromToLastIndex),
-            });
-          }
+          doTheDecoration({
+            decoration,
+            firstNodeIndex: 0,
+            lastNodeIndex: fromToLastIndex,
+            letters: line.text,
+            areTheSame: line.text.length === 1,
+            firstNodeOffset: decSelected[0].index,
+            lastNodeOffset: decSelected[decSelected.length - 1].index,
+            id: line.id,
+            selected: decSelected,
+          });
         });
 
         return;
       }
-
-      const selected = mimic.slice(firstNodeIndex, lastNodeIndex + 1);
 
       doTheDecoration({
         decoration,

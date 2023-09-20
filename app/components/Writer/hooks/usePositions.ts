@@ -80,9 +80,9 @@ function usePositions({ text }: { text: IText[] }) {
       (prevSelectionRange?.end ||
         (anchorComesFirst ? focusOffset : anchorOffset)) - 1;
 
-    const firstNodeId = parseFloat(firstNode?.getAttribute("data-block-id"));
+    const firstNodeId = firstNode?.getAttribute("data-block-id");
 
-    const lastNodeId = parseFloat(lastNode?.getAttribute("data-block-id"));
+    const lastNodeId = lastNode?.getAttribute("data-block-id");
 
     const isCodeBlock = !!(
       firstNode?.querySelector("code") || lastNode?.querySelector("code")
@@ -144,12 +144,12 @@ function usePositions({ text }: { text: IText[] }) {
 
     if (areFromDiffLines) {
       const { newMimic, ...props } = getLinesBettween({
-        firstLineId: parseFloat(
-          firstNode?.closest("[data-line-id]")?.getAttribute("data-line-id")
-        ),
-        lastLineId: parseFloat(
-          lastNode?.closest("[data-line-id]")?.getAttribute("data-line-id")
-        ),
+        firstLineId: firstNode
+          ?.closest("[data-line-id]")
+          ?.getAttribute("data-line-id"),
+        lastLineId: lastNode
+          ?.closest("[data-line-id]")
+          ?.getAttribute("data-line-id"),
       });
 
       letters = newMimic;

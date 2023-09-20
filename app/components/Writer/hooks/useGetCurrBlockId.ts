@@ -21,27 +21,26 @@ function useGetCurrBlockId() {
         : globalState.get(contextName).find(({ id }) => id === dataLineId)
             ?.text;
 
-      let changedBlockId = parseFloat(
+      let changedBlockId =
         selection.anchorNode?.parentElement?.getAttribute?.("data-block-id") ||
-          currText?.[0]?.id
-      );
+        currText?.[0]?.id;
 
       let currSelection = selection.anchorOffset;
 
       const isCodeBlock =
-        selection.anchorNode?.parentElement?.parentElement?.tagName === "CODE" ||
+        selection.anchorNode?.parentElement?.parentElement?.tagName ===
+          "CODE" ||
         // @ts-expect-error - we know that anchorNode is not null
         selection.anchorNode?.tagName === "CODE";
 
       if (isCodeBlock) {
-        changedBlockId = parseFloat(
+        changedBlockId =
           selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
             "data-block-id"
           ) ||
-            selection.anchorNode.parentElement.parentElement.getAttribute(
-              "data-block-id"
-            )
-        );
+          selection.anchorNode.parentElement.parentElement.getAttribute(
+            "data-block-id"
+          );
 
         const codeChilds = Array.from(
           selection.anchorNode.parentElement?.parentElement.childNodes

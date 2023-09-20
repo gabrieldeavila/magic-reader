@@ -15,6 +15,7 @@ import {
 import Component from "../options/Component/Component";
 import { ReadWrite } from "../options/Component/style";
 import useGetCurrBlockId from "../hooks/useGetCurrBlockId";
+import uuid from "../../../utils/uuid";
 
 export const WriterContext = createContext<IWriterContext>({
   content: [],
@@ -56,7 +57,7 @@ const WriterContextProvider = ({
 
   const info = useRef<IWriterInfo>({
     selection: 0,
-    blockId: 0,
+    blockId: "",
   });
 
   const handleUpdate = useCallback(
@@ -108,7 +109,7 @@ const WriterContextProvider = ({
         if (newContent.length === 1) {
           const blocks = newContent.find(({ id }) => id === textId);
 
-          blocks.text = [{ id: new Date().getTime(), value: "", options: [] }];
+          blocks.text = [{ id: uuid(), value: "", options: [] }];
 
           info.current = {
             selection: 0,

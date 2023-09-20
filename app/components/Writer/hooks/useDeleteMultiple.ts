@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import usePositions from "./usePositions";
 import { stateStorage } from "react-trigger-state";
 import { useWriterContext } from "../context/WriterContext";
+import uuid from "../../../utils/uuid";
 
 function useDeleteMultiple({ text, id, info }) {
   const { getSelectedBlocks } = usePositions({ text });
@@ -107,7 +108,7 @@ function useDeleteMultiple({ text, id, info }) {
     // if there is no new words, add an empty block
     if (!newWords.length) {
       newWords.push({
-        id: Math.random(),
+        id: uuid(),
         value: "",
         options: [],
       });

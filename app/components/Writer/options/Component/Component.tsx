@@ -21,6 +21,7 @@ import { IEditable } from "../../interface";
 import Popup from "../../popup/Popup";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
+import uuid from "../../../../utils/uuid";
 
 const OPTIONS_CHARS = {
   bold: "**",
@@ -153,9 +154,8 @@ function Component({ text, id, position }: IEditable) {
 
         const currText = content[currTextIndex].text;
 
-        let changedBlockId = parseFloat(
-          selection.anchorNode.parentElement.getAttribute("data-block-id")
-        );
+        let changedBlockId =
+          selection.anchorNode.parentElement.getAttribute("data-block-id");
 
         let baseValue = selection.anchorNode.parentElement.innerText;
 
@@ -190,11 +190,10 @@ function Component({ text, id, position }: IEditable) {
           newIndex += selection.anchorOffset;
 
           charToDelete = newIndex + deletingPosition;
-          changedBlockId = parseFloat(
+          changedBlockId =
             selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
               "data-block-id"
-            )
-          );
+            );
 
           baseValue =
             selection.anchorNode.parentElement.parentElement.innerText;
@@ -376,12 +375,12 @@ function Component({ text, id, position }: IEditable) {
         const isCtrlPressed = event.ctrlKey;
 
         if (isCtrlPressed) {
-          const newId = Math.random();
+          const newId = uuid();
           const newText = {
             id: newId,
             text: [
               {
-                id: Math.random(),
+                id: uuid(),
                 value: "",
                 options: [],
               },
@@ -416,16 +415,14 @@ function Component({ text, id, position }: IEditable) {
         const isCodeBlock =
           !selection.anchorNode.parentElement.getAttribute("data-block-id");
 
-        const changedBlockId = parseFloat(
-          isCodeBlock
-            ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement?.getAttribute?.(
-                "data-block-id"
-              ) ||
-                selection.anchorNode.parentElement.parentElement.getAttribute(
-                  "data-block-id"
-                )
-            : selection.anchorNode.parentElement.getAttribute("data-block-id")
-        );
+        const changedBlockId = isCodeBlock
+          ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement?.getAttribute?.(
+              "data-block-id"
+            ) ||
+            selection.anchorNode.parentElement.parentElement.getAttribute(
+              "data-block-id"
+            )
+          : selection.anchorNode.parentElement.getAttribute("data-block-id");
 
         const content = globalState.get(contextName);
 
@@ -481,7 +478,7 @@ function Component({ text, id, position }: IEditable) {
               if (newValue.length > 0) {
                 acc.newLineText.push({
                   ...item,
-                  id: Math.random(),
+                  id: uuid(),
                   value: newValue,
                 });
               }
@@ -505,11 +502,11 @@ function Component({ text, id, position }: IEditable) {
           return item;
         });
 
-        const newId = Math.random();
+        const newId = uuid();
 
         if (newLineText.length === 0) {
           newLineText.push({
-            id: Math.random(),
+            id: uuid(),
             value: "",
             options: [],
           });
@@ -677,7 +674,15 @@ function Component({ text, id, position }: IEditable) {
 
       return false;
     },
-    [contextName, copyText, deleteLine, deleteMultipleLetters, id, info, position]
+    [
+      contextName,
+      copyText,
+      deleteLine,
+      deleteMultipleLetters,
+      id,
+      info,
+      position,
+    ]
   );
 
   const verifyForAccents = useCallback(
@@ -752,18 +757,14 @@ function Component({ text, id, position }: IEditable) {
         const isCodeBlock =
           selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
 
-        const changedBlockId = parseFloat(
-          isCodeBlock
-            ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
-                "data-block-id"
-              )
-            : selection.anchorNode.parentElement.getAttribute(
-                "data-block-id"
-              ) ??
-                // @ts-expect-error - this is a valid attribute
-                selection.anchorNode.getAttribute?.("data-block-id") ??
-                currText[0]?.id
-        );
+        const changedBlockId = isCodeBlock
+          ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
+              "data-block-id"
+            )
+          : selection.anchorNode.parentElement.getAttribute("data-block-id") ??
+            // @ts-expect-error - this is a valid attribute
+            selection.anchorNode.getAttribute?.("data-block-id") ??
+            currText[0]?.id;
 
         const block = currText.find(({ id }) => id === changedBlockId);
 
@@ -1083,7 +1084,7 @@ function Component({ text, id, position }: IEditable) {
 
           return {
             value: newValue,
-            id: Math.random() + new Date().getTime(),
+            id: uuid(),
             options: filteredOptions.map(
               (char) => CHARS_KEYS[CHARS_VALUES.indexOf(char)]
             ),
@@ -1115,7 +1116,7 @@ function Component({ text, id, position }: IEditable) {
 
           newText.push({
             value: valueAfter,
-            id: item.id + new Date().getTime(),
+            id: uuid(),
             options,
           });
         });

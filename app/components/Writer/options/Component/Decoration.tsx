@@ -145,9 +145,7 @@ const Decoration = memo(
       const nextId = nextSibling?.getAttribute("data-block-id");
 
       if (nextId != null) {
-        const nextBlock = parentText.find(
-          (item) => item.id === parseFloat(nextId)
-        );
+        const nextBlock = parentText.find((item) => item.id === nextId);
 
         nextIsHighlight =
           nextBlock?.options?.includes?.("highlight") ||
@@ -160,9 +158,7 @@ const Decoration = memo(
       const prevId = prevSibling?.getAttribute("data-block-id");
 
       if (prevId != null) {
-        const prevBlock = parentText.find(
-          (item) => item.id === parseFloat(prevId)
-        );
+        const prevBlock = parentText.find((item) => item.id === prevId);
 
         prevIsHighlight =
           prevBlock?.options?.includes?.("highlight") ||

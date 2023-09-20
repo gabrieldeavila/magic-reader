@@ -1,29 +1,30 @@
 import Writer from "../../components/Writer/Writer";
 import { IWritterContent } from "../../components/Writer/interface";
+import uuid from "../../utils/uuid";
 
 const DEFAULT_CONTENT: IWritterContent[] = [
   {
-    id: 1,
+    id: uuid(),
     text: [
       {
         value: "Hello ",
         options: [],
-        id: 1,
+        id: uuid(),
       },
       {
         value: "World",
         options: ["bold"],
-        id: 2,
+        id: uuid(),
       },
       {
         value: " hehe",
         options: [],
-        id: 3,
+        id: uuid(),
       },
       {
         value: " const a = b === c",
         options: ["code"],
-        id: 4,
+        id: uuid(),
       },
     ],
   },
