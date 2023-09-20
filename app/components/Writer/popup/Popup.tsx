@@ -8,7 +8,11 @@ import {
   useState,
 } from "react";
 import { Code, PenTool } from "react-feather";
-import { useTriggerState } from "react-trigger-state";
+import {
+  globalState,
+  stateStorage,
+  useTriggerState,
+} from "react-trigger-state";
 import uuid from "../../../utils/uuid";
 import { useWriterContext } from "../context/WriterContext";
 import usePositions from "../hooks/usePositions";
@@ -146,6 +150,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
       lastNodeOffset,
       id,
       selected,
+      isLast,
     }) => {
       const wordsBeforeSelected = [];
       const wordsAfterSelected = [];
@@ -173,9 +178,6 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         });
       }
 
-      // const allAlreadyHaveOption = wordsSelected.every(({ options }) =>
-      // options.includes(decoration)
-      // );
       const allAlreadyHaveOption = selectedOptions.includes(decoration);
 
       // removes the first and last selected
@@ -422,14 +424,31 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         return letterIndex !== -1;
       });
 
-      // stateStorage.set("selection_range", {
-      //   start: newFirstNodeIndex,
-      //   end: newLastNodeIndex,
-      //   startBlockId,
-      //   endBlockId,
-      // });
+      const multiLinFirstNode = globalState.get("multi_line_first_node_index");
+
+      if (isLast && multiLinFirstNode != null) {
+        newFirstNodeIndex = multiLinFirstNode.index;
+        startBlockId = multiLinFirstNode.id;
+      }
+
+      if (isLast) {
+        console.log({
+          start: newFirstNodeIndex,
+          end: newLastNodeIndex,
+          startBlockId,
+          endBlockId,
+        });
+        stateStorage.set("selection_range", {
+          start: newFirstNodeIndex,
+          end: newLastNodeIndex,
+          startBlockId,
+          endBlockId,
+        });
+      }
 
       handleUpdate(id, newText);
+
+      return { newFirstNodeIndex, startBlockId };
     },
     [handleUpdate, selectedOptions]
   );
@@ -461,16 +480,13 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
       );
 
       if (areFromDiffLines) {
-        const { linesBetween, selectedBlocks } = multiLineInfo;
-
-        const firstLine = selectedBlocks[0];
-        const lastLine = selectedBlocks[selectedBlocks.length - 1];
+        const { linesBetween } = multiLineInfo;
 
         let startIndex = 0;
         // sum the length of the lines between
         let stuffToBeSliced = 0;
 
-        linesBetween.forEach((line, index) => {
+        linesBetween.forEach((line, key) => {
           // removes the old startIndex
           stuffToBeSliced += startIndex;
           const linesLetters = selected.slice(stuffToBeSliced);
@@ -495,11 +511,10 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
           startIndex = fromToLastIndex + 1;
 
           const decSelected = linesLetters.slice(0, startIndex);
-          console.log(decSelected);
 
-          doTheDecoration({
+          const { newFirstNodeIndex, startBlockId } = doTheDecoration({
             decoration,
-            firstNodeIndex: 0,
+            firstNodeIndex: key === 0 ? firstNodeIndex : 0,
             lastNodeIndex: fromToLastIndex,
             letters: line.text,
             areTheSame: line.text.length === 1,
@@ -507,8 +522,18 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
             lastNodeOffset: decSelected[decSelected.length - 1].index,
             id: line.id,
             selected: decSelected,
+            isLast: key === linesBetween.length - 1,
           });
+
+          if (key === 0) {
+            globalState.set("multi_line_first_node_index", {
+              id: startBlockId,
+              index: newFirstNodeIndex,
+            });
+          }
         });
+
+        globalState.set("multi_line_first_node_index", null);
 
         return;
       }
@@ -523,6 +548,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         lastNodeOffset,
         id,
         selected,
+        isLast: true,
       });
     },
     [doTheDecoration, getFirstAndLastNode, id, mimic, text, toast]

@@ -10,8 +10,8 @@ function useLinesBetween() {
       firstLineId,
       lastLineId,
     }: {
-      firstLineId: number;
-      lastLineId: number;
+      firstLineId: string;
+      lastLineId: string;
     }) => {
       const lines = stateStorage.get(contextName);
 

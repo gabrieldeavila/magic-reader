@@ -6,7 +6,7 @@ function useGetCurrBlockId() {
   const { contextName } = useWriterContext();
 
   const getBlockId = useCallback(
-    ({ textId }: { textId?: number }) => {
+    ({ textId }: { textId?: string }) => {
       const selection = window.getSelection();
 
       // get the closest data-scribere

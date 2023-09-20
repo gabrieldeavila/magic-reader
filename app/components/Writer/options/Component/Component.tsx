@@ -836,7 +836,7 @@ function Component({ text, id, position }: IEditable) {
 
     info.current = {
       selection: 0,
-      blockId: 0,
+      blockId: "",
     };
 
     const selection = window.getSelection();
@@ -928,6 +928,7 @@ function Component({ text, id, position }: IEditable) {
     if (!startBlock || !endBlock) {
       return;
     }
+    console.log(startBlock, endBlock);
 
     range.setStart(startBlock, selectionRange.start);
     range.setEnd(endBlock, selectionRange.end);
