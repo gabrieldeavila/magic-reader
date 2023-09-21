@@ -5,7 +5,7 @@ import { useWriterContext } from "../context/WriterContext";
 function useLinesBetween() {
   const { contextName } = useWriterContext();
 
-  const getLinesBettween = useCallback(
+  const getLinesBetween = useCallback(
     ({
       firstLineId,
       lastLineId,
@@ -18,7 +18,12 @@ function useLinesBetween() {
       const firstLineIndex = lines.findIndex((line) => line.id === firstLineId);
       const lastLineIndex = lines.findIndex((line) => line.id === lastLineId);
 
-      const linesBetween = lines.slice(firstLineIndex, lastLineIndex + 1);
+      // removes the lines without text
+      const linesBetween = lines
+        .slice(firstLineIndex, lastLineIndex + 1)
+        .filter((line) => {
+          return !(line.text.length === 1 && line.text[0]?.value.length === 0);
+        });
 
       const newMimic = [];
       const selectedBlocks = [];
@@ -29,6 +34,7 @@ function useLinesBetween() {
         text.forEach((block) => {
           const { value, id } = block;
           const letters = value.split("");
+
           selectedBlocks.push(block);
 
           letters.forEach((letter, index) => {
@@ -47,7 +53,7 @@ function useLinesBetween() {
     [contextName]
   );
 
-  return { getLinesBettween };
+  return { getLinesBetween };
 }
 
 export default useLinesBetween;

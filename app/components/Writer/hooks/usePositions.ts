@@ -26,7 +26,7 @@ function usePositions({ text }: { text: IText[] }) {
     [text]
   );
 
-  const { getLinesBettween } = useLinesBetween();
+  const { getLinesBetween } = useLinesBetween();
 
   const getFirstAndLastNode = useCallback(() => {
     const selection = window.getSelection();
@@ -80,9 +80,9 @@ function usePositions({ text }: { text: IText[] }) {
       (prevSelectionRange?.end ||
         (anchorComesFirst ? focusOffset : anchorOffset)) - 1;
 
-    const firstNodeId = firstNode?.getAttribute("data-block-id");
+    let firstNodeId = firstNode?.getAttribute("data-block-id");
 
-    const lastNodeId = lastNode?.getAttribute("data-block-id");
+    let lastNodeId = lastNode?.getAttribute("data-block-id");
 
     const isCodeBlock = !!(
       firstNode?.querySelector("code") || lastNode?.querySelector("code")
@@ -143,7 +143,7 @@ function usePositions({ text }: { text: IText[] }) {
     let multiLineInfo = { selectedBlocks: [], linesBetween: [] };
 
     if (areFromDiffLines) {
-      const { newMimic, ...props } = getLinesBettween({
+      const { newMimic, ...props } = getLinesBetween({
         firstLineId: firstNode
           ?.closest("[data-line-id]")
           ?.getAttribute("data-line-id"),
@@ -151,6 +151,8 @@ function usePositions({ text }: { text: IText[] }) {
           ?.closest("[data-line-id]")
           ?.getAttribute("data-line-id"),
       });
+      firstNodeId = props.linesBetween[0].text[0].id;
+      lastNodeId = props.linesBetween[props.linesBetween.length - 1].text[0].id;
 
       letters = newMimic;
       multiLineInfo = props;
@@ -184,7 +186,7 @@ function usePositions({ text }: { text: IText[] }) {
       areFromDiffLines,
       multiLineInfo,
     };
-  }, [getLinesBettween, mimic]);
+  }, [getLinesBetween, mimic]);
 
   const getSelectedBlocks = useCallback(() => {
     const {

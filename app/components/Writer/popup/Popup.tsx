@@ -210,45 +210,52 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
         // if areTheSame, then the first word will be sliced in 2
         if (areTheSame) {
-          const { first, second, third } = firstWord.value.split("").reduce(
-            (acc, item, index) => {
-              if (index < firstNodeOffset) acc.first += item;
-              else if (index > lastNodeOffset) acc.third += item;
-              else acc.second += item;
+          try {
+            const { first, second, third } = firstWord.value.split("").reduce(
+              (acc, item, index) => {
+                if (index < firstNodeOffset) acc.first += item;
+                else if (index > lastNodeOffset) acc.third += item;
+                else acc.second += item;
 
-              return acc;
-            },
-            {
-              first: "",
-              second: "",
-              third: "",
+                return acc;
+              },
+              {
+                first: "",
+                second: "",
+                third: "",
+              }
+            );
+
+            if (first) {
+              newWords.push({
+                ...firstWord,
+                value: first,
+              });
             }
-          );
 
-          if (first) {
-            newWords.push({
-              ...firstWord,
-              value: first,
-            });
-          }
+            if (second) {
+              newWords.push({
+                ...firstWord,
+                value: second,
+                options: firstWord.options.includes(decoration)
+                  ? allAlreadyHaveOption
+                    ? firstWord.options.filter(
+                        (option) => option !== decoration
+                      )
+                    : firstWord.options
+                  : [...firstWord.options, decoration],
+              });
+            }
 
-          if (second) {
-            newWords.push({
-              ...firstWord,
-              value: second,
-              options: firstWord.options.includes(decoration)
-                ? allAlreadyHaveOption
-                  ? firstWord.options.filter((option) => option !== decoration)
-                  : firstWord.options
-                : [...firstWord.options, decoration],
-            });
-          }
-
-          if (third) {
-            newWords.push({
-              ...firstWord,
-              value: third,
-            });
+            if (third) {
+              newWords.push({
+                ...firstWord,
+                value: third,
+              });
+            }
+          } catch {
+            console.log(firstWord);
+            console.log();
           }
         } else {
           const firstWordSliced = {
@@ -485,6 +492,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         let startIndex = 0;
         // sum the length of the lines between
         let stuffToBeSliced = 0;
+        console.log(linesBetween);
 
         linesBetween.forEach((line, key) => {
           // removes the old startIndex

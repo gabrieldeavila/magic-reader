@@ -6,6 +6,8 @@ import {
   stateStorage,
   useTriggerState,
 } from "react-trigger-state";
+import uuid from "../../../utils/uuid";
+import useGetCurrBlockId from "../hooks/useGetCurrBlockId";
 import {
   IText,
   IWriterContext,
@@ -14,26 +16,24 @@ import {
 } from "../interface";
 import Component from "../options/Component/Component";
 import { ReadWrite } from "../options/Component/style";
-import useGetCurrBlockId from "../hooks/useGetCurrBlockId";
-import uuid from "../../../utils/uuid";
 
 export const WriterContext = createContext<IWriterContext>({
   content: [],
   setContent: () => [{ text: "Initial" }],
-  handleUpdate: (textId: number, text: IText[]) => {
+  handleUpdate: (textId: string, text: IText[]) => {
     console.log(textId, text);
   },
-  deleteBlock: (textId: number, blockId: number) => {
+  deleteBlock: (textId: string, blockId: string) => {
     console.log(textId, blockId);
   },
-  deleteLine: (textId: number) => {
+  deleteLine: (textId: string) => {
     console.log(textId);
   },
   contextName: "writter_context",
   info: {
     current: {
       selection: 0,
-      blockId: 0,
+      blockId: "",
     },
   },
 });
@@ -61,7 +61,7 @@ const WriterContextProvider = ({
   });
 
   const handleUpdate = useCallback(
-    (textId: number, text: IText[]) => {
+    (textId: string, text: IText[]) => {
       setContent((prev) => {
         const newContent = [...prev];
 
@@ -76,7 +76,7 @@ const WriterContextProvider = ({
   );
 
   const deleteBlock = useCallback(
-    (textId: number, blockId: number) => {
+    (textId: string, blockId: string) => {
       setContent((prev) => {
         const newContent = [...prev];
 
@@ -101,7 +101,7 @@ const WriterContextProvider = ({
   );
 
   const deleteLine = useCallback(
-    (textId: number) => {
+    (textId: string) => {
       setContent((prev) => {
         const newContent = [...prev];
 
