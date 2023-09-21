@@ -18,12 +18,26 @@ function useLinesBetween() {
       const firstLineIndex = lines.findIndex((line) => line.id === firstLineId);
       const lastLineIndex = lines.findIndex((line) => line.id === lastLineId);
 
-      // removes the lines without text
-      const linesBetween = lines
-        .slice(firstLineIndex, lastLineIndex + 1)
-        .filter((line) => {
-          return !(line.text.length === 1 && line.text[0]?.value.length === 0);
-        });
+      const tempLinesBetween = lines.slice(firstLineIndex, lastLineIndex + 1);
+
+      // remove the empty lines
+      const linesBetween = tempLinesBetween.filter((line) => {
+        return !(line.text.length === 1 && line.text[0]?.value.length === 0);
+      });
+
+      // if the first tempLine is empty, we create a new id, with the same id as the first line of the linesBetween
+      let newFirstLineId;
+
+      if (tempLinesBetween[0].text.length === 0) {
+        newFirstLineId = linesBetween[0].id;
+      }
+
+      // the same for the last line
+      let newLastLineId;
+
+      if (tempLinesBetween[tempLinesBetween.length - 1].text.length === 0) {
+        newLastLineId = linesBetween[linesBetween.length - 1].id;
+      }
 
       const newMimic = [];
       const selectedBlocks = [];
@@ -48,7 +62,13 @@ function useLinesBetween() {
         });
       });
 
-      return { newMimic, selectedBlocks, linesBetween };
+      return {
+        newLastLineId,
+        newFirstLineId,
+        newMimic,
+        selectedBlocks,
+        linesBetween,
+      };
     },
     [contextName]
   );

@@ -143,16 +143,25 @@ function usePositions({ text }: { text: IText[] }) {
     let multiLineInfo = { selectedBlocks: [], linesBetween: [] };
 
     if (areFromDiffLines) {
-      const { newMimic, ...props } = getLinesBetween({
-        firstLineId: firstNode
-          ?.closest("[data-line-id]")
-          ?.getAttribute("data-line-id"),
-        lastLineId: lastNode
-          ?.closest("[data-line-id]")
-          ?.getAttribute("data-line-id"),
-      });
-      firstNodeId = props.linesBetween[0].text[0].id;
-      lastNodeId = props.linesBetween[props.linesBetween.length - 1].text[0].id;
+      const { newLastLineId, newFirstLineId, newMimic, ...props } =
+        getLinesBetween({
+          firstLineId: firstNode
+            ?.closest("[data-line-id]")
+            ?.getAttribute("data-line-id"),
+          lastLineId: lastNode
+            ?.closest("[data-line-id]")
+            ?.getAttribute("data-line-id"),
+        });
+
+      console.log(props);
+
+      if (newFirstLineId) {
+        firstNodeId = newFirstLineId;
+      }
+
+      if (newLastLineId) {
+        lastNodeId = newLastLineId;
+      }
 
       letters = newMimic;
       multiLineInfo = props;

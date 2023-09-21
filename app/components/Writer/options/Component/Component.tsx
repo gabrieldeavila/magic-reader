@@ -928,7 +928,6 @@ function Component({ text, id, position }: IEditable) {
     if (!startBlock || !endBlock) {
       return;
     }
-    console.log(startBlock, endBlock);
 
     range.setStart(startBlock, selectionRange.start);
     range.setEnd(endBlock, selectionRange.end);
