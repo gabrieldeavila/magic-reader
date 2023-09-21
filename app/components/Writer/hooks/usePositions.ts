@@ -153,18 +153,41 @@ function usePositions({ text }: { text: IText[] }) {
             ?.getAttribute("data-line-id"),
         });
 
-      console.log(props);
-
-      if (newFirstLineId) {
-        firstNodeId = newFirstLineId;
-      }
-
-      if (newLastLineId) {
-        lastNodeId = newLastLineId;
-      }
-
       letters = newMimic;
       multiLineInfo = props;
+
+      if (props.linesBetween.length === 1) {
+        const lineId = props.linesBetween[0].id;
+        // gets the letters with the lineId
+        const testingLetters = newMimic.filter(
+          ({ lineId: id }) => id === lineId
+        );
+
+        // if the only line is not the same as the selected
+        // the first node is not going to be the same
+        if (firstNodeId !== testingLetters[firstNodeOffset].id) {
+          firstNodeId = props.selectedBlocks[0]?.id;
+          firstNodeOffset = 0;
+        }
+
+        // the same for the last node
+        if (lastNodeId !== testingLetters[lastNodeOffset + 1].id) {
+          lastNodeId =
+            props.selectedBlocks[props.selectedBlocks.length - 1]?.id;
+
+          lastNodeOffset =
+            props.selectedBlocks[props.selectedBlocks.length - 1].value.length -
+            1;
+        }
+      } else {
+        if (newFirstLineId) {
+          firstNodeId = newFirstLineId;
+        }
+
+        if (newLastLineId) {
+          lastNodeId = newLastLineId;
+        }
+      }
     }
 
     const firstNodeIndex = letters.findIndex(({ id }) => {
