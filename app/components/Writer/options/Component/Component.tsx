@@ -938,20 +938,46 @@ function Component({ text, id, position }: IEditable) {
 
   const [showPopup, setShowPopup] = useState(false);
 
+  const [showPopupForced] = useTriggerState({
+    name: `force_popup_positions_update-${id}`,
+    initial: null,
+  });
+
+  useEffect(() => {
+    if (showPopupForced) {
+      setShowPopup(true);
+      globalState.set(`force_popup_positions_update-${id}`, null);
+    }
+  }, [id, showPopupForced]);
+
+  const [closePopupForced] = useTriggerState({
+    name: `close_popup_forced-${id}`,
+    initial: null,
+  });
+
+  useEffect(() => {
+    if (closePopupForced) {
+      console.log("closePopupForced");
+      setShowPopup(false);
+      globalState.set(`close_popup_forced-${id}`, null);
+    }
+  }, [closePopupForced, id]);
+
   const checkSelection = useCallback(() => {
     setTimeout(() => {
       const selection = window.getSelection();
       const lettersSelected = selection.toString().length;
+      const { dataLineId } = getBlockId({});
 
       const show = lettersSelected > 0;
 
-      if (show) {
+      if (show && dataLineId === id) {
         stateStorage.set("force_popup_positions_update", new Date());
       }
 
       setShowPopup(show);
     });
-  }, []);
+  }, [getBlockId, id]);
 
   const handleSelect = useCallback(
     (ev: React.KeyboardEvent<HTMLDivElement>) => {
@@ -1146,6 +1172,7 @@ function Component({ text, id, position }: IEditable) {
     if (keyDownEv == null) return;
 
     handleChange(keyDownEv.e);
+    globalState.set(`key_down_ev-${id}`, null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyDownEv]);
 
@@ -1158,6 +1185,7 @@ function Component({ text, id, position }: IEditable) {
     if (blurEv == null) return;
 
     checkSelection();
+    globalState.set(`blur_ev-${id}`, null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [blurEv]);
 
@@ -1170,6 +1198,7 @@ function Component({ text, id, position }: IEditable) {
     if (dragEv == null) return;
 
     preventDefault(dragEv.e);
+    globalState.set(`drag_ev-${id}`, null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dragEv]);
 
@@ -1182,6 +1211,7 @@ function Component({ text, id, position }: IEditable) {
     if (selectEv == null) return;
 
     handleSelect(selectEv.e);
+    globalState.set(`select_ev-${id}`, null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectEv]);
 
@@ -1194,6 +1224,7 @@ function Component({ text, id, position }: IEditable) {
     if (pasteEv == null) return;
 
     handlePaste(pasteEv.e);
+    globalState.set(`paste_ev-${id}`, null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pasteEv]);
 

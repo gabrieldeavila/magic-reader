@@ -148,7 +148,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
       areTheSame,
       firstNodeOffset,
       lastNodeOffset,
-      id,
+      id: dId,
       selected,
       isLast,
     }) => {
@@ -254,8 +254,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
               });
             }
           } catch {
-            console.log(firstWord);
-            console.log();
+            console.log(firstWord, "errror");
           }
         } else {
           const firstWordSliced = {
@@ -439,12 +438,12 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
       }
 
       if (isLast) {
-        console.log({
-          start: newFirstNodeIndex,
-          end: newLastNodeIndex,
-          startBlockId,
-          endBlockId,
-        });
+        if (id !== dId) {
+          stateStorage.set(`close_popup_forced-${id}`, true);
+          stateStorage.set(`force_popup_positions_update-${dId}`, true);
+          stateStorage.set(`has_focus_ev-${dId}`, true);
+        }
+
         stateStorage.set("selection_range", {
           start: newFirstNodeIndex,
           end: newLastNodeIndex,
@@ -453,11 +452,11 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         });
       }
 
-      handleUpdate(id, newText);
+      handleUpdate(dId, newText);
 
       return { newFirstNodeIndex, startBlockId };
     },
-    [handleUpdate, selectedOptions]
+    [handleUpdate, id, selectedOptions]
   );
 
   const addDecoration = useCallback(
@@ -492,7 +491,6 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         let startIndex = 0;
         // sum the length of the lines between
         let stuffToBeSliced = 0;
-        console.log(linesBetween);
 
         linesBetween.forEach((line, key) => {
           // removes the old startIndex

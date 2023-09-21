@@ -165,13 +165,13 @@ function usePositions({ text }: { text: IText[] }) {
 
         // if the only line is not the same as the selected
         // the first node is not going to be the same
-        if (firstNodeId !== testingLetters[firstNodeOffset].id) {
+        if (firstNodeId !== testingLetters[firstNodeOffset]?.id) {
           firstNodeId = props.selectedBlocks[0]?.id;
           firstNodeOffset = 0;
         }
 
         // the same for the last node
-        if (lastNodeId !== testingLetters[lastNodeOffset + 1].id) {
+        if (lastNodeId !== testingLetters[lastNodeOffset + 1]?.id) {
           lastNodeId =
             props.selectedBlocks[props.selectedBlocks.length - 1]?.id;
 
