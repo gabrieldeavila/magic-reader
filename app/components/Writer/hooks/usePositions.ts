@@ -194,10 +194,18 @@ function usePositions({ text }: { text: IText[] }) {
       } else {
         if (newFirstLineId) {
           firstNodeId = newFirstLineId;
+          if (slicedTheFirstLine) {
+            firstNodeOffset = 0;
+          }
         }
 
         if (newLastLineId) {
           lastNodeId = newLastLineId;
+          if (slicedTheLastLine) {
+            lastNodeOffset =
+              props.selectedBlocks[props.selectedBlocks.length - 1].value
+                .length - 1;
+          }
         }
       }
     }

@@ -522,7 +522,9 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
             decoration,
             firstNodeIndex: key === 0 ? firstNodeIndex : 0,
             lastNodeIndex:
-              array.length === 1 ? firstNodeIndex + fromToLastIndex : fromToLastIndex,
+              array.length === 1
+                ? firstNodeIndex + fromToLastIndex
+                : fromToLastIndex,
             letters: line.text,
             areTheSame: line.text.length === 1,
             firstNodeOffset: decSelected[0].index,
