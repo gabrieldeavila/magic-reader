@@ -492,7 +492,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         // sum the length of the lines between
         let stuffToBeSliced = 0;
 
-        linesBetween.forEach((line, key) => {
+        linesBetween.forEach((line, key, array) => {
           // removes the old startIndex
           stuffToBeSliced += startIndex;
           const linesLetters = selected.slice(stuffToBeSliced);
@@ -521,7 +521,8 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
           const { newFirstNodeIndex, startBlockId } = doTheDecoration({
             decoration,
             firstNodeIndex: key === 0 ? firstNodeIndex : 0,
-            lastNodeIndex: fromToLastIndex,
+            lastNodeIndex:
+              array.length === 1 ? firstNodeIndex + fromToLastIndex : fromToLastIndex,
             letters: line.text,
             areTheSame: line.text.length === 1,
             firstNodeOffset: decSelected[0].index,

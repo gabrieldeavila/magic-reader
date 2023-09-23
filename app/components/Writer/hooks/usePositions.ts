@@ -143,15 +143,21 @@ function usePositions({ text }: { text: IText[] }) {
     let multiLineInfo = { selectedBlocks: [], linesBetween: [] };
 
     if (areFromDiffLines) {
-      const { newLastLineId, newFirstLineId, newMimic, ...props } =
-        getLinesBetween({
-          firstLineId: firstNode
-            ?.closest("[data-line-id]")
-            ?.getAttribute("data-line-id"),
-          lastLineId: lastNode
-            ?.closest("[data-line-id]")
-            ?.getAttribute("data-line-id"),
-        });
+      const {
+        newLastLineId,
+        newFirstLineId,
+        newMimic,
+        slicedTheFirstLine,
+        slicedTheLastLine,
+        ...props
+      } = getLinesBetween({
+        firstLineId: firstNode
+          ?.closest("[data-line-id]")
+          ?.getAttribute("data-line-id"),
+        lastLineId: lastNode
+          ?.closest("[data-line-id]")
+          ?.getAttribute("data-line-id"),
+      });
 
       letters = newMimic;
       multiLineInfo = props;
@@ -165,13 +171,19 @@ function usePositions({ text }: { text: IText[] }) {
 
         // if the only line is not the same as the selected
         // the first node is not going to be the same
-        if (firstNodeId !== testingLetters[firstNodeOffset]?.id) {
+        if (
+          firstNodeId !== testingLetters[firstNodeOffset]?.id &&
+          slicedTheFirstLine
+        ) {
           firstNodeId = props.selectedBlocks[0]?.id;
           firstNodeOffset = 0;
         }
 
         // the same for the last node
-        if (lastNodeId !== testingLetters[lastNodeOffset + 1]?.id) {
+        if (
+          lastNodeId !== testingLetters[lastNodeOffset + 1]?.id &&
+          slicedTheLastLine
+        ) {
           lastNodeId =
             props.selectedBlocks[props.selectedBlocks.length - 1]?.id;
 
@@ -228,7 +240,7 @@ function usePositions({ text }: { text: IText[] }) {
       areFromDiffLines,
       multiLineInfo,
     } = getFirstAndLastNode();
-    const selected = selectedLetters.slice(firstNodeIndex, lastNodeIndex + 1);
+    const selected = selectedLetters?.slice(firstNodeIndex, lastNodeIndex + 1);
 
     // gets the ids of the selected (unique)
     const selectedIds = selected.reduce((acc, item) => {

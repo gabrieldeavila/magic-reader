@@ -19,10 +19,23 @@ function useLinesBetween() {
       const lastLineIndex = lines.findIndex((line) => line.id === lastLineId);
 
       const tempLinesBetween = lines.slice(firstLineIndex, lastLineIndex + 1);
+      let slicedTheFirstLine = false;
+      let slicedTheLastLine = false;
 
       // remove the empty lines
-      const linesBetween = tempLinesBetween.filter((line) => {
-        return !(line.text.length === 1 && line.text[0]?.value.length === 0);
+      const linesBetween = tempLinesBetween.filter((line, index) => {
+        const isEmpty =
+          line.text.length === 1 && line.text[0]?.value.length === 0;
+
+        if (isEmpty && index === 0) {
+          slicedTheFirstLine = true;
+        }
+
+        if (isEmpty && index === tempLinesBetween.length - 1) {
+          slicedTheLastLine = true;
+        }
+
+        return !isEmpty;
       });
 
       // if the first tempLine is empty, we create a new id, with the same id as the first line of the linesBetween
@@ -68,6 +81,8 @@ function useLinesBetween() {
         newMimic,
         selectedBlocks,
         linesBetween,
+        slicedTheFirstLine,
+        slicedTheLastLine,
       };
     },
     [contextName]
