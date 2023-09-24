@@ -140,6 +140,13 @@ const WriterContextProvider = ({
   const handleBlur = useCallback(
     (e) => {
       const { dataLineId } = getBlockId({});
+      const prevSelected = globalState.get("prev-selected");
+      const selection = window.getSelection().toString().length;
+
+      if (prevSelected && selection === 0) {
+        stateStorage.set(`has_focus_ev-${prevSelected}`, false);
+      }
+
       stateStorage.set(`blur_ev-${dataLineId}`, { e, date: new Date() });
     },
     [getBlockId]

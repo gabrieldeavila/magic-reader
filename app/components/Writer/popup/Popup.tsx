@@ -454,6 +454,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
             stateStorage.set(`close_popup_forced-${id}`, new Date());
             stateStorage.set(`force_popup_positions_update-${dId}`, true);
             stateStorage.set(`has_focus_ev-${dId}`, true);
+            globalState.set("prev-selected", dId);
           }, 1);
         }
       }
