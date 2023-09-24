@@ -42,8 +42,9 @@ function useLinesBetween() {
       let newFirstLineId;
 
       if (
-        tempLinesBetween[0].text.length === 0 ||
-        tempLinesBetween[0].text[0]?.value.length === 0
+        (tempLinesBetween[0].text.length === 0 ||
+          tempLinesBetween[0].text[0]?.value.length === 0) &&
+        linesBetween[0]?.text?.[0]?.id
       ) {
         newFirstLineId = linesBetween[0].text[0].id;
       }
@@ -52,10 +53,13 @@ function useLinesBetween() {
       let newLastLineId;
 
       if (
-        tempLinesBetween[tempLinesBetween.length - 1].text.length === 0 ||
-        tempLinesBetween[tempLinesBetween.length - 1].text[
-          tempLinesBetween[tempLinesBetween.length - 1].text.length - 1
-        ]?.value.length === 0
+        (tempLinesBetween[tempLinesBetween.length - 1].text.length === 0 ||
+          tempLinesBetween[tempLinesBetween.length - 1].text[
+            tempLinesBetween[tempLinesBetween.length - 1].text.length - 1
+          ]?.value.length === 0) &&
+        linesBetween[linesBetween.length - 1]?.text?.[
+          linesBetween[linesBetween.length - 1]?.text?.length - 1
+        ]?.id
       ) {
         newLastLineId =
           linesBetween[linesBetween.length - 1].text[

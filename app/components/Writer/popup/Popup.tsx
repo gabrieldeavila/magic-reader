@@ -438,12 +438,6 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
       }
 
       if (isLast) {
-        if (id !== dId) {
-          stateStorage.set(`close_popup_forced-${id}`, true);
-          stateStorage.set(`force_popup_positions_update-${dId}`, true);
-          stateStorage.set(`has_focus_ev-${dId}`, true);
-        }
-
         stateStorage.set("selection_range", {
           start: newFirstNodeIndex,
           end: newLastNodeIndex,
@@ -454,6 +448,15 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
       handleUpdate(dId, newText);
 
+      if (isLast) {
+        if (id !== dId) {
+          setTimeout(() => {
+            stateStorage.set(`close_popup_forced-${id}`, new Date());
+            stateStorage.set(`force_popup_positions_update-${dId}`, true);
+            stateStorage.set(`has_focus_ev-${dId}`, true);
+          }, 1);
+        }
+      }
       return { newFirstNodeIndex, startBlockId };
     },
     [handleUpdate, id, selectedOptions]

@@ -957,7 +957,6 @@ function Component({ text, id, position }: IEditable) {
 
   useEffect(() => {
     if (closePopupForced) {
-      console.log("closePopupForced");
       setShowPopup(false);
       globalState.set(`close_popup_forced-${id}`, null);
     }
@@ -974,7 +973,6 @@ function Component({ text, id, position }: IEditable) {
       if (show && dataLineId === id) {
         stateStorage.set("force_popup_positions_update", new Date());
       }
-
       setShowPopup(show);
     });
   }, [getBlockId, id]);

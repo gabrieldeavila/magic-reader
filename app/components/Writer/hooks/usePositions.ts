@@ -185,6 +185,7 @@ function usePositions({ text }: { text: IText[] }) {
           slicedTheLastLine
         ) {
           lastNodeId =
+            newLastLineId ??
             props.selectedBlocks[props.selectedBlocks.length - 1]?.id;
 
           lastNodeOffset =
@@ -201,6 +202,7 @@ function usePositions({ text }: { text: IText[] }) {
 
         if (newLastLineId) {
           lastNodeId = newLastLineId;
+
           if (slicedTheLastLine) {
             lastNodeOffset =
               props.selectedBlocks[props.selectedBlocks.length - 1].value
