@@ -106,7 +106,16 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
   useLayoutEffect(() => {
     // gets the position of the selected text
     const selection = window.getSelection();
-    const position = selection?.getRangeAt(0)?.getBoundingClientRect?.();
+
+    const anchor = selection.anchorNode?.parentElement;
+    const focus = selection.focusNode?.parentElement;
+    // see which node is the first
+    // if the anchor is the first, then the focus is the last
+    const anchorComesFirst =
+      anchor?.compareDocumentPosition(focus) & Node.DOCUMENT_POSITION_FOLLOWING;
+
+    const lastNode = anchorComesFirst ? focus : anchor;
+    const position = lastNode?.getBoundingClientRect?.();
 
     if (!position) return;
 
