@@ -109,13 +109,18 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
     const anchor = selection.anchorNode?.parentElement;
     const focus = selection.focusNode?.parentElement;
-    // see which node is the first
-    // if the anchor is the first, then the focus is the last
-    const anchorComesFirst =
-      anchor?.compareDocumentPosition(focus) & Node.DOCUMENT_POSITION_FOLLOWING;
 
-    const lastNode = anchorComesFirst ? focus : anchor;
-    const position = lastNode?.getBoundingClientRect?.();
+    let position = focus?.getBoundingClientRect?.();
+
+    const anchorComesFirst = !!(
+      anchor?.compareDocumentPosition(focus) & Node.DOCUMENT_POSITION_FOLLOWING
+    );
+
+    const isTopOutOfScreen = position.top + window.scrollY - 40 < 0;
+
+    if (!anchorComesFirst && isTopOutOfScreen) {
+      position = anchor?.getBoundingClientRect?.();
+    }
 
     if (!position) return;
 
@@ -130,7 +135,10 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
     let newPositions = {};
 
     let newLeft;
-    const newTop = position.top + window.scrollY + 25;
+    const newTop =
+      position.top +
+      window.scrollY +
+      (anchorComesFirst || isTopOutOfScreen ? 25 : -40);
 
     if (isOutOfScreen) {
       newLeft = position.left - width;
@@ -160,6 +168,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
       id: dId,
       selected,
       isLast,
+      anchorComesFirst,
     }) => {
       const wordsBeforeSelected = [];
       const wordsAfterSelected = [];
@@ -446,7 +455,21 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         startBlockId = multiLinFirstNode.id;
       }
 
+      handleUpdate(dId, newText);
+
       if (isLast) {
+        // reverts start and end if anchor does not comes first
+        // if (anchorComesFirst) {
+        //   [newFirstNodeIndex, newLastNodeIndex] = [
+        //     newLastNodeIndex,
+        //     newFirstNodeIndex,
+        //   ];
+
+        //   [startBlockId, endBlockId] = [endBlockId, startBlockId];
+
+        //   dId = endBlockId;
+        // }
+
         stateStorage.set("selection_range", {
           start: newFirstNodeIndex,
           end: newLastNodeIndex,
@@ -455,16 +478,17 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         });
       }
 
-      handleUpdate(dId, newText);
-
       if (isLast) {
         if (id !== dId) {
           setTimeout(() => {
+            console.log("uh");
             stateStorage.set(`close_popup_forced-${id}`, new Date());
             stateStorage.set(`force_popup_positions_update-${dId}`, true);
             stateStorage.set(`has_focus_ev-${dId}`, true);
             globalState.set("prev-selected", dId);
           }, 1);
+        } else {
+          console.log("niet");
         }
       }
       return { newFirstNodeIndex, startBlockId };
@@ -483,6 +507,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         areFromDiffLines,
         multiLineInfo,
         selectedLetters,
+        anchorComesFirst,
       } = getFirstAndLastNode();
 
       if (firstNodeIndex === -1 || lastNodeIndex === -1) {
@@ -545,6 +570,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
             id: line.id,
             selected: decSelected,
             isLast: key === linesBetween.length - 1,
+            anchorComesFirst,
           });
 
           if (key === 0) {
@@ -571,6 +597,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         id,
         selected,
         isLast: true,
+        anchorComesFirst,
       });
     },
     [doTheDecoration, getFirstAndLastNode, id, mimic, text, toast]

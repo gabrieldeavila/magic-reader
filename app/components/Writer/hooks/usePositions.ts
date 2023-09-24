@@ -239,6 +239,7 @@ function usePositions({ text }: { text: IText[] }) {
       selectedLetters: letters,
       areFromDiffLines,
       multiLineInfo,
+      anchorComesFirst
     };
   }, [getLinesBetween, mimic]);
 
