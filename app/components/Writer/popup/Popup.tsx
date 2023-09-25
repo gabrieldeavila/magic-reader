@@ -572,7 +572,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
                   ? firstNodeIndex + fromToLastIndex
                   : fromToLastIndex,
               letters: line.text,
-              areTheSame: line.text.length === 1,
+              areTheSame: line.text.length === 1 || key === array.length - 1,
               firstNodeOffset: decSelected[0].index,
               lastNodeOffset: decSelected[decSelected.length - 1].index,
               id: line.id,
