@@ -26,7 +26,7 @@ function usePositions({ text }: { text: IText[] }) {
     [text]
   );
 
-  const { getLinesBettween } = useLinesBetween();
+  const { getLinesBetween } = useLinesBetween();
 
   const getFirstAndLastNode = useCallback(() => {
     const selection = window.getSelection();
@@ -80,9 +80,9 @@ function usePositions({ text }: { text: IText[] }) {
       (prevSelectionRange?.end ||
         (anchorComesFirst ? focusOffset : anchorOffset)) - 1;
 
-    const firstNodeId = parseFloat(firstNode?.getAttribute("data-block-id"));
+    let firstNodeId = firstNode?.getAttribute("data-block-id");
 
-    const lastNodeId = parseFloat(lastNode?.getAttribute("data-block-id"));
+    let lastNodeId = lastNode?.getAttribute("data-block-id");
 
     const isCodeBlock = !!(
       firstNode?.querySelector("code") || lastNode?.querySelector("code")
@@ -140,20 +140,76 @@ function usePositions({ text }: { text: IText[] }) {
       lastNode?.closest("[data-line-id]");
 
     let letters = mimic;
-    let multiLineInfo = { selectedBlocks: [] };
+    let multiLineInfo = { selectedBlocks: [], linesBetween: [] };
 
     if (areFromDiffLines) {
-      const { newMimic, ...props } = getLinesBettween({
-        firstLineId: parseFloat(
-          firstNode?.closest("[data-line-id]")?.getAttribute("data-line-id")
-        ),
-        lastLineId: parseFloat(
-          lastNode?.closest("[data-line-id]")?.getAttribute("data-line-id")
-        ),
+      const {
+        newLastLineId,
+        newFirstLineId,
+        newMimic,
+        slicedTheFirstLine,
+        slicedTheLastLine,
+        ...props
+      } = getLinesBetween({
+        firstLineId: firstNode
+          ?.closest("[data-line-id]")
+          ?.getAttribute("data-line-id"),
+        lastLineId: lastNode
+          ?.closest("[data-line-id]")
+          ?.getAttribute("data-line-id"),
       });
 
       letters = newMimic;
       multiLineInfo = props;
+
+      if (props.linesBetween.length === 1) {
+        const lineId = props.linesBetween[0].id;
+        // gets the letters with the lineId
+        const testingLetters = newMimic.filter(
+          ({ lineId: id }) => id === lineId
+        );
+
+        // if the only line is not the same as the selected
+        // the first node is not going to be the same
+        if (
+          firstNodeId !== testingLetters[firstNodeOffset]?.id &&
+          slicedTheFirstLine
+        ) {
+          firstNodeId = props.selectedBlocks[0]?.id;
+          firstNodeOffset = 0;
+        }
+
+        // the same for the last node
+        if (
+          lastNodeId !== testingLetters[lastNodeOffset + 1]?.id &&
+          slicedTheLastLine
+        ) {
+          lastNodeId =
+            newLastLineId ??
+            props.selectedBlocks[props.selectedBlocks.length - 1]?.id;
+
+          lastNodeOffset =
+            props.selectedBlocks[props.selectedBlocks.length - 1].value.length -
+            1;
+        }
+      } else {
+        if (newFirstLineId) {
+          firstNodeId = newFirstLineId;
+          if (slicedTheFirstLine) {
+            firstNodeOffset = 0;
+          }
+        }
+
+        if (newLastLineId) {
+          lastNodeId = newLastLineId;
+
+          if (slicedTheLastLine) {
+            lastNodeOffset =
+              props.selectedBlocks[props.selectedBlocks.length - 1].value
+                .length - 1;
+          }
+        }
+      }
     }
 
     const firstNodeIndex = letters.findIndex(({ id }) => {
@@ -183,8 +239,9 @@ function usePositions({ text }: { text: IText[] }) {
       selectedLetters: letters,
       areFromDiffLines,
       multiLineInfo,
+      anchorComesFirst
     };
-  }, [getLinesBettween, mimic]);
+  }, [getLinesBetween, mimic]);
 
   const getSelectedBlocks = useCallback(() => {
     const {
@@ -194,7 +251,7 @@ function usePositions({ text }: { text: IText[] }) {
       areFromDiffLines,
       multiLineInfo,
     } = getFirstAndLastNode();
-    const selected = selectedLetters.slice(firstNodeIndex, lastNodeIndex + 1);
+    const selected = selectedLetters?.slice(firstNodeIndex, lastNodeIndex + 1);
 
     // gets the ids of the selected (unique)
     const selectedIds = selected.reduce((acc, item) => {

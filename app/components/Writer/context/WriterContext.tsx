@@ -6,6 +6,8 @@ import {
   stateStorage,
   useTriggerState,
 } from "react-trigger-state";
+import uuid from "../../../utils/uuid";
+import useGetCurrBlockId from "../hooks/useGetCurrBlockId";
 import {
   IText,
   IWriterContext,
@@ -14,25 +16,24 @@ import {
 } from "../interface";
 import Component from "../options/Component/Component";
 import { ReadWrite } from "../options/Component/style";
-import useGetCurrBlockId from "../hooks/useGetCurrBlockId";
 
 export const WriterContext = createContext<IWriterContext>({
   content: [],
   setContent: () => [{ text: "Initial" }],
-  handleUpdate: (textId: number, text: IText[]) => {
+  handleUpdate: (textId: string, text: IText[]) => {
     console.log(textId, text);
   },
-  deleteBlock: (textId: number, blockId: number) => {
+  deleteBlock: (textId: string, blockId: string) => {
     console.log(textId, blockId);
   },
-  deleteLine: (textId: number) => {
+  deleteLine: (textId: string) => {
     console.log(textId);
   },
   contextName: "writter_context",
   info: {
     current: {
       selection: 0,
-      blockId: 0,
+      blockId: "",
     },
   },
 });
@@ -56,11 +57,11 @@ const WriterContextProvider = ({
 
   const info = useRef<IWriterInfo>({
     selection: 0,
-    blockId: 0,
+    blockId: "",
   });
 
   const handleUpdate = useCallback(
-    (textId: number, text: IText[]) => {
+    (textId: string, text: IText[]) => {
       setContent((prev) => {
         const newContent = [...prev];
 
@@ -75,7 +76,7 @@ const WriterContextProvider = ({
   );
 
   const deleteBlock = useCallback(
-    (textId: number, blockId: number) => {
+    (textId: string, blockId: string) => {
       setContent((prev) => {
         const newContent = [...prev];
 
@@ -100,7 +101,7 @@ const WriterContextProvider = ({
   );
 
   const deleteLine = useCallback(
-    (textId: number) => {
+    (textId: string) => {
       setContent((prev) => {
         const newContent = [...prev];
 
@@ -108,8 +109,8 @@ const WriterContextProvider = ({
         if (newContent.length === 1) {
           const blocks = newContent.find(({ id }) => id === textId);
 
-          blocks.text = [{ id: new Date().getTime(), value: "", options: [] }];
-          console.log(blocks, [blocks]);
+          blocks.text = [{ id: uuid(), value: "", options: [] }];
+
           info.current = {
             selection: 0,
             blockId: blocks.text[0].id,
@@ -139,6 +140,13 @@ const WriterContextProvider = ({
   const handleBlur = useCallback(
     (e) => {
       const { dataLineId } = getBlockId({});
+      const prevSelected = globalState.get("prev-selected");
+      const selection = window.getSelection().toString().length;
+
+      if (prevSelected && selection === 0) {
+        stateStorage.set(`has_focus_ev-${prevSelected}`, false);
+      }
+
       stateStorage.set(`blur_ev-${dataLineId}`, { e, date: new Date() });
     },
     [getBlockId]
@@ -159,6 +167,13 @@ const WriterContextProvider = ({
 
       if (prevSelected !== dataLineId) {
         stateStorage.set(`has_focus_ev-${prevSelected}`, false);
+      }
+
+      const currRange = window.getSelection().toString().length;
+
+      // when selection is empty, no popup is shown
+      if (currRange === 0) {
+        globalState.set("popup_anchor", null);
       }
 
       stateStorage.set(`has_focus_ev-${dataLineId}`, true);

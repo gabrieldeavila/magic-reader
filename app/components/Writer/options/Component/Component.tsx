@@ -21,6 +21,7 @@ import { IEditable } from "../../interface";
 import Popup from "../../popup/Popup";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
+import uuid from "../../../../utils/uuid";
 
 const OPTIONS_CHARS = {
   bold: "**",
@@ -35,7 +36,7 @@ const CHARS_KEYS = Object.keys(OPTIONS_CHARS);
 
 const CHARS_VALUES = Object.values(OPTIONS_CHARS);
 
-function Component({ text, id }: IEditable) {
+function Component({ text, id, position }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
   const [keyDownEv] = useTriggerState({
     name: `key_down_ev-${id}`,
@@ -92,12 +93,15 @@ function Component({ text, id }: IEditable) {
         const deletingPosition = event.key === "Delete" ? 0 : -1;
 
         const selection = window.getSelection();
+        const { changedBlockId: oldBlockId } = getBlockId({ textId: id });
+        const isFirstBlock = text[0].id === oldBlockId;
 
         // if both the anchorNode and the focusNode are 0, and the key is backspace, it means we have to mix the current block with the previous one
         if (
           selection.anchorNode === selection.focusNode &&
           selection.anchorOffset === selection.focusOffset &&
           selection.focusOffset === 0 &&
+          isFirstBlock &&
           event.key === "Backspace"
         ) {
           const content = globalState.get(contextName);
@@ -105,7 +109,7 @@ function Component({ text, id }: IEditable) {
           const currTextIndex = content.findIndex(
             ({ id: textId }) => id === textId
           );
-
+          console.log("currTextIndex", currTextIndex);
           const nextBlockIndex = currTextIndex - 1;
 
           const currText = content[currTextIndex].text;
@@ -153,9 +157,8 @@ function Component({ text, id }: IEditable) {
 
         const currText = content[currTextIndex].text;
 
-        let changedBlockId = parseFloat(
-          selection.anchorNode.parentElement.getAttribute("data-block-id")
-        );
+        let changedBlockId =
+          selection.anchorNode.parentElement.getAttribute("data-block-id");
 
         let baseValue = selection.anchorNode.parentElement.innerText;
 
@@ -190,11 +193,10 @@ function Component({ text, id }: IEditable) {
           newIndex += selection.anchorOffset;
 
           charToDelete = newIndex + deletingPosition;
-          changedBlockId = parseFloat(
+          changedBlockId =
             selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
               "data-block-id"
-            )
-          );
+            );
 
           baseValue =
             selection.anchorNode.parentElement.parentElement.innerText;
@@ -308,7 +310,7 @@ function Component({ text, id }: IEditable) {
 
         // if the current block is empty and there are more than one block
         if (
-          (prevValue.length === 0 ||
+          (prevValue.length === -1 ||
             (prevValue.length === 1 && prevValue === " ")) &&
           content.length > 1 &&
           block.text.length === 1
@@ -376,12 +378,12 @@ function Component({ text, id }: IEditable) {
         const isCtrlPressed = event.ctrlKey;
 
         if (isCtrlPressed) {
-          const newId = Math.random();
+          const newId = uuid();
           const newText = {
             id: newId,
             text: [
               {
-                id: Math.random(),
+                id: uuid(),
                 value: "",
                 options: [],
               },
@@ -416,16 +418,14 @@ function Component({ text, id }: IEditable) {
         const isCodeBlock =
           !selection.anchorNode.parentElement.getAttribute("data-block-id");
 
-        const changedBlockId = parseFloat(
-          isCodeBlock
-            ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement?.getAttribute?.(
-                "data-block-id"
-              ) ||
-                selection.anchorNode.parentElement.parentElement.getAttribute(
-                  "data-block-id"
-                )
-            : selection.anchorNode.parentElement.getAttribute("data-block-id")
-        );
+        const changedBlockId = isCodeBlock
+          ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement?.getAttribute?.(
+              "data-block-id"
+            ) ||
+            selection.anchorNode.parentElement.parentElement.getAttribute(
+              "data-block-id"
+            )
+          : selection.anchorNode.parentElement.getAttribute("data-block-id");
 
         const content = globalState.get(contextName);
 
@@ -481,7 +481,7 @@ function Component({ text, id }: IEditable) {
               if (newValue.length > 0) {
                 acc.newLineText.push({
                   ...item,
-                  id: Math.random(),
+                  id: uuid(),
                   value: newValue,
                 });
               }
@@ -505,11 +505,11 @@ function Component({ text, id }: IEditable) {
           return item;
         });
 
-        const newId = Math.random();
+        const newId = uuid();
 
         if (newLineText.length === 0) {
           newLineText.push({
-            id: Math.random(),
+            id: uuid(),
             value: "",
             options: [],
           });
@@ -649,7 +649,20 @@ function Component({ text, id }: IEditable) {
         if (length > 0) {
           deleteMultipleLetters();
         } else {
+          const nextLine = globalState.get(contextName)[position + 1]?.text[0];
+
           deleteLine(id);
+          if (nextLine) {
+            info.current = {
+              selection: 0,
+              blockId: nextLine.id,
+            };
+
+            stateStorage.set(
+              `${contextName}_decoration-${nextLine.id}`,
+              new Date()
+            );
+          }
         }
 
         return true;
@@ -664,7 +677,15 @@ function Component({ text, id }: IEditable) {
 
       return false;
     },
-    [copyText, deleteLine, deleteMultipleLetters, id]
+    [
+      contextName,
+      copyText,
+      deleteLine,
+      deleteMultipleLetters,
+      id,
+      info,
+      position,
+    ]
   );
 
   const verifyForAccents = useCallback(
@@ -739,18 +760,14 @@ function Component({ text, id }: IEditable) {
         const isCodeBlock =
           selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
 
-        const changedBlockId = parseFloat(
-          isCodeBlock
-            ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
-                "data-block-id"
-              )
-            : selection.anchorNode.parentElement.getAttribute(
-                "data-block-id"
-              ) ??
-                // @ts-expect-error - this is a valid attribute
-                selection.anchorNode.getAttribute?.("data-block-id") ??
-                currText[0]?.id
-        );
+        const changedBlockId = isCodeBlock
+          ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
+              "data-block-id"
+            )
+          : selection.anchorNode.parentElement.getAttribute("data-block-id") ??
+            // @ts-expect-error - this is a valid attribute
+            selection.anchorNode.getAttribute?.("data-block-id") ??
+            currText[0]?.id;
 
         const block = currText.find(({ id }) => id === changedBlockId);
 
@@ -818,11 +835,16 @@ function Component({ text, id }: IEditable) {
   });
 
   useLayoutEffect(() => {
-    if (!ref.current || selectionRange.start == null) return;
+    if (
+      !ref.current ||
+      selectionRange.start == null ||
+      selectionRange.id !== id
+    )
+      return;
 
     info.current = {
       selection: 0,
-      blockId: 0,
+      blockId: "",
     };
 
     const selection = window.getSelection();
@@ -920,24 +942,48 @@ function Component({ text, id }: IEditable) {
 
     selection.removeAllRanges();
     selection.addRange(range);
-  }, [info, selectionRange]);
+  }, [id, info, selectionRange]);
 
   const [showPopup, setShowPopup] = useState(false);
+
+  const [showPopupForced] = useTriggerState({
+    name: `force_popup_positions_update-${id}`,
+    initial: null,
+  });
+
+  useEffect(() => {
+    if (showPopupForced) {
+      setShowPopup(true);
+      globalState.set(`force_popup_positions_update-${id}`, null);
+    }
+  }, [id, showPopupForced]);
+
+  const [closePopupForced] = useTriggerState({
+    name: `close_popup_forced-${id}`,
+    initial: null,
+  });
+
+  useEffect(() => {
+    if (closePopupForced) {
+      setShowPopup(false);
+      globalState.set(`close_popup_forced-${id}`, null);
+    }
+  }, [closePopupForced, id]);
 
   const checkSelection = useCallback(() => {
     setTimeout(() => {
       const selection = window.getSelection();
       const lettersSelected = selection.toString().length;
+      const { dataLineId } = getBlockId({});
 
       const show = lettersSelected > 0;
 
-      if (show) {
+      if (show && dataLineId === id) {
         stateStorage.set("force_popup_positions_update", new Date());
       }
-
       setShowPopup(show);
     });
-  }, []);
+  }, [getBlockId, id]);
 
   const handleSelect = useCallback(
     (ev: React.KeyboardEvent<HTMLDivElement>) => {
@@ -1070,7 +1116,7 @@ function Component({ text, id }: IEditable) {
 
           return {
             value: newValue,
-            id: Math.random() + new Date().getTime(),
+            id: uuid(),
             options: filteredOptions.map(
               (char) => CHARS_KEYS[CHARS_VALUES.indexOf(char)]
             ),
@@ -1102,7 +1148,7 @@ function Component({ text, id }: IEditable) {
 
           newText.push({
             value: valueAfter,
-            id: item.id + new Date().getTime(),
+            id: uuid(),
             options,
           });
         });
@@ -1132,6 +1178,7 @@ function Component({ text, id }: IEditable) {
     if (keyDownEv == null) return;
 
     handleChange(keyDownEv.e);
+    globalState.set(`key_down_ev-${id}`, null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyDownEv]);
 
@@ -1144,6 +1191,7 @@ function Component({ text, id }: IEditable) {
     if (blurEv == null) return;
 
     checkSelection();
+    globalState.set(`blur_ev-${id}`, null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [blurEv]);
 
@@ -1156,6 +1204,7 @@ function Component({ text, id }: IEditable) {
     if (dragEv == null) return;
 
     preventDefault(dragEv.e);
+    globalState.set(`drag_ev-${id}`, null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dragEv]);
 
@@ -1168,6 +1217,7 @@ function Component({ text, id }: IEditable) {
     if (selectEv == null) return;
 
     handleSelect(selectEv.e);
+    globalState.set(`select_ev-${id}`, null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectEv]);
 
@@ -1180,6 +1230,7 @@ function Component({ text, id }: IEditable) {
     if (pasteEv == null) return;
 
     handlePaste(pasteEv.e);
+    globalState.set(`paste_ev-${id}`, null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pasteEv]);
 
@@ -1201,7 +1252,7 @@ function Component({ text, id }: IEditable) {
         );
       })}
 
-      {showPopup && <Popup id={id} text={text} parentRef={ref} />}
+      {showPopup && hasFocusId && <Popup id={id} text={text} parentRef={ref} />}
     </Editable>
   );
 }
