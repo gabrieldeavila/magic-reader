@@ -307,7 +307,7 @@ function Component({ text, id, position }: IEditable) {
 
         // if the current block is empty and there are more than one block
         if (
-          (prevValue.length === 0 ||
+          (prevValue.length === -1 ||
             (prevValue.length === 1 && prevValue === " ")) &&
           content.length > 1 &&
           block.text.length === 1
