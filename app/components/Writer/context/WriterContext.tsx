@@ -169,17 +169,12 @@ const WriterContextProvider = ({
         stateStorage.set(`has_focus_ev-${prevSelected}`, false);
       }
 
-      const prevRange = globalState.get("prev-range");
-
       const currRange = window.getSelection().toString().length;
 
-      const areEqual = currRange === prevRange;
-
-      if (!areEqual) {
+      // when selection is empty, no popup is shown
+      if (currRange === 0) {
         globalState.set("popup_anchor", null);
       }
-
-      globalState.set("prev-range", currRange);
 
       stateStorage.set(`has_focus_ev-${dataLineId}`, true);
 
