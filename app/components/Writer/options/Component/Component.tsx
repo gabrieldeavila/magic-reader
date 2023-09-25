@@ -93,12 +93,15 @@ function Component({ text, id, position }: IEditable) {
         const deletingPosition = event.key === "Delete" ? 0 : -1;
 
         const selection = window.getSelection();
+        const { changedBlockId: oldBlockId } = getBlockId({ textId: id });
+        const isFirstBlock = text[0].id === oldBlockId;
 
         // if both the anchorNode and the focusNode are 0, and the key is backspace, it means we have to mix the current block with the previous one
         if (
           selection.anchorNode === selection.focusNode &&
           selection.anchorOffset === selection.focusOffset &&
           selection.focusOffset === 0 &&
+          isFirstBlock &&
           event.key === "Backspace"
         ) {
           const content = globalState.get(contextName);
@@ -106,7 +109,7 @@ function Component({ text, id, position }: IEditable) {
           const currTextIndex = content.findIndex(
             ({ id: textId }) => id === textId
           );
-
+          console.log("currTextIndex", currTextIndex);
           const nextBlockIndex = currTextIndex - 1;
 
           const currText = content[currTextIndex].text;
