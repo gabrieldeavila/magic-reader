@@ -832,7 +832,12 @@ function Component({ text, id, position }: IEditable) {
   });
 
   useLayoutEffect(() => {
-    if (!ref.current || selectionRange.start == null) return;
+    if (
+      !ref.current ||
+      selectionRange.start == null ||
+      selectionRange.id !== id
+    )
+      return;
 
     info.current = {
       selection: 0,
@@ -934,7 +939,7 @@ function Component({ text, id, position }: IEditable) {
 
     selection.removeAllRanges();
     selection.addRange(range);
-  }, [info, selectionRange]);
+  }, [id, info, selectionRange]);
 
   const [showPopup, setShowPopup] = useState(false);
 

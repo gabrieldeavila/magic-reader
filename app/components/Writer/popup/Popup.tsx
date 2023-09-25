@@ -117,9 +117,20 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
     );
 
     const isTopOutOfScreen = position.top + window.scrollY - 40 < 0;
+    let isPrevAnchor =
+      !globalState.get("selection_range").anchorComesFirst &&
+      globalState.get("selection_range").anchorComesFirst != null;
 
-    if (!anchorComesFirst && isTopOutOfScreen) {
-      position = anchor?.getBoundingClientRect?.();
+    if ((!anchorComesFirst && isTopOutOfScreen) || isPrevAnchor) {
+      const isPrevAnchorOutOfScreen =
+        isPrevAnchor &&
+        anchor?.getBoundingClientRect?.().top + window.scrollY - 40 < 0;
+
+      if (!isPrevAnchorOutOfScreen) {
+        position = anchor?.getBoundingClientRect?.();
+      } else {
+        isPrevAnchor = false;
+      }
     }
 
     if (!position) return;
@@ -138,7 +149,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
     const newTop =
       position.top +
       window.scrollY +
-      (anchorComesFirst || isTopOutOfScreen ? 25 : -40);
+      ((anchorComesFirst || isTopOutOfScreen) && !isPrevAnchor ? 25 : -40);
 
     if (isOutOfScreen) {
       newLeft = position.left - width;
@@ -459,39 +470,35 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
       if (isLast) {
         // reverts start and end if anchor does not comes first
-        // if (anchorComesFirst) {
-        //   [newFirstNodeIndex, newLastNodeIndex] = [
-        //     newLastNodeIndex,
-        //     newFirstNodeIndex,
-        //   ];
+        if (!anchorComesFirst && multiLinFirstNode != null) {
+          dId = multiLinFirstNode.endBlockId;
+        }
 
-        //   [startBlockId, endBlockId] = [endBlockId, startBlockId];
-
-        //   dId = endBlockId;
-        // }
+        if (globalState.get("popup_anchor") == null) {
+          globalState.set("popup_anchor", anchorComesFirst);
+        }
 
         stateStorage.set("selection_range", {
           start: newFirstNodeIndex,
           end: newLastNodeIndex,
           startBlockId,
           endBlockId,
+          id: dId,
+          anchorComesFirst: globalState.get("popup_anchor") ?? anchorComesFirst,
         });
       }
 
       if (isLast) {
         if (id !== dId) {
           setTimeout(() => {
-            console.log("uh");
             stateStorage.set(`close_popup_forced-${id}`, new Date());
             stateStorage.set(`force_popup_positions_update-${dId}`, true);
             stateStorage.set(`has_focus_ev-${dId}`, true);
             globalState.set("prev-selected", dId);
           }, 1);
-        } else {
-          console.log("niet");
         }
       }
-      return { newFirstNodeIndex, startBlockId };
+      return { newFirstNodeIndex, startBlockId, endBlockId: dId };
     },
     [handleUpdate, id, selectedOptions]
   );
@@ -556,27 +563,29 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
           const decSelected = linesLetters.slice(0, startIndex);
 
-          const { newFirstNodeIndex, startBlockId } = doTheDecoration({
-            decoration,
-            firstNodeIndex: key === 0 ? firstNodeIndex : 0,
-            lastNodeIndex:
-              array.length === 1
-                ? firstNodeIndex + fromToLastIndex
-                : fromToLastIndex,
-            letters: line.text,
-            areTheSame: line.text.length === 1,
-            firstNodeOffset: decSelected[0].index,
-            lastNodeOffset: decSelected[decSelected.length - 1].index,
-            id: line.id,
-            selected: decSelected,
-            isLast: key === linesBetween.length - 1,
-            anchorComesFirst,
-          });
+          const { newFirstNodeIndex, startBlockId, endBlockId } =
+            doTheDecoration({
+              decoration,
+              firstNodeIndex: key === 0 ? firstNodeIndex : 0,
+              lastNodeIndex:
+                array.length === 1
+                  ? firstNodeIndex + fromToLastIndex
+                  : fromToLastIndex,
+              letters: line.text,
+              areTheSame: line.text.length === 1,
+              firstNodeOffset: decSelected[0].index,
+              lastNodeOffset: decSelected[decSelected.length - 1].index,
+              id: line.id,
+              selected: decSelected,
+              isLast: key === linesBetween.length - 1,
+              anchorComesFirst,
+            });
 
           if (key === 0) {
             globalState.set("multi_line_first_node_index", {
               id: startBlockId,
               index: newFirstNodeIndex,
+              endBlockId,
             });
           }
         });

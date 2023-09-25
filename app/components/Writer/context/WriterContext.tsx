@@ -169,6 +169,18 @@ const WriterContextProvider = ({
         stateStorage.set(`has_focus_ev-${prevSelected}`, false);
       }
 
+      const prevRange = globalState.get("prev-range");
+
+      const currRange = window.getSelection().toString().length;
+
+      const areEqual = currRange === prevRange;
+
+      if (!areEqual) {
+        globalState.set("popup_anchor", null);
+      }
+
+      globalState.set("prev-range", currRange);
+
       stateStorage.set(`has_focus_ev-${dataLineId}`, true);
 
       stateStorage.set(`select_ev-${dataLineId}`, { e, date: new Date() });
