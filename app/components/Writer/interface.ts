@@ -42,6 +42,12 @@ export interface IWriterContext {
   handleUpdate: (textId: string, value: IText[]) => void;
   deleteBlock: (textId: string, blockId: string) => void;
   deleteLine: (textId: string) => void;
+  addToCtrlZ: (
+    lineId: string,
+    blockId: string,
+    value: string,
+    action: "change" | "delete"
+  ) => void;
   contextName: string;
   info: React.MutableRefObject<IWriterInfo>;
 }

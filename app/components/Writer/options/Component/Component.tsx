@@ -43,8 +43,14 @@ function Component({ text, id, position }: IEditable) {
     initial: null,
   });
 
-  const { contextName, handleUpdate, deleteBlock, deleteLine, info } =
-    useWriterContext();
+  const {
+    contextName,
+    handleUpdate,
+    deleteBlock,
+    deleteLine,
+    addToCtrlZ,
+    info,
+  } = useWriterContext();
 
   const { deleteMultipleLetters } = useDeleteMultiple({ text, id, info });
 
@@ -540,6 +546,7 @@ function Component({ text, id, position }: IEditable) {
       deleteBlock,
       deleteLine,
       deleteMultipleLetters,
+      getBlockId,
       handleUpdate,
       id,
       info,
@@ -801,13 +808,18 @@ function Component({ text, id, position }: IEditable) {
           inputChar +
           baseValue.slice(cursorPositionValue);
 
+        let prevValue;
+
         const newText = currText.map((item) => {
           if (item.id === changedBlockId) {
+            prevValue = item.value;
             item.value = newValue;
           }
 
           return item;
         });
+
+        addToCtrlZ(id, changedBlockId, prevValue, "change");
 
         handleUpdate(id, newText);
 
@@ -818,6 +830,7 @@ function Component({ text, id, position }: IEditable) {
       });
     },
     [
+      addToCtrlZ,
       contextName,
       deleteMultipleLetters,
       handleCtrlEvents,

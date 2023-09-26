@@ -29,6 +29,14 @@ export const WriterContext = createContext<IWriterContext>({
   deleteLine: (textId: string) => {
     console.log(textId);
   },
+  addToCtrlZ: (
+    lineId: string,
+    blockId: string,
+    value: string,
+    action: "change" | "delete"
+  ) => {
+    console.log(lineId, blockId, value, action);
+  },
   contextName: "writter_context",
   info: {
     current: {
@@ -193,6 +201,49 @@ const WriterContextProvider = ({
     [getBlockId]
   );
 
+  const addToCtrlZ = useCallback(
+    (
+      lineId: string,
+      blockId: string,
+      value: string,
+      action: "change" | "delete"
+    ) => {
+      const changedInfo = {
+        lineId,
+        blockId,
+        value,
+        action,
+        timestamp: new Date().getTime(),
+      };
+
+      const prevState = globalState.get("undo") || [];
+
+      const lastItem = prevState[prevState.length - 1];
+
+      // and if the timestamp is more than 5 seconds, it will created a new array
+      if (
+        lastItem?.blockId === changedInfo.blockId &&
+        lastItem?.action === changedInfo.action &&
+        prevState.length > 1 &&
+        lastItem?.timestamp + 5000 > changedInfo.timestamp
+      ) {
+        const updatedPrevState = prevState.map((item, index, array) => {
+          if (index === array.length - 1) {
+            item.value = changedInfo.value;
+            item.timestamp = changedInfo.timestamp;
+          }
+
+          return item;
+        });
+        stateStorage.set("undo", updatedPrevState);
+        return;
+      }
+      console.log([...prevState, changedInfo]);
+      stateStorage.set("undo", [...prevState, changedInfo]);
+    },
+    []
+  );
+
   return (
     <WriterContext.Provider
       value={{
@@ -203,6 +254,7 @@ const WriterContextProvider = ({
         deleteBlock,
         deleteLine,
         info,
+        addToCtrlZ,
       }}
     >
       <ReadWrite
