@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useCallback, useMemo, useRef } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import {
   globalState,
   stateStorage,
@@ -137,12 +143,54 @@ const WriterContextProvider = ({
 
   const { getBlockId } = useGetCurrBlockId();
 
+  const undo = useCallback(() => {
+    const prevState = globalState.get("undo") || [];
+
+    const lastItem = prevState?.[prevState.length - 1];
+
+    if (!lastItem) return;
+
+    // now find the lineId and blockId of the content
+    const updateContent = content.map((item) => {
+      if (item.id === lastItem.lineId) {
+        item.text = item.text.map((block) => {
+          if (block.id === lastItem.blockId) {
+            if (lastItem.action === "change") {
+              block.value = lastItem.value;
+            } else {
+              block.value = "";
+            }
+          }
+
+          return block;
+        });
+      }
+
+      return item;
+    });
+
+    setContent(updateContent);
+    // remove the last item, and add it to redo
+    stateStorage.set("undo", prevState.slice(0, prevState.length - 1));
+
+    const prevRedo = globalState.get("redo") || [];
+    const newRedo = [...prevRedo, lastItem];
+
+    stateStorage.set("redo", newRedo);
+  }, [content, setContent]);
+
   const handleKeyDown = useCallback(
     (e) => {
+      // if ctrl is pressed and z is pressed, it will undo the last action
+      if (e.ctrlKey && e.key === "z") {
+        undo();
+        return;
+      }
+
       const { dataLineId } = getBlockId({});
       stateStorage.set(`key_down_ev-${dataLineId}`, { e, date: new Date() });
     },
-    [getBlockId]
+    [getBlockId, undo]
   );
 
   const handleBlur = useCallback(
@@ -218,31 +266,19 @@ const WriterContextProvider = ({
 
       const prevState = globalState.get("undo") || [];
 
-      const lastItem = prevState[prevState.length - 1];
-
-      // and if the timestamp is more than 5 seconds, it will created a new array
-      if (
-        lastItem?.blockId === changedInfo.blockId &&
-        lastItem?.action === changedInfo.action &&
-        prevState.length > 1 &&
-        lastItem?.timestamp + 5000 > changedInfo.timestamp
-      ) {
-        const updatedPrevState = prevState.map((item, index, array) => {
-          if (index === array.length - 1) {
-            item.value = changedInfo.value;
-            item.timestamp = changedInfo.timestamp;
-          }
-
-          return item;
-        });
-        stateStorage.set("undo", updatedPrevState);
-        return;
-      }
-      console.log([...prevState, changedInfo]);
       stateStorage.set("undo", [...prevState, changedInfo]);
     },
     []
   );
+
+  const [undoUh] = useTriggerState({
+    name: "undo",
+    initial: [],
+  });
+
+  useEffect(() => {
+    console.log(undoUh);
+  }, [undoUh]);
 
   return (
     <WriterContext.Provider

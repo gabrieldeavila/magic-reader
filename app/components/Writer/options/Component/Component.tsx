@@ -115,7 +115,7 @@ function Component({ text, id, position }: IEditable) {
           const currTextIndex = content.findIndex(
             ({ id: textId }) => id === textId
           );
-          console.log("currTextIndex", currTextIndex);
+
           const nextBlockIndex = currTextIndex - 1;
 
           const currText = content[currTextIndex].text;
@@ -808,18 +808,19 @@ function Component({ text, id, position }: IEditable) {
           inputChar +
           baseValue.slice(cursorPositionValue);
 
-        let prevValue;
+        let prevVal;
 
         const newText = currText.map((item) => {
           if (item.id === changedBlockId) {
-            prevValue = item.value;
+            globalState.set("next_prev_value", { changedBlockId, newValue });
+            prevVal = item.value;
             item.value = newValue;
           }
 
           return item;
         });
 
-        addToCtrlZ(id, changedBlockId, prevValue, "change");
+        addToCtrlZ(id, changedBlockId, prevVal, "change");
 
         handleUpdate(id, newText);
 
