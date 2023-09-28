@@ -6,7 +6,7 @@ import uuid from "../../../utils/uuid";
 
 function useDeleteMultiple({ text, id, info }) {
   const { getSelectedBlocks } = usePositions({ text });
-  const { contextName, handleUpdate } = useWriterContext();
+  const { contextName, handleUpdate, addToCtrlZ } = useWriterContext();
 
   const deleteMultipleLetters = useCallback(() => {
     const { selectedBlocks, first, last } = getSelectedBlocks();
@@ -114,6 +114,7 @@ function useDeleteMultiple({ text, id, info }) {
       });
     }
 
+    addToCtrlZ({ lineId: id, value: newWords, action: "delete_line" });
     handleUpdate(id, newWords);
 
     // changes also the cursor position
@@ -123,7 +124,15 @@ function useDeleteMultiple({ text, id, info }) {
     };
 
     stateStorage.set(`${contextName}_decoration-${first.id}`, new Date());
-  }, [contextName, getSelectedBlocks, handleUpdate, id, info, text]);
+  }, [
+    addToCtrlZ,
+    contextName,
+    getSelectedBlocks,
+    handleUpdate,
+    id,
+    info,
+    text,
+  ]);
 
   return { deleteMultipleLetters };
 }

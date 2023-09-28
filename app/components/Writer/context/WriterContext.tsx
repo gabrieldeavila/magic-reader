@@ -26,21 +26,16 @@ import { ReadWrite } from "../options/Component/style";
 export const WriterContext = createContext<IWriterContext>({
   content: [],
   setContent: () => [{ text: "Initial" }],
-  handleUpdate: (textId: string, text: IText[]) => {
+  handleUpdate: (textId, text) => {
     console.log(textId, text);
   },
-  deleteBlock: (textId: string, blockId: string) => {
+  deleteBlock: (textId, blockId) => {
     console.log(textId, blockId);
   },
-  deleteLine: (textId: string) => {
+  deleteLine: (textId) => {
     console.log(textId);
   },
-  addToCtrlZ: (
-    lineId: string,
-    blockId: string,
-    value: string,
-    action: "change" | "delete"
-  ) => {
+  addToCtrlZ: ({ lineId, blockId, value, action }) => {
     console.log(lineId, blockId, value, action);
   },
   contextName: "writter_context",
@@ -158,6 +153,7 @@ const WriterContextProvider = ({
             if (lastItem.action === "change") {
               block.value = lastItem.value;
             } else {
+              console.log("aquiii");
               block.value = "";
             }
           }
@@ -249,13 +245,8 @@ const WriterContextProvider = ({
     [getBlockId]
   );
 
-  const addToCtrlZ = useCallback(
-    (
-      lineId: string,
-      blockId: string,
-      value: string,
-      action: "change" | "delete"
-    ) => {
+  const addToCtrlZ: IWriterContext["addToCtrlZ"] = useCallback(
+    ({ lineId, blockId, value, action }) => {
       const changedInfo = {
         lineId,
         blockId,
@@ -263,6 +254,7 @@ const WriterContextProvider = ({
         action,
         timestamp: new Date().getTime(),
       };
+      console.log("ohoho", changedInfo);
 
       const prevState = globalState.get("undo") || [];
 
@@ -277,7 +269,7 @@ const WriterContextProvider = ({
   });
 
   useEffect(() => {
-    console.log(undoUh);
+    // console.log(undoUh);
   }, [undoUh]);
 
   return (

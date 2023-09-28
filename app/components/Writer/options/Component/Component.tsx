@@ -820,7 +820,12 @@ function Component({ text, id, position }: IEditable) {
           return item;
         });
 
-        addToCtrlZ(id, changedBlockId, prevVal, "change");
+        addToCtrlZ({
+          lineId: id,
+          blockId: changedBlockId,
+          value: prevVal,
+          action: "change",
+        });
 
         handleUpdate(id, newText);
 
