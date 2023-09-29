@@ -11,6 +11,8 @@ function useDeleteMultiple({ text, id, info }) {
   const deleteMultipleLetters = useCallback(() => {
     const { selectedBlocks, first, last } = getSelectedBlocks();
 
+    addToCtrlZ({ lineId: id, value: structuredClone(text), action: "delete_line" });
+
     const newWords = [];
 
     text.forEach((item) => {
@@ -114,7 +116,6 @@ function useDeleteMultiple({ text, id, info }) {
       });
     }
 
-    addToCtrlZ({ lineId: id, value: newWords, action: "delete_line" });
     handleUpdate(id, newWords);
 
     // changes also the cursor position

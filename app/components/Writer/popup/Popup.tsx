@@ -21,7 +21,7 @@ import WPopup from "./style";
 
 const Popup = memo(({ id, text, parentRef }: IPopup) => {
   const { toast } = useGTToastContext();
-  const { handleUpdate } = useWriterContext();
+  const { handleUpdate, addToCtrlZ } = useWriterContext();
 
   const ref = useRef<HTMLDivElement>(null);
 
@@ -505,6 +505,12 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
   const addDecoration = useCallback(
     (decoration: string) => {
+      addToCtrlZ({
+        lineId: id,
+        value: structuredClone(text),
+        action: "delete_line",
+      });
+
       const {
         firstNodeIndex,
         areTheSame,

@@ -820,12 +820,14 @@ function Component({ text, id, position }: IEditable) {
           return item;
         });
 
-        addToCtrlZ({
-          lineId: id,
-          blockId: changedBlockId,
-          value: prevVal,
-          action: "change",
-        });
+        if (!numberOfChars) {
+          addToCtrlZ({
+            lineId: id,
+            blockId: changedBlockId,
+            value: prevVal,
+            action: "change",
+          });
+        }
 
         handleUpdate(id, newText);
 

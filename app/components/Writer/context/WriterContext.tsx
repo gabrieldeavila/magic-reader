@@ -148,6 +148,11 @@ const WriterContextProvider = ({
     // now find the lineId and blockId of the content
     const updateContent = content.map((item) => {
       if (item.id === lastItem.lineId) {
+        if (lastItem.action === "delete_line") {
+          item.text = lastItem.value;
+          return item;
+        }
+
         item.text = item.text.map((block) => {
           if (block.id === lastItem.blockId) {
             if (lastItem.action === "change") {
