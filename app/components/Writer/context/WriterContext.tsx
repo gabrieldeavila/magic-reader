@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-} from "react";
+import React, { createContext, useCallback, useMemo, useRef } from "react";
 import {
   globalState,
   stateStorage,
@@ -145,12 +139,35 @@ const WriterContextProvider = ({
 
     if (!lastItem) return;
 
+    const iterator = lastItem.action === "add_line" ? "filter" : "map";
+
     // now find the lineId and blockId of the content
-    const updateContent = content.map((item) => {
+    const updateContent = content[iterator]((item) => {
+      if (lastItem.action === "add_line" && item.id === lastItem.lineId) {
+        console.log(lastItem);
+
+        const newUndo = [
+          ...(globalState.get("redo") || []),
+          {
+            ...lastItem,
+            action: "add_line",
+            value: structuredClone(item.text),
+          },
+        ];
+
+        stateStorage.set("redo", newUndo);
+
+        return false;
+      }
+
       if (item.id === lastItem.lineId) {
         const newRedo = [
           ...(globalState.get("redo") || []),
-          { ...lastItem, value: structuredClone(item.text) },
+          {
+            ...lastItem,
+            action: "delete_line",
+            value: structuredClone(item.text),
+          },
         ];
         stateStorage.set("redo", newRedo);
 
@@ -184,33 +201,47 @@ const WriterContextProvider = ({
 
     if (!lastItem) return;
 
+    const preventMap = lastItem.action === "add_line";
+
     // now find the lineId and blockId of the content
-    const updateContent = content.map((item) => {
-      if (item.id === lastItem.lineId) {
-        const newUndo = [
-          ...(globalState.get("undo") || []),
-          { ...lastItem, value: structuredClone(item.text) },
-        ];
-        stateStorage.set("undo", newUndo);
+    const updateContent = preventMap
+      ? content
+      : content.map((item) => {
+          if (item.id === lastItem.lineId) {
+            const newUndo = [
+              ...(globalState.get("undo") || []),
+              { ...lastItem, value: structuredClone(item.text) },
+            ];
+            stateStorage.set("undo", newUndo);
 
-        if (lastItem.action === "delete_line") {
-          item.text = lastItem.value;
-          return item;
-        }
-
-        item.text = item.text.map((block) => {
-          if (block.id === lastItem.blockId) {
-            if (lastItem.action === "change") {
-              block.value = lastItem.value;
+            if (lastItem.action === "delete_line") {
+              item.text = lastItem.value;
+              return item;
             }
+
+            item.text = item.text.map((block) => {
+              if (block.id === lastItem.blockId) {
+                if (lastItem.action === "change") {
+                  block.value = lastItem.value;
+                }
+              }
+
+              return block;
+            });
           }
 
-          return block;
+          return item;
         });
-      }
 
-      return item;
-    });
+    if (preventMap) {
+      updateContent.splice(1, 0, {
+        id: lastItem.lineId,
+        text: lastItem.value,
+      });
+      // const newUndo = [...(globalState.get("undo") || []), { ...lastItem }];
+      // stateStorage.set("undo", newUndo);
+      console.log(updateContent, lastItem);
+    }
 
     setContent(updateContent);
     // remove the last item, and add it to redo
@@ -292,32 +323,12 @@ const WriterContextProvider = ({
     [getBlockId]
   );
 
-  const addToCtrlZ: IWriterContext["addToCtrlZ"] = useCallback(
-    ({ lineId, blockId, value, action }) => {
-      const changedInfo = {
-        lineId,
-        blockId,
-        value,
-        action,
-        timestamp: new Date().getTime(),
-      };
-      console.log("ohoho", changedInfo);
+  const addToCtrlZ: IWriterContext["addToCtrlZ"] = useCallback((block) => {
+    const prevState = globalState.get("undo") || [];
+    stateStorage.set("undo", [...prevState, block]);
+  }, []);
 
-      const prevState = globalState.get("undo") || [];
-
-      stateStorage.set("undo", [...prevState, changedInfo]);
-    },
-    []
-  );
-
-  const [undoUh] = useTriggerState({
-    name: "undo",
-    initial: [],
-  });
-
-  useEffect(() => {
-    // console.log(undoUh);
-  }, [undoUh]);
+  console.log(content);
 
   return (
     <WriterContext.Provider

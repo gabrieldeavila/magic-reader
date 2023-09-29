@@ -102,6 +102,12 @@ function Component({ text, id, position }: IEditable) {
         const { changedBlockId: oldBlockId } = getBlockId({ textId: id });
         const isFirstBlock = text[0].id === oldBlockId;
 
+        addToCtrlZ({
+          lineId: id,
+          value: structuredClone(text),
+          action: "delete_line",
+        });
+
         // if both the anchorNode and the focusNode are 0, and the key is backspace, it means we have to mix the current block with the previous one
         if (
           selection.anchorNode === selection.focusNode &&
@@ -414,6 +420,13 @@ function Component({ text, id, position }: IEditable) {
 
           stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
           stateStorage.set(contextName, newContent);
+
+          // add to the undo
+          addToCtrlZ({
+            lineId: newId,
+            action: "add_line",
+            position
+          });
           return;
         }
 
@@ -531,6 +544,13 @@ function Component({ text, id, position }: IEditable) {
         );
 
         stateStorage.set("first_selection", newId);
+          console.log(position);
+
+        addToCtrlZ({
+          lineId: newId,
+          action: "add_line",
+          position,
+        });
 
         info.current = {
           selection: 0,
@@ -542,6 +562,7 @@ function Component({ text, id, position }: IEditable) {
       }
     },
     [
+      addToCtrlZ,
       contextName,
       deleteBlock,
       deleteLine,
@@ -550,6 +571,7 @@ function Component({ text, id, position }: IEditable) {
       handleUpdate,
       id,
       info,
+      position,
       text,
     ]
   );
