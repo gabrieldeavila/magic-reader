@@ -148,6 +148,51 @@ const WriterContextProvider = ({
     // now find the lineId and blockId of the content
     const updateContent = content.map((item) => {
       if (item.id === lastItem.lineId) {
+        const newRedo = [
+          ...(globalState.get("redo") || []),
+          { ...lastItem, value: structuredClone(item.text) },
+        ];
+        stateStorage.set("redo", newRedo);
+
+        if (lastItem.action === "delete_line") {
+          item.text = lastItem.value;
+        } else {
+          item.text = item.text.map((block) => {
+            if (block.id === lastItem.blockId) {
+              if (lastItem.action === "change") {
+                block.value = lastItem.value;
+              }
+            }
+
+            return block;
+          });
+        }
+      }
+
+      return item;
+    });
+
+    setContent(updateContent);
+    // remove the last item, and add it to redo
+    stateStorage.set("undo", prevState.slice(0, prevState.length - 1));
+  }, [content, setContent]);
+
+  const redo = useCallback(() => {
+    const prevState = globalState.get("redo") || [];
+
+    const lastItem = prevState?.[prevState.length - 1];
+
+    if (!lastItem) return;
+
+    // now find the lineId and blockId of the content
+    const updateContent = content.map((item) => {
+      if (item.id === lastItem.lineId) {
+        const newUndo = [
+          ...(globalState.get("undo") || []),
+          { ...lastItem, value: structuredClone(item.text) },
+        ];
+        stateStorage.set("undo", newUndo);
+
         if (lastItem.action === "delete_line") {
           item.text = lastItem.value;
           return item;
@@ -157,9 +202,6 @@ const WriterContextProvider = ({
           if (block.id === lastItem.blockId) {
             if (lastItem.action === "change") {
               block.value = lastItem.value;
-            } else {
-              console.log("aquiii");
-              block.value = "";
             }
           }
 
@@ -172,12 +214,7 @@ const WriterContextProvider = ({
 
     setContent(updateContent);
     // remove the last item, and add it to redo
-    stateStorage.set("undo", prevState.slice(0, prevState.length - 1));
-
-    const prevRedo = globalState.get("redo") || [];
-    const newRedo = [...prevRedo, lastItem];
-
-    stateStorage.set("redo", newRedo);
+    stateStorage.set("redo", prevState.slice(0, prevState.length - 1));
   }, [content, setContent]);
 
   const handleKeyDown = useCallback(
@@ -188,10 +225,15 @@ const WriterContextProvider = ({
         return;
       }
 
+      if (e.ctrlKey && e.key === "y") {
+        redo();
+        return;
+      }
+
       const { dataLineId } = getBlockId({});
       stateStorage.set(`key_down_ev-${dataLineId}`, { e, date: new Date() });
     },
-    [getBlockId, undo]
+    [getBlockId, redo, undo]
   );
 
   const handleBlur = useCallback(
