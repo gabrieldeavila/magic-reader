@@ -355,10 +355,47 @@ const WriterContextProvider = ({
 
   const addToCtrlZ: IWriterContext["addToCtrlZ"] = useCallback((block) => {
     const prevState = globalState.get("undo") || [];
+
+    const lastItem = prevState?.[prevState.length - 1];
+
+    if (
+      ["change"].includes(lastItem?.action) &&
+      lastItem?.blockId === block.blockId
+    ) {
+      const prevWords = lastItem.value?.split(" ");
+      // @ts-expect-error works
+      const currWords = block.value?.split?.(" ");
+
+      const diff = currWords?.length - prevWords?.length;
+
+      if (!diff && currWords) {
+        return;
+      }
+    }
+
+    if (
+      lastItem?.action === "delete_letters" &&
+      lastItem?.lineId === block.lineId &&
+      lastItem?.blockId === block.blockId &&
+      typeof block.value !== "string"
+    ) {
+      const currWords = block.value
+        .find(({ id }) => id === block.blockId)
+        .value.split(" ");
+
+      const prevWords = lastItem.value
+        .find(({ id }) => id === block.blockId)
+        .value.split(" ");
+
+      const diff = currWords.length - prevWords.length;
+
+      if (!diff) {
+        return;
+      }
+    }
+
     stateStorage.set("undo", [...prevState, block]);
   }, []);
-
-  console.log(content);
 
   return (
     <WriterContext.Provider

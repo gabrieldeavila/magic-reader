@@ -106,6 +106,7 @@ function Component({ text, id, position }: IEditable) {
           lineId: id,
           value: structuredClone(text),
           action: "delete_letters",
+          blockId: oldBlockId,
         });
 
         // if both the anchorNode and the focusNode are 0, and the key is backspace, it means we have to mix the current block with the previous one
