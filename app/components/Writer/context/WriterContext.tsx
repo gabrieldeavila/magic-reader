@@ -163,13 +163,13 @@ const WriterContextProvider = ({
           ...(globalState.get("redo") || []),
           {
             ...lastItem,
-            action: "delete_line",
+            action: "delete_letters",
             value: structuredClone(item.text),
           },
         ];
         stateStorage.set("redo", newRedo);
 
-        if (lastItem.action === "delete_line") {
+        if (lastItem.action === "delete_letters") {
           item.text = lastItem.value;
         } else {
           item.text = item.text.map((block) => {
@@ -212,7 +212,7 @@ const WriterContextProvider = ({
             ];
             stateStorage.set("undo", newUndo);
 
-            if (lastItem.action === "delete_line") {
+            if (lastItem.action === "delete_letters") {
               item.text = lastItem.value;
               return item;
             }

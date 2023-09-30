@@ -508,7 +508,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
       addToCtrlZ({
         lineId: id,
         value: structuredClone(text),
-        action: "delete_line",
+        action: "delete_letters",
       });
 
       const {

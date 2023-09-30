@@ -11,7 +11,7 @@ function useDeleteMultiple({ text, id, info }) {
   const deleteMultipleLetters = useCallback(() => {
     const { selectedBlocks, first, last } = getSelectedBlocks();
 
-    addToCtrlZ({ lineId: id, value: structuredClone(text), action: "delete_line" });
+    addToCtrlZ({ lineId: id, value: structuredClone(text), action: "delete_letters" });
 
     const newWords = [];
 

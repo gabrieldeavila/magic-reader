@@ -105,7 +105,7 @@ function Component({ text, id, position }: IEditable) {
         addToCtrlZ({
           lineId: id,
           value: structuredClone(text),
-          action: "delete_line",
+          action: "delete_letters",
         });
 
         // if both the anchorNode and the focusNode are 0, and the key is backspace, it means we have to mix the current block with the previous one
@@ -425,7 +425,7 @@ function Component({ text, id, position }: IEditable) {
           addToCtrlZ({
             lineId: newId,
             action: "add_line",
-            position
+            position,
           });
           return;
         }
@@ -544,7 +544,7 @@ function Component({ text, id, position }: IEditable) {
         );
 
         stateStorage.set("first_selection", newId);
-          console.log(position);
+        console.log(position);
 
         addToCtrlZ({
           lineId: newId,
@@ -679,6 +679,11 @@ function Component({ text, id, position }: IEditable) {
           deleteMultipleLetters();
         } else {
           const nextLine = globalState.get(contextName)[position + 1]?.text[0];
+          addToCtrlZ({
+            lineId: id,
+            value: structuredClone(text),
+            action: "delete_letters",
+          });
 
           deleteLine(id);
           if (nextLine) {
@@ -707,6 +712,7 @@ function Component({ text, id, position }: IEditable) {
       return false;
     },
     [
+      addToCtrlZ,
       contextName,
       copyText,
       deleteLine,
@@ -714,6 +720,7 @@ function Component({ text, id, position }: IEditable) {
       id,
       info,
       position,
+      text,
     ]
   );
 
