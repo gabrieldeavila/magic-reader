@@ -682,7 +682,8 @@ function Component({ text, id, position }: IEditable) {
           addToCtrlZ({
             lineId: id,
             value: structuredClone(text),
-            action: "delete_letters",
+            action: "delete_line",
+            position: position + 1,
           });
 
           deleteLine(id);

@@ -36,7 +36,7 @@ export interface IShortcuts extends IEditable {
   editableInfo: React.MutableRefObject<TEditable>;
 }
 
-type undoActions = "change" | "delete_letters" | "add_line";
+type undoActions = "change" | "delete_letters" | "add_line" | "delete_line";
 
 export interface IWriterContext {
   content: IWritterContent[];
