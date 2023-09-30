@@ -144,8 +144,6 @@ const WriterContextProvider = ({
     // now find the lineId and blockId of the content
     const updateContent = content[iterator]((item) => {
       if (lastItem.action === "add_line" && item.id === lastItem.lineId) {
-        console.log(lastItem);
-
         const newUndo = [
           ...(globalState.get("redo") || []),
           {
@@ -238,12 +236,12 @@ const WriterContextProvider = ({
         id: lastItem.lineId,
         text: lastItem.value,
       });
-      // const newUndo = [...(globalState.get("undo") || []), { ...lastItem }];
-      // stateStorage.set("undo", newUndo);
-      console.log(updateContent, lastItem);
+      const newUndo = [...(globalState.get("undo") || []), { ...lastItem }];
+      stateStorage.set("undo", newUndo);
+      setContent([...updateContent]);
+    } else {
+      setContent(updateContent);
     }
-
-    setContent(updateContent);
     // remove the last item, and add it to redo
     stateStorage.set("redo", prevState.slice(0, prevState.length - 1));
   }, [content, setContent]);
