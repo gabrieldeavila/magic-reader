@@ -191,7 +191,7 @@ const WriterContextProvider = ({
         });
 
     if (prevent) {
-      updateContent.splice(lastItem.position, 0, {
+      updateContent.splice(lastItem.position - 1, 0, {
         id: lastItem.lineId,
         text: lastItem.value,
       });
@@ -264,7 +264,7 @@ const WriterContextProvider = ({
         });
 
     if (preventMap) {
-      updateContent.splice(lastItem.position, 0, {
+      updateContent.splice(lastItem.position + 1, 0, {
         id: lastItem.lineId,
         text: lastItem.value,
       });
