@@ -388,6 +388,8 @@ function Component({ text, id, position }: IEditable) {
         };
       } else if (event.key === "Enter") {
         event.preventDefault();
+        const textClone = structuredClone(text);
+
         const isCtrlPressed = event.ctrlKey;
 
         if (isCtrlPressed) {
@@ -545,11 +547,16 @@ function Component({ text, id, position }: IEditable) {
         );
 
         stateStorage.set("first_selection", newId);
+          console.log(text);
 
         addToCtrlZ({
           lineId: newId,
           action: "add_line",
           position,
+          prevLineInfo: {
+            id,
+            text: textClone,
+          },
         });
 
         info.current = {

@@ -143,16 +143,28 @@ const WriterContextProvider = ({
     const prevent = lastItem.action === "delete_line";
 
     // now find the lineId and blockId of the content
-    const updateContent = prevent
+    let updateContent = prevent
       ? content
       : content[iterator]((item) => {
           if (lastItem.action === "add_line" && item.id === lastItem.lineId) {
+            const extra = lastItem.prevLineInfo
+              ? {
+                  prevLineInfo: {
+                    ...lastItem.prevLineInfo,
+                    text: content.find(
+                      ({ id }) => id === lastItem.prevLineInfo.id
+                    ).text,
+                  },
+                }
+              : {};
+
             const newUndo = [
               ...(globalState.get("redo") || []),
               {
                 ...lastItem,
                 action: "add_line",
                 value: structuredClone(item.text),
+                ...extra,
               },
             ];
 
@@ -190,6 +202,16 @@ const WriterContextProvider = ({
           return item;
         });
 
+    if (lastItem.action === "add_line") {
+      updateContent = updateContent.map((item) => {
+        if (item.id === lastItem.prevLineInfo?.id) {
+          item.text = lastItem.prevLineInfo.text;
+        }
+
+        return item;
+      });
+    }
+
     if (prevent) {
       updateContent.splice(lastItem.position - 1, 0, {
         id: lastItem.lineId,
@@ -214,61 +236,83 @@ const WriterContextProvider = ({
 
     const preventMap = lastItem.action === "add_line";
     const iterator = lastItem.action === "delete_line" ? "filter" : "map";
+    if (preventMap && lastItem.prevLineInfo) {
+      globalState.set("add_line_undo", {
+        text: content.find(({ id }) => id === lastItem.prevLineInfo.id).text,
+      });
+    }
 
     // now find the lineId and blockId of the content
-    const updateContent = preventMap
-      ? content
-      : content[iterator]((item) => {
-          if (
-            lastItem.action === "delete_line" &&
-            item.id === lastItem.lineId
-          ) {
-            const newUndo = [
-              ...(globalState.get("undo") || []),
-              {
-                ...lastItem,
-                action: "delete_line",
-                value: structuredClone(item.text),
-              },
-            ];
+    const updateContent = content[iterator]((item) => {
+      if (lastItem.action === "delete_line" && item.id === lastItem.lineId) {
+        const newUndo = [
+          ...(globalState.get("undo") || []),
+          {
+            ...lastItem,
+            action: "delete_line",
+            value: structuredClone(item.text),
+          },
+        ];
 
-            stateStorage.set("undo", newUndo);
+        stateStorage.set("undo", newUndo);
 
-            return false;
-          }
+        return false;
+      }
 
-          if (item.id === lastItem.lineId) {
-            const newUndo = [
-              ...(globalState.get("undo") || []),
-              { ...lastItem, value: structuredClone(item.text) },
-            ];
-            stateStorage.set("undo", newUndo);
+      if (item.id === lastItem.prevLineInfo?.id) {
+        item.text = lastItem.prevLineInfo.text;
+      } else if (
+        item.id === lastItem.lineId &&
+        lastItem.action !== "add_line"
+      ) {
+        const newUndo = [
+          ...(globalState.get("undo") || []),
+          { ...lastItem, value: structuredClone(item.text) },
+        ];
+        stateStorage.set("undo", newUndo);
 
-            if (lastItem.action === "delete_letters") {
-              item.text = lastItem.value;
-              return item;
-            }
-
-            item.text = item.text.map((block) => {
-              if (block.id === lastItem.blockId) {
-                if (lastItem.action === "change") {
-                  block.value = lastItem.value;
-                }
-              }
-
-              return block;
-            });
-          }
-
+        if (lastItem.action === "delete_letters") {
+          item.text = lastItem.value;
           return item;
+        }
+
+        item.text = item.text.map((block) => {
+          if (block.id === lastItem.blockId) {
+            if (lastItem.action === "change") {
+              block.value = lastItem.value;
+            }
+          }
+
+          return block;
         });
+      }
+
+      return item;
+    });
 
     if (preventMap) {
       updateContent.splice(lastItem.position + 1, 0, {
         id: lastItem.lineId,
         text: lastItem.value,
       });
-      const newUndo = [...(globalState.get("undo") || []), { ...lastItem }];
+
+      const extra = lastItem.prevLineInfo
+        ? {
+            prevLineInfo: {
+              id: lastItem.prevLineInfo?.id,
+              text: globalState.get("add_line_undo").text,
+            },
+          }
+        : {};
+
+      const newUndo = [
+        ...(globalState.get("undo") || []),
+        {
+          ...lastItem,
+          ...extra,
+        },
+      ];
+
       stateStorage.set("undo", newUndo);
       setContent([...updateContent]);
     } else {
