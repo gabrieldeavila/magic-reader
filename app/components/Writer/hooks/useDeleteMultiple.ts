@@ -16,7 +16,7 @@ function useDeleteMultiple({ text, id, info }) {
       getSelectedBlocks();
 
     if (areFromDiffLines) {
-      return deleteMultiLine({ ...rest });
+      return deleteMultiLine({ first, ...rest });
     }
 
     addToCtrlZ({

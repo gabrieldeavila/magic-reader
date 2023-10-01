@@ -1,15 +1,21 @@
 import { useCallback } from "react";
-import { useWriterContext } from "../context/WriterContext";
 import { stateStorage } from "react-trigger-state";
+import { useWriterContext } from "../context/WriterContext";
 
 function useDeleteMultiLines() {
-  const { deleteLine, contextName } = useWriterContext();
+  const { deleteLine, contextName, info } = useWriterContext();
 
   const deleteMultiLine = useCallback(
-    ({ selectedLetters, firstNodeIndex, lastNodeIndex, multiLineInfo }) => {
+    ({
+      first,
+      selectedLetters,
+      firstNodeIndex,
+      lastNodeIndex,
+      multiLineInfo,
+    }) => {
       // filter out the selected blocks
-      const reducedLines = selectedLetters.reduce((acc, block, key) => {
-        const { lineId, id, letter } = block;
+      const reducedBlocks = selectedLetters.reduce((acc, block, key) => {
+        const { id, letter } = block;
 
         const isBetweenFirstAndLastNode =
           key >= firstNodeIndex && key <= lastNodeIndex;
@@ -18,54 +24,53 @@ function useDeleteMultiLines() {
           return acc;
         }
 
-        acc[lineId] = acc[lineId] || {};
-        acc[lineId][id] = [...(acc[lineId][id] || []), letter];
+        acc = acc || {};
+        acc[id] = [...(acc[id] || []), letter];
 
         return acc;
       }, {});
 
-      const newLines = Object.keys(reducedLines).map((lineId) => {
-        const line = reducedLines[lineId];
-
-        const text = Object.keys(line).map((id) => {
-          const value = line[id].join("");
-          const blockInfo = multiLineInfo.selectedBlocks.find(
-            (block) => block.id === id
-          );
-
-          return {
-            id,
-            value,
-            options: blockInfo.options,
-          };
-        });
+      const blocks = Object.keys(reducedBlocks).map((id) => {
+        const value = reducedBlocks[id].join("");
+        const blockInfo = multiLineInfo.selectedBlocks.find(
+          (block) => block.id === id
+        );
 
         return {
-          id: lineId,
-          text,
+          id,
+          value,
+          options: blockInfo.options,
         };
       });
 
-      const linesKeys = Object.keys(reducedLines);
+      const linesToDelete = multiLineInfo.linesBetween.slice(1);
+      const lineParent = multiLineInfo.linesBetween[0];
 
-      multiLineInfo.linesBetween.forEach(({ id }) => {
-        if (!linesKeys.includes(id)) {
-          deleteLine(id);
-        }
+      linesToDelete.forEach(({ id }) => {
+        deleteLine(id);
       });
 
       const currContent = stateStorage.get(contextName).map((item) => {
-        if (linesKeys.includes(item.id)) {
-          return newLines.find(({ id }) => id === item.id);
+        if (lineParent.id === item.id) {
+          return {
+            ...lineParent,
+            text: blocks,
+          };
         }
 
         return item;
       });
 
-      console.log(currContent);
+      info.current = {
+        selection: first.index,
+        blockId: first.id,
+      };
+
+      stateStorage.set(`${contextName}_decoration-${first.id}`, new Date());
+
       stateStorage.set(contextName, currContent);
     },
-    [contextName, deleteLine]
+    [contextName, deleteLine, info]
   );
 
   return { deleteMultiLine };
