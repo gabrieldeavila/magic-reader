@@ -30,7 +30,7 @@ function useDeleteMultiLines() {
         return acc;
       }, {});
 
-      const blocks = Object.keys(reducedBlocks).map((id) => {
+      let blocks = Object.keys(reducedBlocks).map((id) => {
         const value = reducedBlocks[id].join("");
         const blockInfo = multiLineInfo.selectedBlocks.find(
           (block) => block.id === id
@@ -42,6 +42,16 @@ function useDeleteMultiLines() {
           options: blockInfo.options,
         };
       });
+
+      if (!blocks.length) {
+        blocks = [
+          {
+            id: first.id,
+            value: "",
+            options: [],
+          },
+        ];
+      }
 
       const linesToDelete = multiLineInfo.linesBetween.slice(1);
       const lineParent = multiLineInfo.linesBetween[0];
@@ -60,6 +70,7 @@ function useDeleteMultiLines() {
 
         return item;
       });
+      console.log(first.index, first.id);
 
       info.current = {
         selection: first.index,
