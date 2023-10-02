@@ -3,7 +3,7 @@ import { stateStorage } from "react-trigger-state";
 import { useWriterContext } from "../context/WriterContext";
 
 function useDeleteMultiLines() {
-  const { deleteLine, contextName, info } = useWriterContext();
+  const { deleteLine, contextName, info, addToCtrlZ } = useWriterContext();
 
   const deleteMultiLine = useCallback(
     ({
@@ -66,11 +66,18 @@ function useDeleteMultiLines() {
         blockId: first.id,
       };
 
+      addToCtrlZ({
+        lineId: lineParent.id,
+        linesBetween: multiLineInfo.linesBetween,
+        value: blocks,
+        action: "delete_multi_lines",
+      });
+
       stateStorage.set(`${contextName}_decoration-${first.id}`, new Date());
 
       stateStorage.set(contextName, currContent);
     },
-    [contextName, deleteLine, info]
+    [addToCtrlZ, contextName, deleteLine, info]
   );
 
   return { deleteMultiLine };

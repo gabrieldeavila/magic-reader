@@ -547,7 +547,6 @@ function Component({ text, id, position }: IEditable) {
         );
 
         stateStorage.set("first_selection", newId);
-          console.log(text);
 
         addToCtrlZ({
           lineId: newId,

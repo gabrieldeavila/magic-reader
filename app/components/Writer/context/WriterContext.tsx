@@ -139,8 +139,15 @@ const WriterContextProvider = ({
 
     if (!lastItem) return;
 
-    const iterator = lastItem.action === "add_line" ? "filter" : "map";
-    const prevent = lastItem.action === "delete_line";
+    const iterator = ["add_line", "delete_multi_lines"].includes(
+      lastItem.action
+    )
+      ? "filter"
+      : "map";
+
+    const prevent = ["delete_line", "delete_multi_lines"].includes(
+      lastItem.action
+    );
 
     // now find the lineId and blockId of the content
     let updateContent = prevent
@@ -210,9 +217,24 @@ const WriterContextProvider = ({
 
         return item;
       });
+    } else if (lastItem.action === "delete_multi_lines") {
+      updateContent = updateContent.reduce((acc, item) => {
+        if (lastItem.lineId === item.id) {
+          acc.push(...lastItem.linesBetween);
+          return acc;
+        }
+
+        acc.push(item);
+
+        return acc;
+      }, []);
+
+      // add to the redo
+      const newRedo = [...(globalState.get("redo") || []), { ...lastItem }];
+      stateStorage.set("redo", newRedo);
     }
 
-    if (prevent) {
+    if (lastItem.action === "delete_line") {
       updateContent.splice(lastItem.position - 1, 0, {
         id: lastItem.lineId,
         text: lastItem.value,
@@ -233,9 +255,15 @@ const WriterContextProvider = ({
     const lastItem = prevState?.[prevState.length - 1];
 
     if (!lastItem) return;
+    console.log("oia", lastItem.action);
 
     const preventMap = lastItem.action === "add_line";
-    const iterator = lastItem.action === "delete_line" ? "filter" : "map";
+    const iterator = ["delete_line", "delete_multi_lines"].includes(
+      lastItem.action
+    )
+      ? "filter"
+      : "map";
+
     if (preventMap && lastItem.prevLineInfo) {
       globalState.set("add_line_undo", {
         text: content.find(({ id }) => id === lastItem.prevLineInfo.id).text,
@@ -243,7 +271,7 @@ const WriterContextProvider = ({
     }
 
     // now find the lineId and blockId of the content
-    const updateContent = content[iterator]((item) => {
+    let updateContent = content[iterator]((item) => {
       if (lastItem.action === "delete_line" && item.id === lastItem.lineId) {
         const newUndo = [
           ...(globalState.get("undo") || []),
@@ -257,6 +285,13 @@ const WriterContextProvider = ({
         stateStorage.set("undo", newUndo);
 
         return false;
+      }
+      const isBtw = lastItem.linesBetween?.find?.(({ id }) => id === item.id);
+
+      if (lastItem.action === "delete_multi_lines" && isBtw) {
+        // only the first line will not be deleted
+        const isFirst = lastItem.linesBetween[0].id === item.id;
+        return isFirst;
       }
 
       if (item.id === lastItem.prevLineInfo?.id) {
@@ -314,6 +349,21 @@ const WriterContextProvider = ({
       ];
 
       stateStorage.set("undo", newUndo);
+      setContent([...updateContent]);
+    } else if (lastItem.action === "delete_multi_lines") {
+      // add to the redo
+      const newUndo = [...(globalState.get("undo") || []), structuredClone(lastItem)];
+
+      stateStorage.set("undo", newUndo);
+
+      updateContent = updateContent.map((item) => {
+        if (lastItem.lineId === item.id) {
+          item.text = lastItem.value;
+        }
+
+        return item;
+      });
+
       setContent([...updateContent]);
     } else {
       setContent(updateContent);
