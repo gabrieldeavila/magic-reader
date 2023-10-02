@@ -3,13 +3,28 @@ import usePositions from "./usePositions";
 import { stateStorage } from "react-trigger-state";
 import { useWriterContext } from "../context/WriterContext";
 import uuid from "../../../utils/uuid";
+import useDeleteMultiLines from "./useDeleteMultiLines";
 
 function useDeleteMultiple({ text, id, info }) {
   const { getSelectedBlocks } = usePositions({ text });
-  const { contextName, handleUpdate } = useWriterContext();
+  const { contextName, handleUpdate, addToCtrlZ } = useWriterContext();
+
+  const { deleteMultiLine } = useDeleteMultiLines();
 
   const deleteMultipleLetters = useCallback(() => {
-    const { selectedBlocks, first, last } = getSelectedBlocks();
+    const { selectedBlocks, first, last, areFromDiffLines, ...rest } =
+      getSelectedBlocks();
+
+    if (areFromDiffLines) {
+      return deleteMultiLine({ first, ...rest });
+    }
+
+    addToCtrlZ({
+      lineId: id,
+      value: structuredClone(text),
+      action: "delete_letters",
+      blockId: first.id,
+    });
 
     const newWords = [];
 
@@ -123,7 +138,16 @@ function useDeleteMultiple({ text, id, info }) {
     };
 
     stateStorage.set(`${contextName}_decoration-${first.id}`, new Date());
-  }, [contextName, getSelectedBlocks, handleUpdate, id, info, text]);
+  }, [
+    addToCtrlZ,
+    contextName,
+    deleteMultiLine,
+    getSelectedBlocks,
+    handleUpdate,
+    id,
+    info,
+    text,
+  ]);
 
   return { deleteMultipleLetters };
 }

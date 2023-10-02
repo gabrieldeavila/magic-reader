@@ -21,7 +21,7 @@ import WPopup from "./style";
 
 const Popup = memo(({ id, text, parentRef }: IPopup) => {
   const { toast } = useGTToastContext();
-  const { handleUpdate } = useWriterContext();
+  const { handleUpdate, addToCtrlZ } = useWriterContext();
 
   const ref = useRef<HTMLDivElement>(null);
 
@@ -529,6 +529,15 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         firstNodeIndex,
         lastNodeIndex + 1
       );
+
+      if (!areFromDiffLines) {
+        addToCtrlZ({
+          lineId: id,
+          value: structuredClone(text),
+          action: "delete_letters",
+          blockId: selected[0].id,
+        });
+      }
 
       if (areFromDiffLines) {
         const { linesBetween } = multiLineInfo;

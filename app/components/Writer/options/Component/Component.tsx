@@ -43,8 +43,14 @@ function Component({ text, id, position }: IEditable) {
     initial: null,
   });
 
-  const { contextName, handleUpdate, deleteBlock, deleteLine, info } =
-    useWriterContext();
+  const {
+    contextName,
+    handleUpdate,
+    deleteBlock,
+    deleteLine,
+    addToCtrlZ,
+    info,
+  } = useWriterContext();
 
   const { deleteMultipleLetters } = useDeleteMultiple({ text, id, info });
 
@@ -96,6 +102,13 @@ function Component({ text, id, position }: IEditable) {
         const { changedBlockId: oldBlockId } = getBlockId({ textId: id });
         const isFirstBlock = text[0].id === oldBlockId;
 
+        addToCtrlZ({
+          lineId: id,
+          value: structuredClone(text),
+          action: "delete_letters",
+          blockId: oldBlockId,
+        });
+
         // if both the anchorNode and the focusNode are 0, and the key is backspace, it means we have to mix the current block with the previous one
         if (
           selection.anchorNode === selection.focusNode &&
@@ -109,7 +122,7 @@ function Component({ text, id, position }: IEditable) {
           const currTextIndex = content.findIndex(
             ({ id: textId }) => id === textId
           );
-          console.log("currTextIndex", currTextIndex);
+
           const nextBlockIndex = currTextIndex - 1;
 
           const currText = content[currTextIndex].text;
@@ -375,6 +388,8 @@ function Component({ text, id, position }: IEditable) {
         };
       } else if (event.key === "Enter") {
         event.preventDefault();
+        const textClone = structuredClone(text);
+
         const isCtrlPressed = event.ctrlKey;
 
         if (isCtrlPressed) {
@@ -408,6 +423,13 @@ function Component({ text, id, position }: IEditable) {
 
           stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
           stateStorage.set(contextName, newContent);
+
+          // add to the undo
+          addToCtrlZ({
+            lineId: newId,
+            action: "add_line",
+            position,
+          });
           return;
         }
 
@@ -526,6 +548,16 @@ function Component({ text, id, position }: IEditable) {
 
         stateStorage.set("first_selection", newId);
 
+        addToCtrlZ({
+          lineId: newId,
+          action: "add_line",
+          position,
+          prevLineInfo: {
+            id,
+            text: textClone,
+          },
+        });
+
         info.current = {
           selection: 0,
           blockId: newId,
@@ -536,13 +568,16 @@ function Component({ text, id, position }: IEditable) {
       }
     },
     [
+      addToCtrlZ,
       contextName,
       deleteBlock,
       deleteLine,
       deleteMultipleLetters,
+      getBlockId,
       handleUpdate,
       id,
       info,
+      position,
       text,
     ]
   );
@@ -650,6 +685,12 @@ function Component({ text, id, position }: IEditable) {
           deleteMultipleLetters();
         } else {
           const nextLine = globalState.get(contextName)[position + 1]?.text[0];
+          addToCtrlZ({
+            lineId: id,
+            value: structuredClone(text),
+            action: "delete_line",
+            position: position + 1,
+          });
 
           deleteLine(id);
           if (nextLine) {
@@ -678,6 +719,7 @@ function Component({ text, id, position }: IEditable) {
       return false;
     },
     [
+      addToCtrlZ,
       contextName,
       copyText,
       deleteLine,
@@ -685,6 +727,7 @@ function Component({ text, id, position }: IEditable) {
       id,
       info,
       position,
+      text,
     ]
   );
 
@@ -801,13 +844,26 @@ function Component({ text, id, position }: IEditable) {
           inputChar +
           baseValue.slice(cursorPositionValue);
 
+        let prevVal;
+
         const newText = currText.map((item) => {
           if (item.id === changedBlockId) {
+            globalState.set("next_prev_value", { changedBlockId, newValue });
+            prevVal = item.value;
             item.value = newValue;
           }
 
           return item;
         });
+
+        if (!numberOfChars) {
+          addToCtrlZ({
+            lineId: id,
+            blockId: changedBlockId,
+            value: prevVal,
+            action: "change",
+          });
+        }
 
         handleUpdate(id, newText);
 
@@ -818,6 +874,7 @@ function Component({ text, id, position }: IEditable) {
       });
     },
     [
+      addToCtrlZ,
       contextName,
       deleteMultipleLetters,
       handleCtrlEvents,

@@ -28,6 +28,26 @@ const DEFAULT_CONTENT: IWritterContent[] = [
       },
     ],
   },
+  {
+    id: uuid(),
+    text: [
+      {
+        value: "111",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    text: [
+      {
+        value: "2222",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
 ];
 
 function Scribere() {
