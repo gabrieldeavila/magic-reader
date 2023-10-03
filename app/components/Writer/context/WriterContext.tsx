@@ -351,7 +351,10 @@ const WriterContextProvider = ({
       setContent([...updateContent]);
     } else if (lastItem.action === "delete_multi_lines") {
       // add to the redo
-      const newUndo = [...(globalState.get("undo") || []), structuredClone(lastItem)];
+      const newUndo = [
+        ...(globalState.get("undo") || []),
+        structuredClone(lastItem),
+      ];
 
       stateStorage.set("undo", newUndo);
 
@@ -490,6 +493,11 @@ const WriterContextProvider = ({
     stateStorage.set("undo", [...prevState, block]);
   }, []);
 
+  const handleDoubleClick = useCallback(() => {
+    const { dataLineId } = getBlockId({});
+    stateStorage.set(`double_click-${dataLineId}`, { date: new Date() });
+  }, [getBlockId]);
+
   return (
     <WriterContext.Provider
       value={{
@@ -511,6 +519,7 @@ const WriterContextProvider = ({
         onClick={handleBlur}
         onDragStart={handleDrag}
         onDrop={handleDrag}
+        onDoubleClick={handleDoubleClick}
         onSelectCapture={handleSelect}
         onPaste={handlePaste}
         suppressContentEditableWarning

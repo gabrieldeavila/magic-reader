@@ -674,6 +674,30 @@ function Component({ text, id, position }: IEditable) {
     navigator.clipboard.writeText(copyStuff);
   }, [copyEntireBlock, getSelectedBlocks]);
 
+  const selectAll = useCallback(() => {
+    const selection = window.getSelection();
+
+    const range = document.createRange();
+
+    const firstBlock = text?.[0]?.id;
+    const lastBlock = text?.[text.length - 1]?.id;
+
+    if (!firstBlock || !lastBlock) return;
+
+    const first = dgb(firstBlock);
+
+    const last = dgb(lastBlock, false);
+
+    if (!first || !last) return;
+
+    range.setStart(first, 0);
+
+    range.setEnd(last, last.textContent?.length ?? 0);
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }, [text]);
+
   const handleCtrlEvents = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>, ctrlPressed: boolean) => {
       if (!ctrlPressed) return false;
@@ -718,28 +742,8 @@ function Component({ text, id, position }: IEditable) {
       } else if (["a"].includes(e.key)) {
         // selects all the text
         e.preventDefault();
+        selectAll();
 
-        const selection = window.getSelection();
-
-        const range = document.createRange();
-
-        const firstBlock = text?.[0]?.id;
-        const lastBlock = text?.[text.length - 1]?.id;
-
-        if (!firstBlock || !lastBlock) return;
-
-        const first = dgb(firstBlock);
-
-        const last = dgb(lastBlock, false);
-
-        if (!first || !last) return;
-
-        range.setStart(first, 0);
-
-        range.setEnd(last, last.textContent?.length ?? 0);
-
-        selection.removeAllRanges();
-        selection.addRange(range);
         return true;
       }
 
@@ -754,6 +758,7 @@ function Component({ text, id, position }: IEditable) {
       id,
       info,
       position,
+      selectAll,
       text,
     ]
   );
@@ -1278,6 +1283,23 @@ function Component({ text, id, position }: IEditable) {
     globalState.set(`blur_ev-${id}`, null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [blurEv]);
+
+  const [doubleEv] = useTriggerState({
+    name: `double_click-${id}`,
+    initial: null,
+  });
+
+  const doubleClick = useCallback(() => {
+    selectAll();
+  }, [selectAll]);
+
+  useEffect(() => {
+    if (doubleEv == null) return;
+
+    doubleClick();
+    globalState.set(`double_click-${id}`, null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doubleEv]);
 
   const [dragEv] = useTriggerState({
     name: `drag_ev-${id}`,
