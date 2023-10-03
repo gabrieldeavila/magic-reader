@@ -22,6 +22,7 @@ import Popup from "../../popup/Popup";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
 import uuid from "../../../../utils/uuid";
+import { dgb } from "../../../../utils/dgb";
 
 const OPTIONS_CHARS = {
   bold: "**",
@@ -713,6 +714,32 @@ function Component({ text, id, position }: IEditable) {
 
         return true;
       } else if (["v", "r"].includes(e.key)) {
+        return true;
+      } else if (["a"].includes(e.key)) {
+        // selects all the text
+        e.preventDefault();
+
+        const selection = window.getSelection();
+
+        const range = document.createRange();
+
+        const firstBlock = text?.[0]?.id;
+        const lastBlock = text?.[text.length - 1]?.id;
+
+        if (!firstBlock || !lastBlock) return;
+
+        const first = dgb(firstBlock);
+
+        const last = dgb(lastBlock, false);
+
+        if (!first || !last) return;
+
+        range.setStart(first, 0);
+
+        range.setEnd(last, last.textContent?.length ?? 0);
+
+        selection.removeAllRanges();
+        selection.addRange(range);
         return true;
       }
 

@@ -255,7 +255,6 @@ const WriterContextProvider = ({
     const lastItem = prevState?.[prevState.length - 1];
 
     if (!lastItem) return;
-    console.log("oia", lastItem.action);
 
     const preventMap = lastItem.action === "add_line";
     const iterator = ["delete_line", "delete_multi_lines"].includes(
