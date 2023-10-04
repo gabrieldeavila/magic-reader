@@ -1,5 +1,6 @@
 import { useGTToastContext } from "@geavila/gt-design";
 import {
+  forwardRef,
   memo,
   useCallback,
   useLayoutEffect,
@@ -18,8 +19,12 @@ import { useWriterContext } from "../context/WriterContext";
 import usePositions from "../hooks/usePositions";
 import { IPopup } from "../interface";
 import WPopup from "./style";
+import { PopupFunctions } from "./interface";
 
-const Popup = memo(({ id, text, parentRef }: IPopup) => {
+const PopupComp = (
+  { id, text, parentRef }: IPopup,
+  popupRef: React.MutableRefObject<PopupFunctions>
+) => {
   const { toast } = useGTToastContext();
   const { handleUpdate, addToCtrlZ } = useWriterContext();
 
@@ -618,7 +623,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
         anchorComesFirst,
       });
     },
-    [doTheDecoration, getFirstAndLastNode, id, mimic, text, toast]
+    [addToCtrlZ, doTheDecoration, getFirstAndLastNode, id, mimic, text, toast]
   );
 
   const bold = useCallback(() => {
@@ -655,6 +660,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
       <WPopup.Content>
         <WPopup.Item>
           <WPopup.B
+            ref={(el) => (popupRef.current.bold = el)}
             isSelected={selectedOptions.includes("bold")}
             onClick={bold}
           >
@@ -664,6 +670,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
         <WPopup.Item>
           <WPopup.I
+            ref={(el) => (popupRef.current.italic = el)}
             isSelected={selectedOptions.includes("italic")}
             onClick={italic}
           >
@@ -673,6 +680,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
         <WPopup.Item>
           <WPopup.U
+            ref={(el) => (popupRef.current.underline = el)}
             isSelected={selectedOptions.includes("underline")}
             onClick={underline}
           >
@@ -682,6 +690,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
         <WPopup.Item>
           <WPopup.S
+            ref={(el) => (popupRef.current.strikethrough = el)}
             isSelected={selectedOptions.includes("strikethrough")}
             onClick={strikethrough}
           >
@@ -691,6 +700,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
         <WPopup.Item>
           <WPopup.Code
+            ref={(el) => (popupRef.current.highlight = el)}
             isSelected={selectedOptions.includes("highlight")}
             onClick={highlight}
           >
@@ -700,6 +710,7 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
 
         <WPopup.Item>
           <WPopup.Code
+            ref={(el) => (popupRef.current.code = el)}
             isSelected={selectedOptions.includes("code")}
             onClick={code}
           >
@@ -709,7 +720,9 @@ const Popup = memo(({ id, text, parentRef }: IPopup) => {
       </WPopup.Content>
     </WPopup.Wrapper>
   );
-});
+};
+
+const Popup = memo(forwardRef<PopupFunctions, IPopup>(PopupComp));
 
 Popup.displayName = "Popup";
 

@@ -193,6 +193,8 @@ const Decoration = memo(
       },
     };
 
+    console.log(tagOptions);
+
     if (options.includes("code") && value.length > 0) {
       return (
         <DCode {...tagOptions}>

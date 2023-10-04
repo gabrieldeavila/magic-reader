@@ -23,6 +23,7 @@ import { Editable } from "../../style";
 import Decoration from "./Decoration";
 import uuid from "../../../../utils/uuid";
 import { dgb } from "../../../../utils/dgb";
+import { PopupFunctions } from "../../popup/interface";
 
 const OPTIONS_CHARS = {
   bold: "**",
@@ -43,6 +44,8 @@ function Component({ text, id, position }: IEditable) {
     name: `key_down_ev-${id}`,
     initial: null,
   });
+
+  const popupRef = useRef<PopupFunctions>({});
 
   const {
     contextName,
@@ -741,6 +744,36 @@ function Component({ text, id, position }: IEditable) {
         selection.removeAllRanges();
         selection.addRange(range);
         return true;
+      } else if (e.key === "b") {
+        e.preventDefault();
+
+        popupRef.current.bold.click();
+        return true;
+      } else if (e.key === "i") {
+        e.preventDefault();
+
+        popupRef.current.italic.click();
+        return true;
+      } else if (e.key === "u") {
+        e.preventDefault();
+
+        popupRef.current.underline.click();
+        return true;
+      } else if (e.key === "s") {
+        e.preventDefault();
+
+        popupRef.current.strikethrough.click();
+        return true;
+      } else if (e.key === "h") {
+        e.preventDefault();
+
+        popupRef.current.highlight.click();
+        return true;
+      } else if (e.key === "e") {
+        e.preventDefault();
+
+        popupRef.current.code.click();
+        return true;
       }
 
       return false;
@@ -1279,7 +1312,6 @@ function Component({ text, id, position }: IEditable) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [blurEv]);
 
-
   const [dragEv] = useTriggerState({
     name: `drag_ev-${id}`,
     initial: null,
@@ -1337,7 +1369,9 @@ function Component({ text, id, position }: IEditable) {
         );
       })}
 
-      {showPopup && hasFocusId && <Popup id={id} text={text} parentRef={ref} />}
+      {showPopup && hasFocusId && (
+        <Popup ref={popupRef} id={id} text={text} parentRef={ref} />
+      )}
     </Editable>
   );
 }
