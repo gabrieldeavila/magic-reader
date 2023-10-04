@@ -747,32 +747,32 @@ function Component({ text, id, position }: IEditable) {
       } else if (e.key === "b") {
         e.preventDefault();
 
-        popupRef.current.bold.click();
+        popupRef.current.bold?.click();
         return true;
       } else if (e.key === "i") {
         e.preventDefault();
 
-        popupRef.current.italic.click();
+        popupRef.current.italic?.click();
         return true;
       } else if (e.key === "u") {
         e.preventDefault();
 
-        popupRef.current.underline.click();
+        popupRef.current.underline?.click();
         return true;
       } else if (e.key === "s") {
         e.preventDefault();
 
-        popupRef.current.strikethrough.click();
+        popupRef.current.strikethrough?.click();
         return true;
       } else if (e.key === "h") {
         e.preventDefault();
 
-        popupRef.current.highlight.click();
+        popupRef.current.highlight?.click();
         return true;
       } else if (e.key === "e") {
         e.preventDefault();
 
-        popupRef.current.code.click();
+        popupRef.current.code?.click();
         return true;
       }
 
@@ -819,6 +819,82 @@ function Component({ text, id, position }: IEditable) {
     []
   );
 
+  const handleAltEvents = useCallback(
+    (e) => {
+      const isAltPressed = e.altKey;
+
+      if (!isAltPressed) return false;
+
+      if (e.key === "ArrowUp") {
+        // gets the content and add the line above the curr position
+        e.preventDefault();
+
+        const content = globalState.get(contextName);
+
+        const currTextIndex = content.findIndex(
+          ({ id: textId }) => id === textId
+        );
+
+        const prevLine = content[currTextIndex - 1];
+
+        if (!prevLine) return;
+
+        const newContent = content.reduce((acc, item, index) => {
+          if (index === currTextIndex) {
+            return acc;
+          }
+
+          if (index === currTextIndex - 1) {
+            acc.push(content[currTextIndex]);
+            acc.push(item);
+          } else {
+            acc.push(item);
+          }
+
+          return acc;
+        }, []);
+
+        stateStorage.set(contextName, newContent);
+
+        return true;
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+
+        const content = globalState.get(contextName);
+
+        const currTextIndex = content.findIndex(
+          ({ id: textId }) => id === textId
+        );
+
+        const nextLine = content[currTextIndex + 1];
+
+        if (!nextLine) return;
+
+        const newContent = content.reduce((acc, item, index) => {
+          if (index === currTextIndex) {
+            return acc;
+          }
+
+          if (index === currTextIndex + 1) {
+            acc.push(item);
+            acc.push(content[currTextIndex]);
+          } else {
+            acc.push(item);
+          }
+
+          return acc;
+        }, []);
+
+        stateStorage.set(contextName, newContent);
+
+        return true;
+      }
+
+      return false;
+    },
+    [contextName, id]
+  );
+
   const handleChange = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       // only accept letters, numbers, spaces, special characters and accents
@@ -831,6 +907,8 @@ function Component({ text, id, position }: IEditable) {
 
       const newChar = verifyForAccents(event);
 
+      const avoidAlt = handleAltEvents(event);
+
       if (!isAllowed && newChar !== false) {
         inputChar = newChar;
       } else if (!isAllowed) {
@@ -842,7 +920,7 @@ function Component({ text, id, position }: IEditable) {
 
       const avoidCtrl = handleCtrlEvents(event, ctrlPressed);
 
-      if (avoidCtrl) return;
+      if (avoidCtrl || avoidAlt) return;
 
       event.preventDefault();
 
@@ -937,6 +1015,7 @@ function Component({ text, id, position }: IEditable) {
       addToCtrlZ,
       contextName,
       deleteMultipleLetters,
+      handleAltEvents,
       handleCtrlEvents,
       handleUpdate,
       id,
