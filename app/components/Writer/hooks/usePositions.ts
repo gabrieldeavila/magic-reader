@@ -239,7 +239,7 @@ function usePositions({ text }: { text: IText[] }) {
       selectedLetters: letters,
       areFromDiffLines,
       multiLineInfo,
-      anchorComesFirst
+      anchorComesFirst,
     };
   }, [getLinesBetween, mimic]);
 
@@ -251,10 +251,11 @@ function usePositions({ text }: { text: IText[] }) {
       areFromDiffLines,
       multiLineInfo,
     } = getFirstAndLastNode();
+
     const selected = selectedLetters?.slice(firstNodeIndex, lastNodeIndex + 1);
 
     // gets the ids of the selected (unique)
-    const selectedIds = selected.reduce((acc, item) => {
+    const selectedIds = selected?.reduce?.((acc, item) => {
       if (!acc.includes(item.id)) acc.push(item.id);
 
       return acc;

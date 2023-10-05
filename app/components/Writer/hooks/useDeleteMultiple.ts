@@ -120,10 +120,13 @@ function useDeleteMultiple({ text, id, info }) {
       newWords.push(item);
     });
 
+    const noNewWords = !newWords.length;
+    const newId = uuid();
+
     // if there is no new words, add an empty block
-    if (!newWords.length) {
+    if (noNewWords) {
       newWords.push({
-        id: uuid(),
+        id: newId,
         value: "",
         options: [],
       });
@@ -133,8 +136,8 @@ function useDeleteMultiple({ text, id, info }) {
 
     // changes also the cursor position
     info.current = {
-      selection: first.index,
-      blockId: first.id,
+      selection: noNewWords ? 0 : first.index,
+      blockId: noNewWords ? newId : first.id,
     };
 
     stateStorage.set(`${contextName}_decoration-${first.id}`, new Date());
