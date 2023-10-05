@@ -854,7 +854,19 @@ function Component({ text, id, position }: IEditable) {
           return acc;
         }, []);
 
+        const { changedBlockId, currSelection } = getBlockId({ textId: id });
+
         stateStorage.set(contextName, newContent);
+
+        info.current = {
+          selection: currSelection,
+          blockId: changedBlockId,
+        };
+
+        stateStorage.set(
+          `${contextName}_decoration-${changedBlockId}`,
+          new Date()
+        );
 
         return true;
       } else if (e.key === "ArrowDown") {
@@ -887,12 +899,25 @@ function Component({ text, id, position }: IEditable) {
 
         stateStorage.set(contextName, newContent);
 
+        const { changedBlockId, currSelection } = getBlockId({ textId: id });
+
+        stateStorage.set(contextName, newContent);
+
+        info.current = {
+          selection: currSelection,
+          blockId: changedBlockId,
+        };
+
+        stateStorage.set(
+          `${contextName}_decoration-${changedBlockId}`,
+          new Date()
+        );
         return true;
       }
 
       return false;
     },
-    [contextName, id]
+    [contextName, getBlockId, id, info]
   );
 
   const handleChange = useCallback(
