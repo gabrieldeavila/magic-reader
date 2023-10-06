@@ -41,7 +41,8 @@ function usePositions({ text }: { text: IText[] }) {
 
     // if are the same, checks if the anchorOffset is less than the focusOffset
     const isAnchorOffsetLessThanFocusOffset =
-      areTheSame && anchorOffset < focusOffset;
+      (areTheSame && anchorOffset < focusOffset) ||
+      (selection.toString().length === 0 && anchorOffset === focusOffset);
 
     // see which node is the first
     // if the anchor is the first, then the focus is the last
@@ -212,7 +213,7 @@ function usePositions({ text }: { text: IText[] }) {
       }
     }
 
-    const firstNodeIndex = letters.findIndex(({ id }) => {
+    let firstNodeIndex = letters.findIndex(({ id }) => {
       if (id == firstNodeId) {
         return firstIdIndex++ === firstNodeOffset;
       }
@@ -222,13 +223,22 @@ function usePositions({ text }: { text: IText[] }) {
 
     let lastIdIndex = 0;
 
-    const lastNodeIndex = letters.findIndex(({ id }) => {
+    let lastNodeIndex = letters.findIndex(({ id }) => {
       if (id == lastNodeId) {
         return lastIdIndex++ === lastNodeOffset;
       }
 
       return false;
     });
+
+    // prevents the nodeIndex to be -1
+    if (selection.toString().length === 0) {
+      if (lastNodeIndex === -1) {
+        lastNodeIndex = firstNodeIndex - 1;
+      } else if (firstNodeIndex === -1) {
+        firstNodeIndex = lastNodeIndex + 1;
+      }
+    }
 
     return {
       firstNodeIndex,

@@ -98,6 +98,7 @@ function Component({ text, id, position }: IEditable) {
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (["Backspace", "Delete"].includes(event.key)) {
         event.preventDefault();
+        const ctrlPressed = event.ctrlKey;
 
         // returns if is deleting in the right or left side of the block
         const deletingPosition = event.key === "Delete" ? 0 : -1;
@@ -221,6 +222,118 @@ function Component({ text, id, position }: IEditable) {
 
         const isTheLastBlock =
           currText[currText.length - 1].id === changedBlockId;
+
+        if (ctrlPressed) {
+          const { selectedLetters, lastNodeIndex, firstNodeIndex } =
+            getSelectedBlocks();
+
+          // gets where there is a space in the selected letters
+          let spaceIndex = -1;
+
+          if (event.key === "Backspace") {
+            selectedLetters.find(({ letter }, index) => {
+              if (letter === " " && index != lastNodeIndex) {
+                spaceIndex = index;
+                return false;
+              }
+
+              return index === lastNodeIndex;
+            });
+          } else {
+            spaceIndex = selectedLetters.findIndex(({ letter }, index) => {
+              return letter === " " && index > firstNodeIndex;
+            });
+
+            if (spaceIndex === -1) {
+              spaceIndex = selectedLetters.length - 1;
+            }
+          }
+
+          spaceIndex += 1;
+
+          // gets the letters between the space and the last selected letter
+          let lettersToDelete = [];
+
+          if (event.key === "Backspace") {
+            lettersToDelete = selectedLetters.slice(
+              spaceIndex,
+              lastNodeIndex + 1
+            );
+          } else {
+            lettersToDelete = selectedLetters.slice(firstNodeIndex, spaceIndex);
+          }
+
+          console.log(
+            lettersToDelete,
+            selectedLetters,
+            firstNodeIndex,
+            spaceIndex
+          );
+
+          const blocksIds = lettersToDelete.reduce((acc, item) => {
+            if (!acc.includes(item.id)) {
+              acc.push(item.id);
+            }
+
+            return acc;
+          }, []);
+
+          // reduces the text of the blocks
+          const newLineText = currText.reduce((acc, item, index, array) => {
+            if (blocksIds.includes(item.id)) {
+              item.value = item.value.split("").reduce((acc, letter, key) => {
+                if (
+                  !lettersToDelete.find(
+                    ({ index, id }) => index === key && id === item.id
+                  )
+                ) {
+                  acc += letter;
+                }
+
+                return acc;
+              }, "");
+            }
+
+            if (item.value.length > 0 || index === array.length - 1) {
+              acc.push(item);
+            }
+
+            return acc;
+          }, []);
+
+          stateStorage.set(contextName, [
+            ...content.slice(0, currTextIndex),
+            {
+              ...content[currTextIndex],
+              text: newLineText,
+            },
+            ...content.slice(currTextIndex + 1),
+          ]);
+
+          const newSelection = selectedLetters[spaceIndex - 1];
+
+          if (event.key === "Delete") {
+            const lettersDeletedFromThisBlock = lettersToDelete.filter(
+              ({ id }) => id === newSelection?.id
+            );
+            newSelection.index =
+              newSelection.index - lettersDeletedFromThisBlock.length;
+          }
+
+          if (!newSelection) return;
+
+          info.current = {
+            selection: newSelection.index + 1,
+            blockId: newSelection.id,
+          };
+
+          stateStorage.set(
+            `${contextName}_decoration-${newSelection.id}`,
+            new Date()
+          );
+
+          return;
+        }
 
         // now if is the delete key, we have to mix the current block with the next one
         if (
@@ -578,6 +691,7 @@ function Component({ text, id, position }: IEditable) {
       deleteLine,
       deleteMultipleLetters,
       getBlockId,
+      getSelectedBlocks,
       handleUpdate,
       id,
       info,
@@ -774,7 +888,12 @@ function Component({ text, id, position }: IEditable) {
 
         popupRef.current.code?.click();
         return true;
+      } else if (e.key === "Backspace") {
+        e.preventDefault();
+        console.log("aaa");
+        return true;
       }
+      console.log(e.key);
 
       return false;
     },
