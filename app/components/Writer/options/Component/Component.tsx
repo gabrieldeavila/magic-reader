@@ -192,6 +192,8 @@ function Component({ text, id, position }: IEditable) {
         const isCodeBlock =
           selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
 
+        let isLastCodeChild = false;
+
         if (isCodeBlock) {
           const codeChilds = Array.from(
             selection.anchorNode.parentElement?.parentElement.childNodes
@@ -218,6 +220,10 @@ function Component({ text, id, position }: IEditable) {
 
           baseValue =
             selection.anchorNode.parentElement.parentElement.innerText;
+
+          const lastChild =
+            selection.anchorNode.parentElement.parentElement.lastChild;
+          isLastCodeChild = lastChild === selection.anchorNode.parentElement;
         }
 
         const isTheLastBlock =
@@ -262,13 +268,6 @@ function Component({ text, id, position }: IEditable) {
           } else {
             lettersToDelete = selectedLetters.slice(firstNodeIndex, spaceIndex);
           }
-
-          console.log(
-            lettersToDelete,
-            selectedLetters,
-            firstNodeIndex,
-            spaceIndex
-          );
 
           const blocksIds = lettersToDelete.reduce((acc, item) => {
             if (!acc.includes(item.id)) {
@@ -341,7 +340,8 @@ function Component({ text, id, position }: IEditable) {
           selection.anchorOffset === selection.focusOffset &&
           selection.focusOffset === selection.focusNode.textContent.length &&
           event.key === "Delete" &&
-          isTheLastBlock
+          isTheLastBlock &&
+          (isLastCodeChild || !isCodeBlock)
         ) {
           const nextBlockIndex = currTextIndex + 1;
 

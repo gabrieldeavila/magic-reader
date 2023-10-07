@@ -89,7 +89,10 @@ const Decoration = memo(
 
           const hasCursor = letters.some((_letter, index) => {
             nodeIndex++;
-            if (nodeIndex === cursorPositionValue) {
+            if (
+              nodeIndex === cursorPositionValue ||
+              cursorPositionValue === 0
+            ) {
               nodePosition = index;
               hasFound = true;
               return true;
@@ -102,8 +105,7 @@ const Decoration = memo(
         if (!hasFound) {
           node = codeNodesArray[codeNodesArray.length - 1]?.childNodes[0];
         }
-
-        cursorPositionValue = nodePosition + 1;
+        cursorPositionValue = cursorPositionValue === 0 ? 0 : nodePosition + 1;
       }
 
       if (
