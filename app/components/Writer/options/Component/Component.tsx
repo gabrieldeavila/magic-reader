@@ -338,8 +338,8 @@ function Component({ text, id, position }: IEditable) {
         if (
           selection.anchorNode === selection.focusNode &&
           selection.anchorOffset === selection.focusOffset &&
-          selection.focusOffset === selection.focusNode.textContent.length &&
-          event.key === "Delete" &&
+          (selection.focusOffset === selection.focusNode.textContent.length ||
+            currText[currText.length - 1].value.length === 0) &&
           isTheLastBlock &&
           (isLastCodeChild || !isCodeBlock)
         ) {

@@ -271,7 +271,10 @@ function usePositions({ text }: { text: IText[] }) {
       return acc;
     }, []);
 
-    const selectedBlocks = text.filter(({ id }) => selectedIds.includes(id));
+    const selectedBlocks =
+      selectedIds == null
+        ? []
+        : text.filter(({ id }) => selectedIds.includes(id));
 
     return {
       selectedBlocks,
