@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useCallback, useMemo, useRef } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import {
   globalState,
   stateStorage,
@@ -573,6 +579,28 @@ const WriterContextProvider = ({
       globalState.set("triple-count", count + 1);
     }
   }, [contextName, getBlockId]);
+
+  useEffect(() => {
+    // add listener
+    const handleChange = (e) => {
+      // if ctrl is pressed and z is pressed, it will undo the last action
+      if (e.ctrlKey && e.key === "z") {
+        undo();
+        return;
+      }
+
+      if (e.ctrlKey && e.key === "y") {
+        redo();
+        return;
+      }
+    };
+
+    window.addEventListener("keydown", handleChange);
+
+    return () => {
+      window.removeEventListener("keydown", handleChange);
+    };
+  }, [handleKeyDown, redo, undo]);
 
   return (
     <WriterContext.Provider

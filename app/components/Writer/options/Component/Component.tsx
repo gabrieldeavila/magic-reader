@@ -891,12 +891,10 @@ function Component({ text, id, position }: IEditable) {
         return true;
       } else if (e.key === "Backspace") {
         e.preventDefault();
-        console.log("aaa");
         return true;
       }
-      console.log(e.key);
 
-      return false;
+      return true;
     },
     [
       addToCtrlZ,
