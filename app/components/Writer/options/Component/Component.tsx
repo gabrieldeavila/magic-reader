@@ -1500,7 +1500,16 @@ function Component({ text, id, position }: IEditable) {
         );
       });
     },
-    [contextName, deleteMultipleLetters, getBlockId, handleUpdate, id, info]
+    [
+      addToCtrlZ,
+      contextName,
+      deleteMultipleLetters,
+      getBlockId,
+      handleUpdate,
+      id,
+      info,
+      text,
+    ]
   );
 
   useEffect(() => {

@@ -27,6 +27,8 @@ function useDeleteMultiple({ text, id, info }) {
       blockId: first.id,
     });
 
+    const firstIndex = text.findIndex(({ id }) => id === first.id);
+
     const newWords = [];
 
     text.forEach((item) => {
@@ -135,13 +137,21 @@ function useDeleteMultiple({ text, id, info }) {
 
     handleUpdate(id, newWords);
 
+    // sees if the first was deleted
+    const firstWasDeleted = !newWords.some(({ id }) => id === first.id);
+
+    // if the first was deleted, gets the next block, by the next index
+    const nextBlock = firstWasDeleted
+      ? { ...newWords[firstIndex], index: 0 }
+      : first;
+
     // changes also the cursor position
     info.current = {
-      selection: noNewWords ? 0 : first.index,
-      blockId: noNewWords ? newId : first.id,
+      selection: noNewWords ? 0 : nextBlock.index,
+      blockId: noNewWords ? newId : nextBlock.id,
     };
 
-    stateStorage.set(`${contextName}_decoration-${first.id}`, new Date());
+    stateStorage.set(`${contextName}_decoration-${nextBlock.id}`, new Date());
   }, [
     addToCtrlZ,
     contextName,
