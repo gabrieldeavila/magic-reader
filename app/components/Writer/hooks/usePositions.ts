@@ -57,17 +57,6 @@ function usePositions({ text }: { text: IText[] }) {
     let firstNode = anchorComesFirst ? anchor : focus;
     let lastNode = anchorComesFirst ? focus : anchor;
 
-    // if the first node does not have an id, then it will become the lastNode, and the last node will be the last of the line
-    if (firstNode.getAttribute("data-block-id") == null) {
-      const lastTextId = text[text.length - 1]?.id;
-      const firstTextId = text[0]?.id;
-
-      firstNode = lastNode;
-      lastNode = document.querySelector(`[data-block-id="${lastTextId}"]`);
-      console.log("oh sheeet");
-      dcs(firstTextId, lastTextId, false);
-    }
-
     const firstNodeIsCode = firstNode?.parentElement?.tagName === "CODE";
     const lastNodeIsCode = lastNode?.parentElement?.tagName === "CODE";
 
@@ -83,6 +72,17 @@ function usePositions({ text }: { text: IText[] }) {
       // gets the one being selected
       lastCode = lastNode;
       lastNode = lastNode?.parentElement?.parentElement?.parentElement;
+    }
+
+    // if the first node does not have an id, then it will become the lastNode, and the last node will be the last of the line
+    if (firstNode.getAttribute("data-block-id") == null) {
+      const lastTextId = text[text.length - 1]?.id;
+      const firstTextId = text[0]?.id;
+
+      firstNode = lastNode;
+      lastNode = document.querySelector(`[data-block-id="${lastTextId}"]`);
+
+      dcs(firstTextId, lastTextId, false); 
     }
 
     const prevSelectionRange = stateStorage.get("selection_range");
