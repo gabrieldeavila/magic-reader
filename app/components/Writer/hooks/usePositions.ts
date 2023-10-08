@@ -1,5 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { stateStorage } from "react-trigger-state";
+import { dcs } from "../../../utils/dcs";
+import { useContextName } from "../context/WriterContext";
 import { IText } from "../interface";
 import useLinesBetween from "./useLinesBetween";
 
@@ -25,6 +27,8 @@ function usePositions({ text }: { text: IText[] }) {
       }, []),
     [text]
   );
+
+  const contextName = useContextName();
 
   const { getLinesBetween } = useLinesBetween();
 
@@ -52,6 +56,17 @@ function usePositions({ text }: { text: IText[] }) {
 
     let firstNode = anchorComesFirst ? anchor : focus;
     let lastNode = anchorComesFirst ? focus : anchor;
+
+    // if the first node does not have an id, then it will become the lastNode, and the last node will be the last of the line
+    if (firstNode.getAttribute("data-block-id") == null) {
+      const lastTextId = text[text.length - 1]?.id;
+      const firstTextId = text[0]?.id;
+
+      firstNode = lastNode;
+      lastNode = document.querySelector(`[data-block-id="${lastTextId}"]`);
+      console.log("oh sheeet");
+      dcs(firstTextId, lastTextId, false);
+    }
 
     const firstNodeIsCode = firstNode?.parentElement?.tagName === "CODE";
     const lastNodeIsCode = lastNode?.parentElement?.tagName === "CODE";
@@ -251,7 +266,7 @@ function usePositions({ text }: { text: IText[] }) {
       multiLineInfo,
       anchorComesFirst,
     };
-  }, [getLinesBetween, mimic]);
+  }, [getLinesBetween, mimic, text]);
 
   const getSelectedBlocks = useCallback(() => {
     const {
@@ -276,6 +291,20 @@ function usePositions({ text }: { text: IText[] }) {
         ? []
         : text.filter(({ id }) => selectedIds.includes(id));
 
+    if (selected == null) {
+      console.log(
+        selected,
+        selectedLetters,
+        firstNodeIndex,
+        lastNodeIndex,
+        stateStorage.get(contextName),
+        getFirstAndLastNode()
+      );
+      debugger;
+
+      return {};
+    }
+
     return {
       selectedBlocks,
       firstNodeIndex,
@@ -292,7 +321,7 @@ function usePositions({ text }: { text: IText[] }) {
       areFromDiffLines,
       multiLineInfo,
     };
-  }, [getFirstAndLastNode, text]);
+  }, [contextName, getFirstAndLastNode, text]);
 
   return { getFirstAndLastNode, getSelectedBlocks };
 }

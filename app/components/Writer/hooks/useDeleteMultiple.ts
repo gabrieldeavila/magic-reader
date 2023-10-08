@@ -16,6 +16,7 @@ function useDeleteMultiple({ text, id, info }) {
       getSelectedBlocks();
 
     if (areFromDiffLines) {
+      // @ts-expect-error - rest has the same type as the return of deleteMultiLine
       return deleteMultiLine({ first, ...rest });
     }
 

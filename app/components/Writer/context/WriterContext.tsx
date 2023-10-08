@@ -16,6 +16,7 @@ import {
 } from "../interface";
 import Component from "../options/Component/Component";
 import { ReadWrite } from "../options/Component/style";
+import { dcs } from "../../../utils/dcs";
 
 export const WriterContext = createContext<IWriterContext>({
   content: [],
@@ -493,6 +494,43 @@ const WriterContextProvider = ({
     stateStorage.set("undo", [...prevState, block]);
   }, []);
 
+  // if triple click, it will select the whole line
+  const handleClick = useCallback(() => {
+    const startedCount = globalState.get("started-count");
+    const { dataLineId } = getBlockId({});
+    const lineCount = globalState.get("line-count");
+
+    if (
+      !startedCount ||
+      lineCount !== dataLineId ||
+      new Date().getTime() - startedCount?.getTime() > 500
+    ) {
+      globalState.set("started-count", new Date());
+      globalState.set("triple-count", 1);
+      globalState.set("line-count", dataLineId);
+      return;
+    }
+
+    const count = globalState.get("triple-count") || 0;
+
+    if (count >= 2) {
+      globalState.set("triple-count", 0);
+      globalState.set("started-count", null);
+      // gets the text from the curr line
+      const lineText = globalState
+        .get(contextName)
+        .find(({ id }) => id === dataLineId).text;
+
+      const firstTextId = lineText[0].id;
+      const lastTextId = lineText[lineText.length - 1].id;
+      setTimeout(() => {
+        dcs(firstTextId, lastTextId, false);
+      });
+    } else {
+      globalState.set("triple-count", count + 1);
+    }
+  }, [contextName, getBlockId]);
+
   return (
     <WriterContext.Provider
       value={{
@@ -511,7 +549,10 @@ const WriterContextProvider = ({
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
         onFocus={handleBlur}
-        onClick={handleBlur}
+        onClick={(e) => {
+          handleBlur(e);
+          handleClick();
+        }}
         onDragStart={handleDrag}
         onDrop={handleDrag}
         onSelectCapture={handleSelect}

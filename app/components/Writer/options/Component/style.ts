@@ -6,6 +6,7 @@ export const DCode = styled.span`
 
   * {
     border-radius: inherit !important;
+    padding: 0 !important;
   }
 
   code {
