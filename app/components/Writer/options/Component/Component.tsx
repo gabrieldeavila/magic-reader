@@ -943,6 +943,7 @@ function Component({ text, id, position }: IEditable) {
       const isAltPressed = e.altKey;
 
       if (!isAltPressed) return false;
+      e.preventDefault();
 
       if (e.key === "ArrowUp") {
         // gets the content and add the line above the curr position
@@ -1338,6 +1339,11 @@ function Component({ text, id, position }: IEditable) {
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement>) => {
       e.preventDefault();
+      addToCtrlZ({
+        lineId: id,
+        value: structuredClone(text),
+        action: "delete_letters",
+      });
 
       const copiedText = e.clipboardData.getData("text/plain");
       const selection = window.getSelection();
