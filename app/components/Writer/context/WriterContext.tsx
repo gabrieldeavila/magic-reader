@@ -153,6 +153,7 @@ const WriterContextProvider = ({
       ...lastItem,
       undoAnchorOffset: anchorOffset,
     };
+    const prevLineCloned = structuredClone(lastItem.prevLineInfo);
 
     const iterator = ["add_line", "delete_multi_lines"].includes(
       lastItem.action
@@ -226,7 +227,7 @@ const WriterContextProvider = ({
 
     if (lastItem.action === "add_line") {
       updateContent = updateContent.map((item) => {
-        if (item.id === lastItem.prevLineInfo?.id) {
+        if (item.id === prevLineCloned?.id) {
           item.text = lastItem.prevLineInfo.text;
         }
 
@@ -415,21 +416,10 @@ const WriterContextProvider = ({
 
   const handleKeyDown = useCallback(
     (e) => {
-      // if ctrl is pressed and z is pressed, it will undo the last action
-      if (e.ctrlKey && e.key === "z") {
-        undo();
-        return;
-      }
-
-      if (e.ctrlKey && e.key === "y") {
-        redo();
-        return;
-      }
-
       const { dataLineId } = getBlockId({});
       stateStorage.set(`key_down_ev-${dataLineId}`, { e, date: new Date() });
     },
-    [getBlockId, redo, undo]
+    [getBlockId]
   );
 
   const handleBlur = useCallback(

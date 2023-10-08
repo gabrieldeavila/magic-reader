@@ -6,7 +6,8 @@
 export const dga = () => {
   const selection = window.getSelection();
   const isCodeBlock =
-    selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
+    selection.anchorNode.parentElement?.parentElement?.tagName === "CODE";
+
   let anchorOffset = selection?.anchorOffset;
 
   if (isCodeBlock) {
