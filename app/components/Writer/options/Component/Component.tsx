@@ -341,7 +341,8 @@ function Component({ text, id, position }: IEditable) {
           (selection.focusOffset === selection.focusNode.textContent.length ||
             currText[currText.length - 1].value.length === 0) &&
           isTheLastBlock &&
-          (isLastCodeChild || !isCodeBlock)
+          (isLastCodeChild || !isCodeBlock) &&
+          event.key === "Delete"
         ) {
           const nextBlockIndex = currTextIndex + 1;
 

@@ -136,9 +136,16 @@ const WriterContextProvider = ({
   const undo = useCallback(() => {
     const prevState = globalState.get("undo") || [];
 
-    const lastItem = prevState?.[prevState.length - 1];
+    let lastItem = prevState?.[prevState.length - 1];
 
     if (!lastItem) return;
+
+    const selection = window.getSelection();
+
+    lastItem = {
+      ...lastItem,
+      undoAnchorOffset: selection?.anchorOffset,
+    };
 
     const iterator = ["add_line", "delete_multi_lines"].includes(
       lastItem.action
@@ -246,9 +253,21 @@ const WriterContextProvider = ({
     } else {
       setContent(updateContent);
     }
+
+    info.current = {
+      selection: lastItem.anchorOffset,
+      blockId: lastItem.changedBlockId,
+    };
+    globalState.set("first_selection", null);
+
+    stateStorage.set(
+      `${contextName}_decoration-${lastItem.changedBlockId}`,
+      new Date()
+    );
+
     // remove the last item, and add it to redo
     stateStorage.set("undo", prevState.slice(0, prevState.length - 1));
-  }, [content, setContent]);
+  }, [content, contextName, setContent]);
 
   const redo = useCallback(() => {
     const prevState = globalState.get("redo") || [];
@@ -371,9 +390,21 @@ const WriterContextProvider = ({
     } else {
       setContent(updateContent);
     }
+
+    info.current = {
+      selection: lastItem.undoAnchorOffset,
+      blockId: lastItem.changedBlockId,
+    };
+    globalState.set("first_selection", null);
+
+    stateStorage.set(
+      `${contextName}_decoration-${lastItem.changedBlockId}`,
+      new Date()
+    );
+
     // remove the last item, and add it to redo
     stateStorage.set("redo", prevState.slice(0, prevState.length - 1));
-  }, [content, setContent]);
+  }, [content, contextName, setContent]);
 
   const handleKeyDown = useCallback(
     (e) => {
@@ -450,49 +481,61 @@ const WriterContextProvider = ({
     [getBlockId]
   );
 
-  const addToCtrlZ: IWriterContext["addToCtrlZ"] = useCallback((block) => {
-    const prevState = globalState.get("undo") || [];
+  const addToCtrlZ: IWriterContext["addToCtrlZ"] = useCallback(
+    (block) => {
+      const prevState = globalState.get("undo") || [];
+      const { changedBlockId } = getBlockId({});
 
-    const lastItem = prevState?.[prevState.length - 1];
+      const lastItem = prevState?.[prevState.length - 1];
 
-    if (
-      ["change"].includes(lastItem?.action) &&
-      lastItem?.blockId === block.blockId
-    ) {
-      const prevWords = lastItem.value?.split(" ");
-      // @ts-expect-error works
-      const currWords = block.value?.split?.(" ");
+      if (
+        ["change"].includes(lastItem?.action) &&
+        lastItem?.blockId === block.blockId
+      ) {
+        const prevWords = lastItem.value?.split(" ");
+        // @ts-expect-error works
+        const currWords = block.value?.split?.(" ");
 
-      const diff = currWords?.length - prevWords?.length;
+        const diff = currWords?.length - prevWords?.length;
 
-      if (!diff && currWords) {
-        return;
+        if (!diff && currWords) {
+          return;
+        }
       }
-    }
+      const selection = window.getSelection();
 
-    if (
-      lastItem?.action === "delete_letters" &&
-      lastItem?.lineId === block.lineId &&
-      lastItem?.blockId === block.blockId &&
-      typeof block.value !== "string"
-    ) {
-      const currWords = block.value
-        .find(({ id }) => id === block.blockId)
-        .value.split(" ");
+      const blockInfo = {
+        ...block,
+        selection,
+        changedBlockId,
+        anchorOffset: selection?.anchorOffset,
+      };
 
-      const prevWords = lastItem.value
-        .find(({ id }) => id === block.blockId)
-        .value.split(" ");
+      if (
+        lastItem?.action === "delete_letters" &&
+        lastItem?.lineId === block.lineId &&
+        lastItem?.blockId === block.blockId &&
+        typeof block.value !== "string"
+      ) {
+        const currWords = block.value
+          .find(({ id }) => id === block.blockId)
+          .value.split(" ");
 
-      const diff = currWords.length - prevWords.length;
+        const prevWords = lastItem.value
+          .find(({ id }) => id === block.blockId)
+          .value.split(" ");
 
-      if (!diff) {
-        return;
+        const diff = currWords.length - prevWords.length;
+
+        if (!diff) {
+          return;
+        }
       }
-    }
 
-    stateStorage.set("undo", [...prevState, block]);
-  }, []);
+      stateStorage.set("undo", [...prevState, blockInfo]);
+    },
+    [getBlockId]
+  );
 
   // if triple click, it will select the whole line
   const handleClick = useCallback(() => {

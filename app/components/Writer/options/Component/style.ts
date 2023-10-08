@@ -11,6 +11,7 @@ export const DCode = styled.span`
 
   code {
     white-space: break-spaces !important;
+    padding: 0 2px !important;
   }
 `;
 
