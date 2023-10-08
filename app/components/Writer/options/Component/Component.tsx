@@ -24,6 +24,7 @@ import Decoration from "./Decoration";
 import uuid from "../../../../utils/uuid";
 import { dgb } from "../../../../utils/dgb";
 import { PopupFunctions } from "../../popup/interface";
+import { dga } from "../../../../utils/dga";
 
 const OPTIONS_CHARS = {
   bold: "**",
@@ -1101,28 +1102,7 @@ function Component({ text, id, position }: IEditable) {
 
         const baseValue = block?.value?.slice?.() ?? "";
 
-        let cursorPositionValue = selection.anchorOffset;
-
-        if (isCodeBlock) {
-          const codeChilds = Array.from(
-            selection.anchorNode.parentElement?.parentElement.childNodes
-          );
-
-          let codeNewIndex = 0;
-
-          codeChilds.find((item) => {
-            if (item !== selection.anchorNode.parentElement) {
-              codeNewIndex += item.textContent?.length ?? 0;
-              return false;
-            }
-
-            return true;
-          });
-
-          codeNewIndex += selection.anchorOffset;
-
-          cursorPositionValue = codeNewIndex;
-        }
+        const cursorPositionValue = dga();
 
         const newValue =
           baseValue.slice(0, cursorPositionValue) +

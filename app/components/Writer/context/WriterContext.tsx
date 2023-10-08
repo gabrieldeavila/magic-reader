@@ -23,6 +23,7 @@ import {
 import Component from "../options/Component/Component";
 import { ReadWrite } from "../options/Component/style";
 import { dcs } from "../../../utils/dcs";
+import { dga } from "../../../utils/dga";
 
 export const WriterContext = createContext<IWriterContext>({
   content: [],
@@ -146,11 +147,11 @@ const WriterContextProvider = ({
 
     if (!lastItem) return;
 
-    const selection = window.getSelection();
+    const anchorOffset = dga();
 
     lastItem = {
       ...lastItem,
-      undoAnchorOffset: selection?.anchorOffset,
+      undoAnchorOffset: anchorOffset,
     };
 
     const iterator = ["add_line", "delete_multi_lines"].includes(
@@ -509,12 +510,13 @@ const WriterContextProvider = ({
         }
       }
       const selection = window.getSelection();
+      const anchorOffset = dga();
 
       const blockInfo = {
         ...block,
         selection,
         changedBlockId,
-        anchorOffset: selection?.anchorOffset,
+        anchorOffset,
       };
 
       if (
