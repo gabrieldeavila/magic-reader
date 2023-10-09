@@ -22,6 +22,9 @@ import Popup from "../../popup/Popup";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
 import uuid from "../../../../utils/uuid";
+import { dgb } from "../../../../utils/dgb";
+import { PopupFunctions } from "../../popup/interface";
+import { dga } from "../../../../utils/dga";
 
 const OPTIONS_CHARS = {
   bold: "**",
@@ -42,6 +45,8 @@ function Component({ text, id, position }: IEditable) {
     name: `key_down_ev-${id}`,
     initial: null,
   });
+
+  const popupRef = useRef<PopupFunctions>({});
 
   const {
     contextName,
@@ -94,6 +99,7 @@ function Component({ text, id, position }: IEditable) {
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (["Backspace", "Delete"].includes(event.key)) {
         event.preventDefault();
+        const ctrlPressed = event.ctrlKey;
 
         // returns if is deleting in the right or left side of the block
         const deletingPosition = event.key === "Delete" ? 0 : -1;
@@ -187,6 +193,8 @@ function Component({ text, id, position }: IEditable) {
         const isCodeBlock =
           selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
 
+        let isLastCodeChild = false;
+
         if (isCodeBlock) {
           const codeChilds = Array.from(
             selection.anchorNode.parentElement?.parentElement.childNodes
@@ -213,18 +221,129 @@ function Component({ text, id, position }: IEditable) {
 
           baseValue =
             selection.anchorNode.parentElement.parentElement.innerText;
+
+          const lastChild =
+            selection.anchorNode.parentElement.parentElement.lastChild;
+          isLastCodeChild = lastChild === selection.anchorNode.parentElement;
         }
 
         const isTheLastBlock =
           currText[currText.length - 1].id === changedBlockId;
 
+        if (ctrlPressed) {
+          const { selectedLetters, lastNodeIndex, firstNodeIndex } =
+            getSelectedBlocks();
+
+          // gets where there is a space in the selected letters
+          let spaceIndex = -1;
+
+          if (event.key === "Backspace") {
+            selectedLetters.find(({ letter }, index) => {
+              if (letter === " " && index != lastNodeIndex) {
+                spaceIndex = index;
+                return false;
+              }
+
+              return index === lastNodeIndex;
+            });
+          } else {
+            spaceIndex = selectedLetters.findIndex(({ letter }, index) => {
+              return letter === " " && index > firstNodeIndex;
+            });
+
+            if (spaceIndex === -1) {
+              spaceIndex = selectedLetters.length - 1;
+            }
+          }
+
+          spaceIndex += 1;
+
+          // gets the letters between the space and the last selected letter
+          let lettersToDelete = [];
+
+          if (event.key === "Backspace") {
+            lettersToDelete = selectedLetters.slice(
+              spaceIndex,
+              lastNodeIndex + 1
+            );
+          } else {
+            lettersToDelete = selectedLetters.slice(firstNodeIndex, spaceIndex);
+          }
+
+          const blocksIds = lettersToDelete.reduce((acc, item) => {
+            if (!acc.includes(item.id)) {
+              acc.push(item.id);
+            }
+
+            return acc;
+          }, []);
+
+          // reduces the text of the blocks
+          const newLineText = currText.reduce((acc, item, index, array) => {
+            if (blocksIds.includes(item.id)) {
+              item.value = item.value.split("").reduce((acc, letter, key) => {
+                if (
+                  !lettersToDelete.find(
+                    ({ index, id }) => index === key && id === item.id
+                  )
+                ) {
+                  acc += letter;
+                }
+
+                return acc;
+              }, "");
+            }
+
+            if (item.value.length > 0 || index === array.length - 1) {
+              acc.push(item);
+            }
+
+            return acc;
+          }, []);
+
+          stateStorage.set(contextName, [
+            ...content.slice(0, currTextIndex),
+            {
+              ...content[currTextIndex],
+              text: newLineText,
+            },
+            ...content.slice(currTextIndex + 1),
+          ]);
+
+          const newSelection = selectedLetters[spaceIndex - 1];
+
+          if (event.key === "Delete") {
+            const lettersDeletedFromThisBlock = lettersToDelete.filter(
+              ({ id }) => id === newSelection?.id
+            );
+            newSelection.index =
+              newSelection.index - lettersDeletedFromThisBlock.length;
+          }
+
+          if (!newSelection) return;
+
+          info.current = {
+            selection: newSelection.index + 1,
+            blockId: newSelection.id,
+          };
+
+          stateStorage.set(
+            `${contextName}_decoration-${newSelection.id}`,
+            new Date()
+          );
+
+          return;
+        }
+
         // now if is the delete key, we have to mix the current block with the next one
         if (
           selection.anchorNode === selection.focusNode &&
           selection.anchorOffset === selection.focusOffset &&
-          selection.focusOffset === selection.focusNode.textContent.length &&
-          event.key === "Delete" &&
-          isTheLastBlock
+          (selection.focusOffset === selection.focusNode.textContent.length ||
+            currText[currText.length - 1].value.length === 0) &&
+          isTheLastBlock &&
+          (isLastCodeChild || !isCodeBlock) &&
+          event.key === "Delete"
         ) {
           const nextBlockIndex = currTextIndex + 1;
 
@@ -574,6 +693,7 @@ function Component({ text, id, position }: IEditable) {
       deleteLine,
       deleteMultipleLetters,
       getBlockId,
+      getSelectedBlocks,
       handleUpdate,
       id,
       info,
@@ -714,9 +834,68 @@ function Component({ text, id, position }: IEditable) {
         return true;
       } else if (["v", "r"].includes(e.key)) {
         return true;
+      } else if (["a"].includes(e.key)) {
+        // selects all the text
+        e.preventDefault();
+
+        const selection = window.getSelection();
+
+        const range = document.createRange();
+
+        const firstBlock = text?.[0]?.id;
+        const lastBlock = text?.[text.length - 1]?.id;
+
+        if (!firstBlock || !lastBlock) return;
+
+        const first = dgb(firstBlock);
+
+        const last = dgb(lastBlock, false);
+
+        if (!first || !last) return;
+
+        range.setStart(first, 0);
+
+        range.setEnd(last, last.textContent?.length ?? 0);
+
+        selection.removeAllRanges();
+        selection.addRange(range);
+        return true;
+      } else if (e.key === "b") {
+        e.preventDefault();
+
+        popupRef.current.bold?.click();
+        return true;
+      } else if (e.key === "i") {
+        e.preventDefault();
+
+        popupRef.current.italic?.click();
+        return true;
+      } else if (e.key === "u") {
+        e.preventDefault();
+
+        popupRef.current.underline?.click();
+        return true;
+      } else if (e.key === "s") {
+        e.preventDefault();
+
+        popupRef.current.strikethrough?.click();
+        return true;
+      } else if (e.key === "h") {
+        e.preventDefault();
+
+        popupRef.current.highlight?.click();
+        return true;
+      } else if (e.key === "e") {
+        e.preventDefault();
+
+        popupRef.current.code?.click();
+        return true;
+      } else if (e.key === "Backspace") {
+        e.preventDefault();
+        return true;
       }
 
-      return false;
+      return true;
     },
     [
       addToCtrlZ,
@@ -759,6 +938,112 @@ function Component({ text, id, position }: IEditable) {
     []
   );
 
+  const handleAltEvents = useCallback(
+    (e) => {
+      const isAltPressed = e.altKey;
+
+      if (!isAltPressed) return false;
+      e.preventDefault();
+
+      if (e.key === "ArrowUp") {
+        // gets the content and add the line above the curr position
+        e.preventDefault();
+
+        const content = globalState.get(contextName);
+
+        const currTextIndex = content.findIndex(
+          ({ id: textId }) => id === textId
+        );
+
+        const prevLine = content[currTextIndex - 1];
+
+        if (!prevLine) return;
+
+        const newContent = content.reduce((acc, item, index) => {
+          if (index === currTextIndex) {
+            return acc;
+          }
+
+          if (index === currTextIndex - 1) {
+            acc.push(content[currTextIndex]);
+            acc.push(item);
+          } else {
+            acc.push(item);
+          }
+
+          return acc;
+        }, []);
+
+        const { changedBlockId, currSelection } = getBlockId({ textId: id });
+
+        info.current = {
+          selection: currSelection,
+          blockId: changedBlockId,
+        };
+
+        setTimeout(() => {
+          stateStorage.set(
+            `${contextName}_decoration-${changedBlockId}`,
+            new Date()
+          );
+        });
+
+        stateStorage.set(contextName, newContent);
+
+        return true;
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+
+        const content = globalState.get(contextName);
+
+        const currTextIndex = content.findIndex(
+          ({ id: textId }) => id === textId
+        );
+
+        const nextLine = content[currTextIndex + 1];
+
+        if (!nextLine) return;
+
+        const newContent = content.reduce((acc, item, index) => {
+          if (index === currTextIndex) {
+            return acc;
+          }
+
+          if (index === currTextIndex + 1) {
+            acc.push(item);
+            acc.push(content[currTextIndex]);
+          } else {
+            acc.push(item);
+          }
+
+          return acc;
+        }, []);
+
+        stateStorage.set(contextName, newContent);
+
+        const { changedBlockId, currSelection } = getBlockId({ textId: id });
+
+        stateStorage.set(contextName, newContent);
+
+        info.current = {
+          selection: currSelection,
+          blockId: changedBlockId,
+        };
+
+        setTimeout(() => {
+          stateStorage.set(
+            `${contextName}_decoration-${changedBlockId}`,
+            new Date()
+          );
+        });
+        return true;
+      }
+
+      return false;
+    },
+    [contextName, getBlockId, id, info]
+  );
+
   const handleChange = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       // only accept letters, numbers, spaces, special characters and accents
@@ -771,6 +1056,8 @@ function Component({ text, id, position }: IEditable) {
 
       const newChar = verifyForAccents(event);
 
+      const avoidAlt = handleAltEvents(event);
+
       if (!isAllowed && newChar !== false) {
         inputChar = newChar;
       } else if (!isAllowed) {
@@ -782,7 +1069,7 @@ function Component({ text, id, position }: IEditable) {
 
       const avoidCtrl = handleCtrlEvents(event, ctrlPressed);
 
-      if (avoidCtrl) return;
+      if (avoidCtrl || avoidAlt) return;
 
       event.preventDefault();
 
@@ -816,28 +1103,7 @@ function Component({ text, id, position }: IEditable) {
 
         const baseValue = block?.value?.slice?.() ?? "";
 
-        let cursorPositionValue = selection.anchorOffset;
-
-        if (isCodeBlock) {
-          const codeChilds = Array.from(
-            selection.anchorNode.parentElement?.parentElement.childNodes
-          );
-
-          let codeNewIndex = 0;
-
-          codeChilds.find((item) => {
-            if (item !== selection.anchorNode.parentElement) {
-              codeNewIndex += item.textContent?.length ?? 0;
-              return false;
-            }
-
-            return true;
-          });
-
-          codeNewIndex += selection.anchorOffset;
-
-          cursorPositionValue = codeNewIndex;
-        }
+        const cursorPositionValue = dga();
 
         const newValue =
           baseValue.slice(0, cursorPositionValue) +
@@ -877,6 +1143,7 @@ function Component({ text, id, position }: IEditable) {
       addToCtrlZ,
       contextName,
       deleteMultipleLetters,
+      handleAltEvents,
       handleCtrlEvents,
       handleUpdate,
       id,
@@ -1072,6 +1339,11 @@ function Component({ text, id, position }: IEditable) {
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement>) => {
       e.preventDefault();
+      addToCtrlZ({
+        lineId: id,
+        value: structuredClone(text),
+        action: "delete_letters",
+      });
 
       const copiedText = e.clipboardData.getData("text/plain");
       const selection = window.getSelection();
@@ -1228,7 +1500,16 @@ function Component({ text, id, position }: IEditable) {
         );
       });
     },
-    [contextName, deleteMultipleLetters, getBlockId, handleUpdate, id, info]
+    [
+      addToCtrlZ,
+      contextName,
+      deleteMultipleLetters,
+      getBlockId,
+      handleUpdate,
+      id,
+      info,
+      text,
+    ]
   );
 
   useEffect(() => {
@@ -1309,7 +1590,9 @@ function Component({ text, id, position }: IEditable) {
         );
       })}
 
-      {showPopup && hasFocusId && <Popup id={id} text={text} parentRef={ref} />}
+      {showPopup && hasFocusId && (
+        <Popup ref={popupRef} id={id} text={text} parentRef={ref} />
+      )}
     </Editable>
   );
 }

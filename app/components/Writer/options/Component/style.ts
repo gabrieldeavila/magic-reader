@@ -6,10 +6,12 @@ export const DCode = styled.span`
 
   * {
     border-radius: inherit !important;
+    padding: 0 !important;
   }
 
   code {
     white-space: break-spaces !important;
+    padding: 0 2px !important;
   }
 `;
 

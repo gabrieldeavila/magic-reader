@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useCallback, useMemo, useRef } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import {
   globalState,
   stateStorage,
@@ -16,6 +22,8 @@ import {
 } from "../interface";
 import Component from "../options/Component/Component";
 import { ReadWrite } from "../options/Component/style";
+import { dcs } from "../../../utils/dcs";
+import { dga } from "../../../utils/dga";
 
 export const WriterContext = createContext<IWriterContext>({
   content: [],
@@ -135,9 +143,17 @@ const WriterContextProvider = ({
   const undo = useCallback(() => {
     const prevState = globalState.get("undo") || [];
 
-    const lastItem = prevState?.[prevState.length - 1];
+    let lastItem = prevState?.[prevState.length - 1];
 
     if (!lastItem) return;
+
+    const anchorOffset = dga();
+
+    lastItem = {
+      ...lastItem,
+      undoAnchorOffset: anchorOffset,
+    };
+    const prevLineCloned = structuredClone(lastItem.prevLineInfo);
 
     const iterator = ["add_line", "delete_multi_lines"].includes(
       lastItem.action
@@ -211,7 +227,7 @@ const WriterContextProvider = ({
 
     if (lastItem.action === "add_line") {
       updateContent = updateContent.map((item) => {
-        if (item.id === lastItem.prevLineInfo?.id) {
+        if (item.id === prevLineCloned?.id) {
           item.text = lastItem.prevLineInfo.text;
         }
 
@@ -245,9 +261,21 @@ const WriterContextProvider = ({
     } else {
       setContent(updateContent);
     }
+
+    info.current = {
+      selection: lastItem.anchorOffset,
+      blockId: lastItem.changedBlockId,
+    };
+    globalState.set("first_selection", null);
+
+    stateStorage.set(
+      `${contextName}_decoration-${lastItem.changedBlockId}`,
+      new Date()
+    );
+
     // remove the last item, and add it to redo
     stateStorage.set("undo", prevState.slice(0, prevState.length - 1));
-  }, [content, setContent]);
+  }, [content, contextName, setContent]);
 
   const redo = useCallback(() => {
     const prevState = globalState.get("redo") || [];
@@ -255,7 +283,6 @@ const WriterContextProvider = ({
     const lastItem = prevState?.[prevState.length - 1];
 
     if (!lastItem) return;
-    console.log("oia", lastItem.action);
 
     const preventMap = lastItem.action === "add_line";
     const iterator = ["delete_line", "delete_multi_lines"].includes(
@@ -352,7 +379,10 @@ const WriterContextProvider = ({
       setContent([...updateContent]);
     } else if (lastItem.action === "delete_multi_lines") {
       // add to the redo
-      const newUndo = [...(globalState.get("undo") || []), structuredClone(lastItem)];
+      const newUndo = [
+        ...(globalState.get("undo") || []),
+        structuredClone(lastItem),
+      ];
 
       stateStorage.set("undo", newUndo);
 
@@ -368,27 +398,28 @@ const WriterContextProvider = ({
     } else {
       setContent(updateContent);
     }
+
+    info.current = {
+      selection: lastItem.undoAnchorOffset,
+      blockId: lastItem.changedBlockId,
+    };
+    globalState.set("first_selection", null);
+
+    stateStorage.set(
+      `${contextName}_decoration-${lastItem.changedBlockId}`,
+      new Date()
+    );
+
     // remove the last item, and add it to redo
     stateStorage.set("redo", prevState.slice(0, prevState.length - 1));
-  }, [content, setContent]);
+  }, [content, contextName, setContent]);
 
   const handleKeyDown = useCallback(
     (e) => {
-      // if ctrl is pressed and z is pressed, it will undo the last action
-      if (e.ctrlKey && e.key === "z") {
-        undo();
-        return;
-      }
-
-      if (e.ctrlKey && e.key === "y") {
-        redo();
-        return;
-      }
-
       const { dataLineId } = getBlockId({});
       stateStorage.set(`key_down_ev-${dataLineId}`, { e, date: new Date() });
     },
-    [getBlockId, redo, undo]
+    [getBlockId]
   );
 
   const handleBlur = useCallback(
@@ -396,8 +427,9 @@ const WriterContextProvider = ({
       const { dataLineId } = getBlockId({});
       const prevSelected = globalState.get("prev-selected");
       const selection = window.getSelection().toString().length;
+      const selectedClicked = globalState.get("clicked-item");
 
-      if (prevSelected && selection === 0) {
+      if (prevSelected && selection === 0 && !selectedClicked) {
         stateStorage.set(`has_focus_ev-${prevSelected}`, false);
       }
 
@@ -447,49 +479,121 @@ const WriterContextProvider = ({
     [getBlockId]
   );
 
-  const addToCtrlZ: IWriterContext["addToCtrlZ"] = useCallback((block) => {
-    const prevState = globalState.get("undo") || [];
+  const addToCtrlZ: IWriterContext["addToCtrlZ"] = useCallback(
+    (block) => {
+      const prevState = globalState.get("undo") || [];
+      const { changedBlockId } = getBlockId({});
 
-    const lastItem = prevState?.[prevState.length - 1];
+      const lastItem = prevState?.[prevState.length - 1];
+
+      if (
+        ["change"].includes(lastItem?.action) &&
+        lastItem?.blockId === block.blockId
+      ) {
+        const prevWords = lastItem.value?.split(" ");
+        // @ts-expect-error works
+        const currWords = block.value?.split?.(" ");
+
+        const diff = currWords?.length - prevWords?.length;
+
+        if (!diff && currWords) {
+          return;
+        }
+      }
+      const selection = window.getSelection();
+      const anchorOffset = dga();
+
+      const blockInfo = {
+        ...block,
+        selection,
+        changedBlockId,
+        anchorOffset,
+      };
+
+      if (
+        lastItem?.action === "delete_letters" &&
+        lastItem?.lineId === block.lineId &&
+        lastItem?.blockId === block.blockId &&
+        typeof block.value !== "string"
+      ) {
+        const currWords = block.value
+          .find(({ id }) => id === block.blockId)
+          .value.split(" ");
+
+        const prevWords = lastItem.value
+          .find(({ id }) => id === block.blockId)
+          .value.split(" ");
+
+        const diff = currWords.length - prevWords.length;
+
+        if (!diff) {
+          return;
+        }
+      }
+
+      stateStorage.set("undo", [...prevState, blockInfo]);
+    },
+    [getBlockId]
+  );
+
+  // if triple click, it will select the whole line
+  const handleClick = useCallback(() => {
+    const startedCount = globalState.get("started-count");
+    const { dataLineId } = getBlockId({});
+    const lineCount = globalState.get("line-count");
 
     if (
-      ["change"].includes(lastItem?.action) &&
-      lastItem?.blockId === block.blockId
+      !startedCount ||
+      lineCount !== dataLineId ||
+      new Date().getTime() - startedCount?.getTime() > 500
     ) {
-      const prevWords = lastItem.value?.split(" ");
-      // @ts-expect-error works
-      const currWords = block.value?.split?.(" ");
-
-      const diff = currWords?.length - prevWords?.length;
-
-      if (!diff && currWords) {
-        return;
-      }
+      globalState.set("started-count", new Date());
+      globalState.set("triple-count", 1);
+      globalState.set("line-count", dataLineId);
+      return;
     }
 
-    if (
-      lastItem?.action === "delete_letters" &&
-      lastItem?.lineId === block.lineId &&
-      lastItem?.blockId === block.blockId &&
-      typeof block.value !== "string"
-    ) {
-      const currWords = block.value
-        .find(({ id }) => id === block.blockId)
-        .value.split(" ");
+    const count = globalState.get("triple-count") || 0;
 
-      const prevWords = lastItem.value
-        .find(({ id }) => id === block.blockId)
-        .value.split(" ");
+    if (count >= 2) {
+      globalState.set("triple-count", 0);
+      globalState.set("started-count", null);
+      // gets the text from the curr line
+      const lineText = globalState
+        .get(contextName)
+        .find(({ id }) => id === dataLineId).text;
 
-      const diff = currWords.length - prevWords.length;
+      const firstTextId = lineText[0].id;
+      const lastTextId = lineText[lineText.length - 1].id;
+      setTimeout(() => {
+        dcs(firstTextId, lastTextId, false);
+      });
+    } else {
+      globalState.set("triple-count", count + 1);
+    }
+  }, [contextName, getBlockId]);
 
-      if (!diff) {
+  useEffect(() => {
+    // add listener
+    const handleChange = (e) => {
+      // if ctrl is pressed and z is pressed, it will undo the last action
+      if (e.ctrlKey && e.key === "z") {
+        undo();
         return;
       }
-    }
 
-    stateStorage.set("undo", [...prevState, block]);
-  }, []);
+      if (e.ctrlKey && e.key === "y") {
+        redo();
+        return;
+      }
+    };
+
+    window.addEventListener("keydown", handleChange);
+
+    return () => {
+      window.removeEventListener("keydown", handleChange);
+    };
+  }, [handleKeyDown, redo, undo]);
 
   return (
     <WriterContext.Provider
@@ -507,9 +611,16 @@ const WriterContextProvider = ({
       <ReadWrite
         contentEditable
         onKeyDown={handleKeyDown}
-        onBlur={handleBlur}
+        onBlur={(e) => {
+          globalState.set("clicked-item", false);
+          handleBlur(e);
+        }}
         onFocus={handleBlur}
-        onClick={handleBlur}
+        onClick={(e) => {
+          handleBlur(e);
+          globalState.set("clicked-item", true);
+          handleClick();
+        }}
         onDragStart={handleDrag}
         onDrop={handleDrag}
         onSelectCapture={handleSelect}

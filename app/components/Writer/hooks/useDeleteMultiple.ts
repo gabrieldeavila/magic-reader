@@ -16,6 +16,7 @@ function useDeleteMultiple({ text, id, info }) {
       getSelectedBlocks();
 
     if (areFromDiffLines) {
+      // @ts-expect-error - rest has the same type as the return of deleteMultiLine
       return deleteMultiLine({ first, ...rest });
     }
 
@@ -25,6 +26,8 @@ function useDeleteMultiple({ text, id, info }) {
       action: "delete_letters",
       blockId: first.id,
     });
+
+    const firstIndex = text.findIndex(({ id }) => id === first.id);
 
     const newWords = [];
 
@@ -120,10 +123,13 @@ function useDeleteMultiple({ text, id, info }) {
       newWords.push(item);
     });
 
+    const noNewWords = !newWords.length;
+    const newId = uuid();
+
     // if there is no new words, add an empty block
-    if (!newWords.length) {
+    if (noNewWords) {
       newWords.push({
-        id: uuid(),
+        id: newId,
         value: "",
         options: [],
       });
@@ -131,13 +137,21 @@ function useDeleteMultiple({ text, id, info }) {
 
     handleUpdate(id, newWords);
 
+    // sees if the first was deleted
+    const firstWasDeleted = !newWords.some(({ id }) => id === first.id);
+
+    // if the first was deleted, gets the next block, by the next index
+    const nextBlock = firstWasDeleted
+      ? { ...newWords[firstIndex], index: 0 }
+      : first;
+
     // changes also the cursor position
     info.current = {
-      selection: first.index,
-      blockId: first.id,
+      selection: noNewWords ? 0 : nextBlock.index,
+      blockId: noNewWords ? newId : nextBlock.id,
     };
 
-    stateStorage.set(`${contextName}_decoration-${first.id}`, new Date());
+    stateStorage.set(`${contextName}_decoration-${nextBlock.id}`, new Date());
   }, [
     addToCtrlZ,
     contextName,

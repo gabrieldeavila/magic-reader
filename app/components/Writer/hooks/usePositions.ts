@@ -1,5 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { stateStorage } from "react-trigger-state";
+import { dcs } from "../../../utils/dcs";
+import { useContextName } from "../context/WriterContext";
 import { IText } from "../interface";
 import useLinesBetween from "./useLinesBetween";
 
@@ -26,6 +28,8 @@ function usePositions({ text }: { text: IText[] }) {
     [text]
   );
 
+  const contextName = useContextName();
+
   const { getLinesBetween } = useLinesBetween();
 
   const getFirstAndLastNode = useCallback(() => {
@@ -41,7 +45,8 @@ function usePositions({ text }: { text: IText[] }) {
 
     // if are the same, checks if the anchorOffset is less than the focusOffset
     const isAnchorOffsetLessThanFocusOffset =
-      areTheSame && anchorOffset < focusOffset;
+      (areTheSame && anchorOffset < focusOffset) ||
+      (selection.toString().length === 0 && anchorOffset === focusOffset);
 
     // see which node is the first
     // if the anchor is the first, then the focus is the last
@@ -67,6 +72,17 @@ function usePositions({ text }: { text: IText[] }) {
       // gets the one being selected
       lastCode = lastNode;
       lastNode = lastNode?.parentElement?.parentElement?.parentElement;
+    }
+
+    // if the first node does not have an id, then it will become the lastNode, and the last node will be the last of the line
+    if (firstNode.getAttribute("data-block-id") == null) {
+      const lastTextId = text[text.length - 1]?.id;
+      const firstTextId = text[0]?.id;
+
+      firstNode = lastNode;
+      lastNode = document.querySelector(`[data-block-id="${lastTextId}"]`);
+
+      dcs(firstTextId, lastTextId, false); 
     }
 
     const prevSelectionRange = stateStorage.get("selection_range");
@@ -212,7 +228,7 @@ function usePositions({ text }: { text: IText[] }) {
       }
     }
 
-    const firstNodeIndex = letters.findIndex(({ id }) => {
+    let firstNodeIndex = letters.findIndex(({ id }) => {
       if (id == firstNodeId) {
         return firstIdIndex++ === firstNodeOffset;
       }
@@ -222,13 +238,22 @@ function usePositions({ text }: { text: IText[] }) {
 
     let lastIdIndex = 0;
 
-    const lastNodeIndex = letters.findIndex(({ id }) => {
+    let lastNodeIndex = letters.findIndex(({ id }) => {
       if (id == lastNodeId) {
         return lastIdIndex++ === lastNodeOffset;
       }
 
       return false;
     });
+
+    // prevents the nodeIndex to be -1
+    if (selection.toString().length === 0) {
+      if (lastNodeIndex === -1) {
+        lastNodeIndex = firstNodeIndex - 1;
+      } else if (firstNodeIndex === -1) {
+        firstNodeIndex = lastNodeIndex + 1;
+      }
+    }
 
     return {
       firstNodeIndex,
@@ -239,9 +264,9 @@ function usePositions({ text }: { text: IText[] }) {
       selectedLetters: letters,
       areFromDiffLines,
       multiLineInfo,
-      anchorComesFirst
+      anchorComesFirst,
     };
-  }, [getLinesBetween, mimic]);
+  }, [getLinesBetween, mimic, text]);
 
   const getSelectedBlocks = useCallback(() => {
     const {
@@ -251,16 +276,34 @@ function usePositions({ text }: { text: IText[] }) {
       areFromDiffLines,
       multiLineInfo,
     } = getFirstAndLastNode();
+
     const selected = selectedLetters?.slice(firstNodeIndex, lastNodeIndex + 1);
 
     // gets the ids of the selected (unique)
-    const selectedIds = selected.reduce((acc, item) => {
+    const selectedIds = selected?.reduce?.((acc, item) => {
       if (!acc.includes(item.id)) acc.push(item.id);
 
       return acc;
     }, []);
 
-    const selectedBlocks = text.filter(({ id }) => selectedIds.includes(id));
+    const selectedBlocks =
+      selectedIds == null
+        ? []
+        : text.filter(({ id }) => selectedIds.includes(id));
+
+    if (selected == null) {
+      console.log(
+        selected,
+        selectedLetters,
+        firstNodeIndex,
+        lastNodeIndex,
+        stateStorage.get(contextName),
+        getFirstAndLastNode()
+      );
+      debugger;
+
+      return {};
+    }
 
     return {
       selectedBlocks,
@@ -278,7 +321,7 @@ function usePositions({ text }: { text: IText[] }) {
       areFromDiffLines,
       multiLineInfo,
     };
-  }, [getFirstAndLastNode, text]);
+  }, [contextName, getFirstAndLastNode, text]);
 
   return { getFirstAndLastNode, getSelectedBlocks };
 }
