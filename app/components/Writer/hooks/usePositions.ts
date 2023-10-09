@@ -300,7 +300,6 @@ function usePositions({ text }: { text: IText[] }) {
         stateStorage.get(contextName),
         getFirstAndLastNode()
       );
-      debugger;
 
       return {};
     }
