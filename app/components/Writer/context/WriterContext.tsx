@@ -427,8 +427,9 @@ const WriterContextProvider = ({
       const { dataLineId } = getBlockId({});
       const prevSelected = globalState.get("prev-selected");
       const selection = window.getSelection().toString().length;
+      const selectedClicked = globalState.get("clicked-item");
 
-      if (prevSelected && selection === 0) {
+      if (prevSelected && selection === 0 && !selectedClicked) {
         stateStorage.set(`has_focus_ev-${prevSelected}`, false);
       }
 
@@ -610,10 +611,14 @@ const WriterContextProvider = ({
       <ReadWrite
         contentEditable
         onKeyDown={handleKeyDown}
-        onBlur={handleBlur}
+        onBlur={(e) => {
+          globalState.set("clicked-item", false);
+          handleBlur(e);
+        }}
         onFocus={handleBlur}
         onClick={(e) => {
           handleBlur(e);
+          globalState.set("clicked-item", true);
           handleClick();
         }}
         onDragStart={handleDrag}
