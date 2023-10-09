@@ -518,15 +518,15 @@ const WriterContextProvider = ({
       ) {
         const currWords = block.value
           .find(({ id }) => id === block.blockId)
-          .value.split(" ");
+          ?.value?.split(" ");
 
         const prevWords = lastItem.value
           .find(({ id }) => id === block.blockId)
-          .value.split(" ");
+          ?.value?.split(" ");
 
-        const diff = currWords.length - prevWords.length;
+        const diff = currWords?.length - prevWords?.length;
 
-        if (!diff) {
+        if (!diff && currWords) {
           return;
         }
       }
