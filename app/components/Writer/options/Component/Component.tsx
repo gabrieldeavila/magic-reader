@@ -1163,8 +1163,9 @@ function Component({ text, id, position }: IEditable) {
       !ref.current ||
       selectionRange.start == null ||
       selectionRange.id !== id
-    )
+    ) {
       return;
+    }
 
     info.current = {
       selection: 0,
@@ -1260,12 +1261,19 @@ function Component({ text, id, position }: IEditable) {
     if (!startBlock || !endBlock) {
       return;
     }
-
     range.setStart(startBlock, selectionRange.start);
     range.setEnd(endBlock, selectionRange.end);
 
     selection.removeAllRanges();
     selection.addRange(range);
+
+    setTimeout(() => {
+      range.setStart(startBlock, selectionRange.start);
+      range.setEnd(endBlock, selectionRange.end);
+
+      selection.removeAllRanges();
+      selection.addRange(range);
+    });
   }, [id, info, selectionRange]);
 
   const [showPopup, setShowPopup] = useState(false);
