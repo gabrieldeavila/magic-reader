@@ -13,18 +13,20 @@ import {
   stateStorage,
   useTriggerState,
 } from "react-trigger-state";
+import { dga } from "../../../../utils/dga";
+import { dgb } from "../../../../utils/dgb";
+import uuid from "../../../../utils/uuid";
 import { useWriterContext } from "../../context/WriterContext";
+import useDecoration from "../../hooks/useDecoration";
 import useDeleteMultiple from "../../hooks/useDeleteMultiple";
 import useGetCurrBlockId from "../../hooks/useGetCurrBlockId";
 import usePositions from "../../hooks/usePositions";
+import useSingleDecoration from "../../hooks/useSingleDecoration";
 import { IEditable } from "../../interface";
 import Popup from "../../popup/Popup";
+import { PopupFunctions } from "../../popup/interface";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
-import uuid from "../../../../utils/uuid";
-import { dgb } from "../../../../utils/dgb";
-import { PopupFunctions } from "../../popup/interface";
-import { dga } from "../../../../utils/dga";
 
 const OPTIONS_CHARS = {
   bold: "**",
@@ -56,6 +58,7 @@ function Component({ text, id, position }: IEditable) {
     addToCtrlZ,
     info,
   } = useWriterContext();
+  const { addSingleDecoration } = useSingleDecoration({ id, text });
 
   const { deleteMultipleLetters } = useDeleteMultiple({ text, id, info });
 
@@ -793,6 +796,8 @@ function Component({ text, id, position }: IEditable) {
     navigator.clipboard.writeText(copyStuff);
   }, [copyEntireBlock, getSelectedBlocks]);
 
+  const { addDecoration } = useDecoration({ id, text });
+
   const handleCtrlEvents = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>, ctrlPressed: boolean) => {
       if (!ctrlPressed) return false;
@@ -863,32 +868,54 @@ function Component({ text, id, position }: IEditable) {
       } else if (e.key === "b") {
         e.preventDefault();
 
-        popupRef.current.bold?.click();
+        if (!popupRef.current.bold) {
+          addSingleDecoration("bold");
+        } else {
+          addDecoration("bold");
+        }
+
         return true;
       } else if (e.key === "i") {
         e.preventDefault();
-
-        popupRef.current.italic?.click();
+        if (!popupRef.current.italic) {
+          addSingleDecoration("italic");
+        } else {
+          popupRef.current.italic?.click?.();
+        }
         return true;
       } else if (e.key === "u") {
         e.preventDefault();
+        if (!popupRef.current.underline) {
+          addSingleDecoration("underline");
+        } else {
+          popupRef.current.underline?.click?.();
+        }
 
-        popupRef.current.underline?.click();
         return true;
       } else if (e.key === "s") {
         e.preventDefault();
-
-        popupRef.current.strikethrough?.click();
+        if (!popupRef.current.strikethrough) {
+          addSingleDecoration("strikethrough");
+        } else {
+          popupRef.current.strikethrough?.click?.();
+        }
         return true;
       } else if (e.key === "h") {
         e.preventDefault();
-
-        popupRef.current.highlight?.click();
+        if (!popupRef.current.highlight) {
+          addSingleDecoration("highlight");
+        } else {
+          popupRef.current.highlight?.click?.();
+        }
         return true;
       } else if (e.key === "e") {
         e.preventDefault();
-
-        popupRef.current.code?.click();
+        if (!popupRef.current.code) {
+          console.log("Oooo");
+          addSingleDecoration("code");
+        } else {
+          popupRef.current.code?.click?.();
+        }
         return true;
       } else if (e.key === "Backspace") {
         e.preventDefault();
@@ -898,6 +925,8 @@ function Component({ text, id, position }: IEditable) {
       return true;
     },
     [
+      addDecoration,
+      addSingleDecoration,
       addToCtrlZ,
       contextName,
       copyText,

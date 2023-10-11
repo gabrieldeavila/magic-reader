@@ -72,7 +72,7 @@ const Decoration = memo(
       let node = tagRef.current.childNodes[0];
 
       // if there's a code option, the node is another element
-      if (options.includes("code")) {
+      if (options.includes("code") && node) {
         const codeNodes =
           tagRef.current.childNodes[0]?.childNodes[0]?.childNodes;
 
@@ -108,12 +108,11 @@ const Decoration = memo(
         cursorPositionValue = cursorPositionValue === 0 ? 0 : nodePosition + 1;
       }
 
-      if (
-        (node == null || info.current.selection === -1) &&
-        onlyOneBlockAndIsEmpty === false
-      ) {
-        return;
+      if (node == null || info.current.selection === -1) {
+        node = tagRef.current;
       }
+
+      console.log(node);
 
       if (onlyOneBlockAndIsEmpty) {
         info.current.selection = 0;
@@ -200,7 +199,7 @@ const Decoration = memo(
         <DCode {...tagOptions}>
           <Code
             // @ts-expect-error - uh
-            text={value || " "}
+            text={value}
             language="javascript"
             theme={currTheme === "darkTheme" ? dracula : atomOneLight}
           />
@@ -208,7 +207,7 @@ const Decoration = memo(
       );
     }
 
-    return <span {...tagOptions}>{value || " "}</span>;
+    return <span {...tagOptions}>{value || ""}</span>;
   }
 );
 
