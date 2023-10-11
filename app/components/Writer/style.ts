@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 export const Editable = styled.div`
   padding: 0.25rem 0.5rem;
-  min-height: 1rem;
+  min-height: 24px;
   font-size: 1rem;
   outline: none;
   cursor: text;

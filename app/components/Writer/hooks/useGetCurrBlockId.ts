@@ -14,7 +14,10 @@ function useGetCurrBlockId() {
         selection.anchorNode?.parentElement?.closest?.("[data-scribere]");
 
       const dataLineId =
-        textId || closestScribere?.getAttribute?.("data-line-id");
+        textId ||
+        closestScribere?.getAttribute?.("data-line-id") ||
+        // @ts-expect-error - we know that anchorNode is not null
+        selection.anchorNode?.getAttribute?.("data-line-id");
 
       const currText = !textId
         ? null

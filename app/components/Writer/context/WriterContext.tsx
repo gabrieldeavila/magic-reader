@@ -425,6 +425,7 @@ const WriterContextProvider = ({
   const handleBlur = useCallback(
     (e) => {
       const { dataLineId } = getBlockId({});
+
       const prevSelected = globalState.get("prev-selected");
       const selection = window.getSelection().toString().length;
       const selectedClicked = globalState.get("clicked-item");
