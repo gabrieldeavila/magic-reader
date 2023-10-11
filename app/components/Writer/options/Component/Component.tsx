@@ -80,7 +80,15 @@ function Component({ text, id, position }: IEditable) {
 
     const isCodeBlock = block?.firstChild?.nodeName === "CODE";
 
-    if (!block) return;
+    if (!block) {
+      const span = document.querySelector(`[data-block-id="${firstBlock}"]`);
+
+      range.setStart(span, 0);
+      range.setEnd(span, 0);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      return;
+    }
 
     if (isCodeBlock) {
       range.setStart(block?.firstChild, 0);
@@ -542,9 +550,13 @@ function Component({ text, id, position }: IEditable) {
           }, []);
 
           globalState.set("first_selection", newId);
+          stateStorage.set(contextName, newContent);
 
           stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
-          stateStorage.set(contextName, newContent);
+          info.current = {
+            selection: 0,
+            blockId: newId,
+          };
 
           // add to the undo
           addToCtrlZ({
