@@ -5,6 +5,7 @@ import { useContextName } from "../../context/WriterContext";
 import { IDecoration } from "../../interface";
 import { DCode } from "./style";
 import { useGTTranslate } from "@geavila/gt-design";
+import clsx from "clsx";
 
 const STYLE_MAP = {
   bold: {
@@ -112,8 +113,6 @@ const Decoration = memo(
         node = tagRef.current;
       }
 
-      console.log(node);
-
       if (onlyOneBlockAndIsEmpty) {
         info.current.selection = 0;
         cursorPositionValue = 0;
@@ -174,11 +173,13 @@ const Decoration = memo(
 
     const { translateThis } = useGTTranslate();
 
+    const isEmpty = useMemo(()=>parentText.length === 1 && value.length === 0, [parentText.length, value.length]);
+
     const tagOptions = {
       ref: tagRef,
       "data-block-id": id,
       placeholder: onlyOneBlockAndIsEmpty && translateThis("SCRIBERE.EMPTY"),
-      className: onlyOneBlockAndIsEmpty && "placeholder",
+      className: clsx(onlyOneBlockAndIsEmpty && "placeholder", isEmpty && "empty"),
       style: {
         ...style,
         ...(isHighlight.next && {

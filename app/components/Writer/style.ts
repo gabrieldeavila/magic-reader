@@ -10,7 +10,13 @@ export const Editable = styled.div`
   position: relative;
   white-space: pre-wrap;
 
-  &:empty:before {
+  .empty {
+    min-height: 17px;
+    min-width: 100%;
+    display: inline-block;
+  }
+
+  &:empty::before {
     content: attr(placeholder);
     color: #aaa;
     cursor: text;
