@@ -74,6 +74,20 @@ function usePositions({ text }: { text: IText[] }) {
       lastNode = lastNode?.parentElement?.parentElement?.parentElement;
     }
 
+    if (firstNode.getAttribute("data-line-id")) {
+      const hasEmpty = firstNode.querySelector("span.empty");
+      if (hasEmpty) {
+        firstNode = hasEmpty as HTMLElement;
+      }
+    }
+
+    if (lastNode.getAttribute("data-line-id")) {
+      const hasEmpty = lastNode.querySelector("span.empty");
+      if (hasEmpty) {
+        lastNode = hasEmpty as HTMLElement;
+      }
+    }
+
     // if the first node does not have an id, then it will become the lastNode, and the last node will be the last of the line
     if (firstNode.getAttribute("data-block-id") == null) {
       const lastTextId = text[text.length - 1]?.id;
@@ -82,7 +96,7 @@ function usePositions({ text }: { text: IText[] }) {
       firstNode = lastNode;
       lastNode = document.querySelector(`[data-block-id="${lastTextId}"]`);
 
-      dcs(firstTextId, lastTextId, false); 
+      dcs(firstTextId, lastTextId, false);
     }
 
     const prevSelectionRange = stateStorage.get("selection_range");

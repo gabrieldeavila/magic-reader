@@ -1126,7 +1126,9 @@ function Component({ text, id, position }: IEditable) {
         const selection = window.getSelection();
         const currText = globalState
           .get(contextName)
-          .find(({ id: textId }) => textId === id).text;
+          .find(({ id: textId }) => textId === id)?.text;
+
+        if (!currText) return;
 
         const isCodeBlock =
           selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
