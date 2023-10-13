@@ -426,14 +426,6 @@ const WriterContextProvider = ({
     (e) => {
       const { dataLineId } = getBlockId({});
 
-      const prevSelected = globalState.get("prev-selected");
-      const selection = window.getSelection().toString().length;
-      const selectedClicked = globalState.get("clicked-item");
-
-      if (prevSelected && selection === 0 && !selectedClicked) {
-        stateStorage.set(`has_focus_ev-${prevSelected}`, false);
-      }
-
       stateStorage.set(`blur_ev-${dataLineId}`, { e, date: new Date() });
     },
     [getBlockId]
@@ -461,6 +453,14 @@ const WriterContextProvider = ({
       // when selection is empty, no popup is shown
       if (currRange === 0) {
         globalState.set("popup_anchor", null);
+      } else {
+        // gets all the spans with the empty class
+        const spans = document.querySelectorAll("span.empty");
+
+        spans.forEach((span) => {
+          // removes the placeholder attribute
+          span.removeAttribute("placeholder");
+        });
       }
 
       stateStorage.set(`has_focus_ev-${dataLineId}`, true);
@@ -612,14 +612,8 @@ const WriterContextProvider = ({
       <ReadWrite
         contentEditable
         onKeyDown={handleKeyDown}
-        onBlur={(e) => {
-          globalState.set("clicked-item", false);
-          handleBlur(e);
-        }}
-        onFocus={handleBlur}
         onClick={(e) => {
           handleBlur(e);
-          globalState.set("clicked-item", true);
           handleClick();
         }}
         onDragStart={handleDrag}
