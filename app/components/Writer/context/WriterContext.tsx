@@ -426,6 +426,14 @@ const WriterContextProvider = ({
     (e) => {
       const { dataLineId } = getBlockId({});
 
+      const prevSelected = globalState.get("prev-selected");
+      const selection = window.getSelection().toString().length;
+      const selectedClicked = globalState.get("clicked-item");
+
+      if (prevSelected && selection === 0 && !selectedClicked) {
+        stateStorage.set(`has_focus_ev-${prevSelected}`, false);
+      }
+
       stateStorage.set(`blur_ev-${dataLineId}`, { e, date: new Date() });
     },
     [getBlockId]
@@ -596,6 +604,19 @@ const WriterContextProvider = ({
     };
   }, [handleKeyDown, redo, undo]);
 
+  useEffect(() => {
+    // add listener to windows focus
+    const handleFocus = () => {
+      globalState.set("clicked-item", true);
+    };
+
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, []);
+
   return (
     <WriterContext.Provider
       value={{
@@ -612,8 +633,13 @@ const WriterContextProvider = ({
       <ReadWrite
         contentEditable
         onKeyDown={handleKeyDown}
+        onBlur={(e) => {
+          globalState.set("clicked-item", false);
+          handleBlur(e);
+        }}
         onClick={(e) => {
           handleBlur(e);
+          globalState.set("clicked-item", true);
           handleClick();
         }}
         onDragStart={handleDrag}
