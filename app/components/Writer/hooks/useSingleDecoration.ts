@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import useGetCurrBlockId from "./useGetCurrBlockId";
 import uuid from "../../../utils/uuid";
 import { IText } from "../interface";
-import { stateStorage } from "react-trigger-state";
+import { globalState, stateStorage } from "react-trigger-state";
 import { useWriterContext } from "../context/WriterContext";
 
 function useSingleDecoration({ id, text }) {
@@ -16,21 +16,35 @@ function useSingleDecoration({ id, text }) {
       });
 
       const currBlock = text.find(({ id }) => id === changedBlockId);
+      const prevDecoration = globalState.get("block_decoration");
+
+      let options = currBlock.options;
+
+      if (
+        prevDecoration?.blockId === changedBlockId &&
+        prevDecoration?.currSelection === currSelection
+      ) {
+        options = prevDecoration.options;
+      }
 
       // if already has the decoration, remove it
-      let newOptions = currBlock.options.filter(
-        (option) => option !== decoration
-      );
+      let newOptions = options.filter((option) => option !== decoration);
 
-      if (currBlock.options.includes(decoration)) {
+      if (options.includes(decoration)) {
         // remove the decoration
-        newOptions = currBlock.options.filter(
-          (option) => option !== decoration
-        );
+        newOptions = options.filter((option) => option !== decoration);
       } else {
         // add the decoration
-        newOptions = [...currBlock.options, decoration];
+        newOptions = [...options, decoration];
       }
+
+      globalState.set("block_decoration", {
+        options: newOptions,
+        blockId: changedBlockId,
+        currSelection,
+      });
+
+      return;
 
       if (currSelection === currBlock.value.length) {
         const newId = uuid();
@@ -42,6 +56,65 @@ function useSingleDecoration({ id, text }) {
         };
 
         const newText = [...text, newBlock];
+
+        handleUpdate(id, newText);
+
+        // use the new range as needed
+        info.current = {
+          selection: 0,
+          blockId: newId,
+        };
+
+        stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
+      } else if (currSelection === 0) {
+        // add a new block in the beginning
+        const newId = uuid();
+        const newBlock: IText = {
+          id: newId,
+          options: newOptions,
+          value: "",
+        };
+
+        const newText = [newBlock, ...text];
+
+        handleUpdate(id, newText);
+
+        // use the new range as needed
+        info.current = {
+          selection: 0,
+          blockId: newId,
+        };
+
+        stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
+      } else {
+        // split the block into three
+
+        const newId = uuid();
+        const newBlock: IText = {
+          id: newId,
+          options: newOptions,
+          value: "",
+        };
+
+        const newText = text.reduce((acc, curr) => {
+          if (curr.id === changedBlockId) {
+            const firstHalf = {
+              ...curr,
+              value: curr.value.slice(0, currSelection),
+              id: uuid(),
+            };
+
+            const secondHalf = {
+              ...curr,
+              value: curr.value.slice(currSelection),
+              id: uuid(),
+            };
+
+            return [...acc, firstHalf, newBlock, secondHalf];
+          }
+
+          return [...acc, curr];
+        }, []);
 
         handleUpdate(id, newText);
 
