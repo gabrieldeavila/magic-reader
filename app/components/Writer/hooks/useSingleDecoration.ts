@@ -9,7 +9,7 @@ function useSingleDecoration({ id, text }) {
   const { getBlockId } = useGetCurrBlockId();
   const { contextName, handleUpdate, info } = useWriterContext();
 
-  const addSingleDecoration = useCallback(
+  const saveDecoration = useCallback(
     (decoration: string) => {
       const { changedBlockId, currSelection } = getBlockId({
         textId: id,
@@ -45,57 +45,53 @@ function useSingleDecoration({ id, text }) {
       });
 
       return;
+    },
+    [getBlockId, id, text]
+  );
+
+  const addSingleDecoration = useCallback(
+    (key: string) => {
+      const { changedBlockId, currSelection } = getBlockId({
+        textId: id,
+      });
+      const currBlock = text.find(({ id }) => id === changedBlockId);
+      const blockDecoration = globalState.get("block_decoration") || {};
+      const { options } = blockDecoration;
+
+      const newId = uuid();
+      const newBlock: IText = {
+        id: newId,
+        options,
+        value: key,
+      };
+
+      if (
+        !(
+          options &&
+          blockDecoration.blockId === changedBlockId &&
+          blockDecoration.currSelection === currSelection
+        )
+      ) {
+        return false;
+      }
 
       if (currSelection === currBlock.value.length) {
-        const newId = uuid();
-        // add a new block in the end
-        const newBlock: IText = {
-          id: newId,
-          options: newOptions,
-          value: "",
-        };
+        const newText = text.reduce((acc, curr) => {
+          if (curr.id === changedBlockId) {
+            return [...acc, curr, newBlock];
+          }
 
-        const newText = [...text, newBlock];
+          return [...acc, curr];
+        }, []);
 
         handleUpdate(id, newText);
-
-        // use the new range as needed
-        info.current = {
-          selection: 0,
-          blockId: newId,
-        };
-
-        stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
       } else if (currSelection === 0) {
         // add a new block in the beginning
-        const newId = uuid();
-        const newBlock: IText = {
-          id: newId,
-          options: newOptions,
-          value: "",
-        };
-
         const newText = [newBlock, ...text];
 
         handleUpdate(id, newText);
-
-        // use the new range as needed
-        info.current = {
-          selection: 0,
-          blockId: newId,
-        };
-
-        stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
       } else {
         // split the block into three
-
-        const newId = uuid();
-        const newBlock: IText = {
-          id: newId,
-          options: newOptions,
-          value: "",
-        };
-
         const newText = text.reduce((acc, curr) => {
           if (curr.id === changedBlockId) {
             const firstHalf = {
@@ -117,20 +113,22 @@ function useSingleDecoration({ id, text }) {
         }, []);
 
         handleUpdate(id, newText);
-
-        // use the new range as needed
-        info.current = {
-          selection: 0,
-          blockId: newId,
-        };
-
-        stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
       }
+
+      // use the new range as needed
+      info.current = {
+        selection: 1,
+        blockId: newId,
+      };
+      stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
+      globalState.set("block_decoration", null);
+
+      return true;
     },
     [contextName, getBlockId, handleUpdate, id, info, text]
   );
 
-  return { addSingleDecoration };
+  return { saveDecoration, addSingleDecoration };
 }
 
 export default useSingleDecoration;

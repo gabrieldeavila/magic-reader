@@ -58,7 +58,11 @@ function Component({ text, id, position }: IEditable) {
     addToCtrlZ,
     info,
   } = useWriterContext();
-  const { addSingleDecoration } = useSingleDecoration({ id, text });
+
+  const { saveDecoration, addSingleDecoration } = useSingleDecoration({
+    id,
+    text,
+  });
 
   const { deleteMultipleLetters } = useDeleteMultiple({ text, id, info });
 
@@ -881,7 +885,7 @@ function Component({ text, id, position }: IEditable) {
         e.preventDefault();
 
         if (!popupRef.current.bold) {
-          addSingleDecoration("bold");
+          saveDecoration("bold");
         } else {
           addDecoration("bold");
         }
@@ -890,7 +894,7 @@ function Component({ text, id, position }: IEditable) {
       } else if (e.key === "i") {
         e.preventDefault();
         if (!popupRef.current.italic) {
-          addSingleDecoration("italic");
+          saveDecoration("italic");
         } else {
           popupRef.current.italic?.click?.();
         }
@@ -898,7 +902,7 @@ function Component({ text, id, position }: IEditable) {
       } else if (e.key === "u") {
         e.preventDefault();
         if (!popupRef.current.underline) {
-          addSingleDecoration("underline");
+          saveDecoration("underline");
         } else {
           popupRef.current.underline?.click?.();
         }
@@ -907,7 +911,7 @@ function Component({ text, id, position }: IEditable) {
       } else if (e.key === "s") {
         e.preventDefault();
         if (!popupRef.current.strikethrough) {
-          addSingleDecoration("strikethrough");
+          saveDecoration("strikethrough");
         } else {
           popupRef.current.strikethrough?.click?.();
         }
@@ -915,7 +919,7 @@ function Component({ text, id, position }: IEditable) {
       } else if (e.key === "h") {
         e.preventDefault();
         if (!popupRef.current.highlight) {
-          addSingleDecoration("highlight");
+          saveDecoration("highlight");
         } else {
           popupRef.current.highlight?.click?.();
         }
@@ -923,8 +927,7 @@ function Component({ text, id, position }: IEditable) {
       } else if (e.key === "e") {
         e.preventDefault();
         if (!popupRef.current.code) {
-          console.log("Oooo");
-          addSingleDecoration("code");
+          saveDecoration("code");
         } else {
           popupRef.current.code?.click?.();
         }
@@ -938,7 +941,7 @@ function Component({ text, id, position }: IEditable) {
     },
     [
       addDecoration,
-      addSingleDecoration,
+      saveDecoration,
       addToCtrlZ,
       contextName,
       copyText,
@@ -1130,6 +1133,8 @@ function Component({ text, id, position }: IEditable) {
 
         if (!currText) return;
 
+        if (addSingleDecoration(event.key)) return;
+
         const isCodeBlock =
           selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
 
@@ -1157,7 +1162,6 @@ function Component({ text, id, position }: IEditable) {
 
         const newText = currText.map((item) => {
           if (item.id === changedBlockId) {
-            globalState.set("next_prev_value", { changedBlockId, newValue });
             prevVal = item.value;
             item.value = newValue;
           }
@@ -1183,6 +1187,7 @@ function Component({ text, id, position }: IEditable) {
       });
     },
     [
+      addSingleDecoration,
       addToCtrlZ,
       contextName,
       deleteMultipleLetters,
