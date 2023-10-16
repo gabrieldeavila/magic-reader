@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-export const Editable = styled.div`
+export const Editable = styled.p`
   padding: 0.25rem 0.5rem;
   min-height: 24px;
   font-size: 1rem;

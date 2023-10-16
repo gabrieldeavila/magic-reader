@@ -723,94 +723,74 @@ function Component({ text, id, position }: IEditable) {
 
   const copyEntireBlock = useCallback(() => {
     // copy all the text
-    const currText = globalState
-      .get(contextName)
-      .find(({ id: textId }) => textId === id).text;
+    const lineId = document.querySelector(`[data-line-id="${id}"]`);
 
-    const copyStuff = currText.reduce((acc, item) => {
-      const { value, options } = item;
+    // Create a Blob for the HTML content and a Blob for the plain text
+    const htmlBlob = new Blob([lineId.outerHTML], { type: "text/html" });
+    // @ts-expect-error - it sure is a text
+    const textBlob = new Blob([lineId.innerText], { type: "text/plain" });
 
-      const optionsToUse = options.reduce((acc, item) => {
-        if (OPTIONS_CHARS[item]) {
-          acc.push(OPTIONS_CHARS[item]);
-        }
+    // Create a ClipboardItem with both HTML and text representations
+    const clipboardItem = new ClipboardItem({
+      "text/html": htmlBlob,
+      "text/plain": textBlob,
+    });
 
-        return acc;
-      }, []);
-
-      const optionsRight = optionsToUse.join("");
-
-      const optionsLeft = optionsToUse.reverse().join("");
-
-      acc += `${optionsLeft}${value}${optionsRight}`;
-
-      return acc;
-    }, "");
-
-    // copy the text to the clipboard
-    navigator.clipboard.writeText(copyStuff);
-  }, [contextName, id]);
+    // Use the Clipboard API to copy the modified content
+    navigator.clipboard.write([clipboardItem]);
+  }, [id]);
 
   const copyText = useCallback(() => {
-    if (!window.getSelection().toString().length) {
+    const selection = window.getSelection();
+    if (!selection.toString().length) {
       copyEntireBlock();
       return;
     }
 
-    const { selectedBlocks, last, first } = getSelectedBlocks();
+    // Create a new div element to hold the selected text
+    let textCopied = selection.getRangeAt(0).cloneContents();
+    // console.log(selection.getRangeAt(0).cloneContents());
+    if (!textCopied.querySelector("[data-block-id]")) {
+      const { changedBlockId, isCodeBlock } = getBlockId({ textId: id });
 
-    let copyStuff = "";
+      if (isCodeBlock) {
+        const code = document.createElement("code");
+        code.appendChild(textCopied);
 
-    selectedBlocks.forEach((item, index) => {
-      const { value, options } = item;
-
-      const isLast = index === selectedBlocks.length - 1;
-      const isFirst = index === 0;
-      const isOnlyOne = selectedBlocks.length === 1;
-
-      const optionsToUse = options.reduce((acc, item) => {
-        if (OPTIONS_CHARS[item]) {
-          acc.push(OPTIONS_CHARS[item]);
-        }
-
-        return acc;
-      }, []);
-
-      const optionsRight = optionsToUse.join("");
-
-      const optionsLeft = optionsToUse.reverse().join("");
-
-      let usedValue = "";
-      const letters = value.split("");
-
-      if (isOnlyOne) {
-        letters.forEach((item, index) => {
-          if (index > first.index - 1 && index < last.index + 1) {
-            usedValue += item;
-          }
-        });
-      } else if (isFirst) {
-        letters.forEach((item, index) => {
-          if (index > first.index - 1) {
-            usedValue += item;
-          }
-        });
-      } else if (isLast) {
-        letters.forEach((item, index) => {
-          if (index < last.index + 1) {
-            usedValue += item;
-          }
-        });
+        // @ts-expect-error - it sure is a text
+        textCopied = code;
       } else {
-        usedValue = value;
-      }
+        // gets the style of the block
+        const block = document.querySelector(
+          `[data-block-id="${changedBlockId}"]`
+        );
 
-      copyStuff += `${optionsLeft}${usedValue}${optionsRight}`;
+        const style = block?.getAttribute("style");
+
+        const span = document.createElement("span");
+        span.setAttribute("style", style ?? "");
+        span.appendChild(textCopied);
+
+        // @ts-expect-error - it sure is a text
+        textCopied = span;
+      }
+    }
+    console.log(textCopied, textCopied.textContent);
+    // Create a Blob for the HTML content and a Blob for the plain text
+    const div = document.createElement("div");
+    div.appendChild(textCopied);
+    const htmlBlob = new Blob([div.innerHTML], { type: "text/html" });
+    const textBlob = new Blob([div.innerText], { type: "text/plain" });
+
+    // Create a ClipboardItem with both HTML and text representations
+    const clipboardItem = new ClipboardItem({
+      "text/html": htmlBlob,
+      "text/plain": textBlob,
     });
 
-    // copy the text to the clipboard
-    navigator.clipboard.writeText(copyStuff);
-  }, [copyEntireBlock, getSelectedBlocks]);
+    // Use the Clipboard API to copy the modified content
+    navigator.clipboard.write([clipboardItem]);
+  }, [copyEntireBlock, getBlockId, id]);
 
   const { addDecoration } = useDecoration({ id, text });
 
@@ -849,7 +829,7 @@ function Component({ text, id, position }: IEditable) {
 
         return true;
       } else if (e.key === "c") {
-        e.preventDefault();
+        // e.preventDefault();
         copyText();
 
         return true;
@@ -1392,6 +1372,56 @@ function Component({ text, id, position }: IEditable) {
     [hasFocusId, text]
   );
 
+  const getOptions = useCallback((child: ChildNode) => {
+    // returns if has some option: bold, italic, underline, strikethrough, highlight, code
+
+    const options = [];
+
+    // @ts-expect-error it sure does
+    const style = child?.getAttribute?.("style");
+
+    if (!style) return [];
+
+    const possibleOptions = {
+      bold: "bold",
+      italic: "italic",
+      underline: "underline",
+      strikethrough: "strikethrough",
+      monospace: "code",
+    };
+
+    Object.entries(possibleOptions).forEach(([key, value]) => {
+      if (style.includes(key)) {
+        options.push(value);
+      }
+    });
+
+    return options;
+  }, []);
+
+  const findChildOptions = useCallback(
+    (child: ChildNode, prevOptions = []) => {
+      const children = Array.from(child.childNodes);
+
+      children.forEach((item) => {
+        if (child.nodeName === "#text") {
+          return;
+        }
+
+        prevOptions = [...prevOptions, ...getOptions(item)];
+
+        const hasChildren = item.childNodes.length > 0;
+
+        if (hasChildren) {
+          prevOptions = findChildOptions(item, prevOptions);
+        }
+      });
+
+      return prevOptions;
+    },
+    [getOptions]
+  );
+
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement>) => {
       e.preventDefault();
@@ -1401,7 +1431,42 @@ function Component({ text, id, position }: IEditable) {
         action: "delete_letters",
       });
 
-      const copiedText = e.clipboardData.getData("text/plain");
+      const copiedText = e.clipboardData.getData("text/html");
+
+      // transforms the copiedText into html
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(copiedText, "text/html");
+
+      // if the copied text is not html, it will be plain text
+      const isPlainText = doc.body.innerHTML === "";
+
+      if (isPlainText) return;
+
+      const children = Array.from(doc.body.childNodes);
+      console.log(doc);
+
+      // console.log(children, doc.body);
+      const newText = children.reduce((acc, child) => {
+        // if the child is a comment, do nothing
+        if (child.nodeName === "#comment") return acc;
+
+        if (child.nodeName === "#text") {
+          acc.push({
+            value: child.textContent ?? "",
+            id: uuid(),
+            options: [],
+          });
+
+          return acc;
+        }
+
+        const options = getOptions(child);
+        // console.log(child, options, findChildOptions(child));
+
+        return acc;
+      }, []);
+
+      return;
       const selection = window.getSelection();
 
       const numberOfChars = selection.toString().length;
@@ -1560,7 +1625,9 @@ function Component({ text, id, position }: IEditable) {
       addToCtrlZ,
       contextName,
       deleteMultipleLetters,
+      findChildOptions,
       getBlockId,
+      getOptions,
       handleUpdate,
       id,
       info,
