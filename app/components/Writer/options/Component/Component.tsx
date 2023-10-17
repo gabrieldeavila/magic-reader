@@ -1378,9 +1378,7 @@ function Component({ text, id, position }: IEditable) {
     const options = [];
 
     // @ts-expect-error it sure does
-    const style = child?.getAttribute?.("style");
-
-    if (!style) return [];
+    const style = child?.getAttribute?.("style")?.replace(" ", "") || "";
 
     const possibleOptions = {
       bold: "bold",
@@ -1388,6 +1386,15 @@ function Component({ text, id, position }: IEditable) {
       underline: "underline",
       strikethrough: "strikethrough",
       monospace: "code",
+      "font-weight:700;": "bold",
+    };
+
+    const possibleTags = {
+      STRONG: "bold",
+      EM: "italic",
+      U: "underline",
+      S: "strikethrough",
+      CODE: "code",
     };
 
     Object.entries(possibleOptions).forEach(([key, value]) => {
@@ -1396,28 +1403,48 @@ function Component({ text, id, position }: IEditable) {
       }
     });
 
+    Object.entries(possibleTags).forEach(([key, value]) => {
+      if (child.nodeName === key) {
+        options.push(value);
+      }
+    });
+
     return options;
   }, []);
 
   const findChildOptions = useCallback(
-    (child: ChildNode, prevOptions = []) => {
+    (child: ChildNode, prevOptions = [], prevChild = []) => {
       const children = Array.from(child.childNodes);
 
       children.forEach((item) => {
-        if (child.nodeName === "#text") {
+        const options = [...prevOptions, ...getOptions(item)];
+
+        if (item.nodeName === "#text") {
+          prevChild.push({
+            options,
+            value: item.textContent ?? "",
+            id: uuid(),
+          });
+
           return;
         }
 
-        prevOptions = [...prevOptions, ...getOptions(item)];
-
         const hasChildren = item.childNodes.length > 0;
+        const isCode = item.nodeName === "CODE";
 
-        if (hasChildren) {
-          prevOptions = findChildOptions(item, prevOptions);
+        if (isCode) {
+          options.push("code");
+          prevChild.push({
+            options,
+            value: item.textContent ?? "",
+            id: uuid(),
+          });
+        } else if (hasChildren) {
+          findChildOptions(item, options, prevChild);
         }
       });
 
-      return prevOptions;
+      return prevChild;
     },
     [getOptions]
   );
@@ -1443,7 +1470,7 @@ function Component({ text, id, position }: IEditable) {
       if (isPlainText) return;
 
       const children = Array.from(doc.body.childNodes);
-      console.log(doc);
+      // console.log(doc);
 
       // console.log(children, doc.body);
       const newText = children.reduce((acc, child) => {
@@ -1460,11 +1487,13 @@ function Component({ text, id, position }: IEditable) {
           return acc;
         }
 
-        const options = getOptions(child);
-        // console.log(child, options, findChildOptions(child));
+        const multiWords = findChildOptions(child, [], []);
 
+        acc.push(...multiWords);
         return acc;
       }, []);
+
+      console.log(newText, children);
 
       return;
       const selection = window.getSelection();
