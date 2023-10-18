@@ -28,19 +28,6 @@ import { PopupFunctions } from "../../popup/interface";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
 
-const OPTIONS_CHARS = {
-  bold: "**",
-  italic: "<<<",
-  underline: "__",
-  strikethrough: "~~",
-  code: "```",
-  highlight: "^^^",
-};
-
-const CHARS_KEYS = Object.keys(OPTIONS_CHARS);
-
-const CHARS_VALUES = Object.values(OPTIONS_CHARS);
-
 function Component({ text, id, position }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
   const [keyDownEv] = useTriggerState({
@@ -749,7 +736,7 @@ function Component({ text, id, position }: IEditable) {
 
     // Create a new div element to hold the selected text
     let textCopied = selection.getRangeAt(0).cloneContents();
-    // console.log(selection.getRangeAt(0).cloneContents());
+
     if (!textCopied.querySelector("[data-block-id]")) {
       const { changedBlockId, isCodeBlock } = getBlockId({ textId: id });
 
@@ -775,7 +762,7 @@ function Component({ text, id, position }: IEditable) {
         textCopied = span;
       }
     }
-    console.log(textCopied, textCopied.textContent);
+
     // Create a Blob for the HTML content and a Blob for the plain text
     const div = document.createElement("div");
     div.appendChild(textCopied);
@@ -1416,33 +1403,43 @@ function Component({ text, id, position }: IEditable) {
     (child: ChildNode, prevOptions = [], prevChild = []) => {
       const children = Array.from(child.childNodes);
 
-      children.forEach((item) => {
-        const options = [...prevOptions, ...getOptions(item)];
+      prevOptions.push(...getOptions(child));
 
-        if (item.nodeName === "#text") {
-          prevChild.push({
-            options,
-            value: item.textContent ?? "",
-            id: uuid(),
-          });
+      if (prevOptions.includes("code")) {
+        prevChild.push({
+          options: [...new Set(prevOptions)],
+          value: child.textContent ?? "",
+          id: uuid(),
+        });
+      } else {
+        children.forEach((item) => {
+          const options = [...prevOptions, ...getOptions(item)];
+          // without duplicates
+          if (item.nodeName === "#text") {
+            prevChild.push({
+              options: [...new Set(options)],
+              value: item.textContent ?? "",
+              id: uuid(),
+            });
 
-          return;
-        }
+            return;
+          }
 
-        const hasChildren = item.childNodes.length > 0;
-        const isCode = item.nodeName === "CODE";
+          const hasChildren = item.childNodes.length > 0;
+          const isCode = item.nodeName === "CODE";
 
-        if (isCode) {
-          options.push("code");
-          prevChild.push({
-            options,
-            value: item.textContent ?? "",
-            id: uuid(),
-          });
-        } else if (hasChildren) {
-          findChildOptions(item, options, prevChild);
-        }
-      });
+          if (isCode) {
+            options.push("code");
+            prevChild.push({
+              options: [...new Set(options)],
+              value: item.textContent ?? "",
+              id: uuid(),
+            });
+          } else if (hasChildren) {
+            findChildOptions(item, options, prevChild);
+          }
+        });
+      }
 
       return prevChild;
     },
@@ -1458,6 +1455,14 @@ function Component({ text, id, position }: IEditable) {
         action: "delete_letters",
       });
 
+      const selection = window.getSelection();
+
+      const numberOfChars = selection.toString().length;
+
+      if (numberOfChars) {
+        deleteMultipleLetters();
+      }
+
       const copiedText = e.clipboardData.getData("text/html");
 
       // transforms the copiedText into html
@@ -1467,44 +1472,9 @@ function Component({ text, id, position }: IEditable) {
       // if the copied text is not html, it will be plain text
       const isPlainText = doc.body.innerHTML === "";
 
-      if (isPlainText) return;
+      if (isPlainText) {
+        const plainText = e.clipboardData.getData("text/plain");
 
-      const children = Array.from(doc.body.childNodes);
-      // console.log(doc);
-
-      // console.log(children, doc.body);
-      const newText = children.reduce((acc, child) => {
-        // if the child is a comment, do nothing
-        if (child.nodeName === "#comment") return acc;
-
-        if (child.nodeName === "#text") {
-          acc.push({
-            value: child.textContent ?? "",
-            id: uuid(),
-            options: [],
-          });
-
-          return acc;
-        }
-
-        const multiWords = findChildOptions(child, [], []);
-
-        acc.push(...multiWords);
-        return acc;
-      }, []);
-
-      console.log(newText, children);
-
-      return;
-      const selection = window.getSelection();
-
-      const numberOfChars = selection.toString().length;
-
-      if (numberOfChars) {
-        deleteMultipleLetters();
-      }
-
-      setTimeout(() => {
         const { changedBlockId, currSelection } = getBlockId({ textId: id });
 
         const currText = globalState
@@ -1513,142 +1483,188 @@ function Component({ text, id, position }: IEditable) {
 
         if (!currText) return;
 
-        // transforms the copiedText into an array of blocks
-        // ex.: "^^^**H**^^^^^^***ell***^^^^^^o^^^" -> [{ value: "H", options: ["highlight", "bold"] }, { value: "ell", options: ["highlight", "bold","italic"] }, { value: "o", options: ["highlight"] }]
-        const chars = copiedText.split("");
+        const block = currText.find(({ id }) => id === changedBlockId);
 
-        let currOption = "";
-        let endOption = "";
-        let newWords = "";
-        let searchingForTheEnd = false;
+        const baseValue = block?.value?.slice?.() ?? "";
 
-        const newBlocks = [];
+        const newValue =
+          baseValue.slice(0, currSelection) +
+          plainText +
+          baseValue.slice(currSelection);
 
-        chars.forEach((item, index) => {
-          if (searchingForTheEnd) {
-            if (item === currOption[0]) {
-              endOption += item;
-
-              if (endOption === currOption) {
-                searchingForTheEnd = false;
-                newBlocks.push({
-                  value: newWords,
-                  options: [currOption],
-                });
-
-                currOption = "";
-                newWords = "";
-                endOption = "";
-              }
-            } else {
-              newWords += endOption + item;
-              endOption = "";
-            }
-            return;
+        const newContent = currText.map((item) => {
+          if (item.id === changedBlockId) {
+            item.value = newValue;
           }
 
-          if (currOption || CHARS_VALUES.some((char) => char.includes(item))) {
-            currOption += item;
-
-            const isAKey = CHARS_VALUES.includes(currOption);
-
-            const isNextAKey = CHARS_VALUES.includes(
-              currOption + chars[index + 1]
-            );
-
-            // if the current option is a key and the next one is not, it means that the current option is the end of the option and the start of the word
-            if (isAKey && !isNextAKey) {
-              searchingForTheEnd = true;
-
-              if (newWords) {
-                newBlocks.push({
-                  value: newWords,
-                  options: [],
-                });
-
-                newWords = "";
-              }
-            }
-
-            return;
-          }
-
-          newWords += item;
+          return item;
         });
 
-        if (newWords) {
-          newBlocks.push({
-            value: newWords,
-            options: [],
+        handleUpdate(id, newContent);
+
+        info.current = {
+          selection: currSelection + plainText.length,
+          blockId: changedBlockId,
+        };
+
+        stateStorage.set(
+          `${contextName}_decoration-${changedBlockId}`,
+          new Date()
+        );
+        return;
+      }
+
+      // avoids selecting multiple families, that is do not copies son and father
+      let children = Array.from(doc.body.querySelectorAll("p, div, h1, h2"));
+
+      children = children.filter((item) => {
+        const parent = item.parentElement;
+
+        if (!parent) return true;
+
+        const parentIsNotInList = !children.includes(parent);
+
+        return parentIsNotInList;
+      });
+
+      // it's only one line if none of the children is a P or DIV tag
+      const isOnlyOneLine = doc.body.querySelector("p, div, h1, h2") === null;
+
+      if (isOnlyOneLine) {
+        // @ts-expect-error works fine
+        children = Array.from(doc.body.childNodes);
+      }
+
+      const newText = children.reduce((acc, child) => {
+        // if the child is a comment, do nothing
+        if (child.nodeName === "#comment") return acc;
+
+        // if is an \n, do nothing
+        if (child.nodeName === "#text" && child.textContent.includes("\n")) {
+          return acc;
+        }
+
+        if (child.nodeName === "#text") {
+          if (isOnlyOneLine) {
+            acc.push({
+              value: child.textContent ?? "",
+              id: uuid(),
+              options: [],
+            });
+          } else {
+            acc.push({
+              id: uuid(),
+              text: child.textContent,
+            });
+          }
+
+          return acc;
+        }
+
+        const multiWords = findChildOptions(child, [], []);
+
+        if (multiWords.length === 0) return acc;
+
+        if (isOnlyOneLine) {
+          acc.push(...multiWords);
+        } else {
+          acc.push({
+            id: uuid(),
+            text: multiWords,
           });
         }
 
-        const blocksFormatted = newBlocks.map((item) => {
-          const filteredOptions = [
-            ...CHARS_VALUES.filter((char) => item.value.includes(char)),
-            ...item.options,
-          ];
+        return acc;
+      }, []);
 
-          const newValue = filteredOptions.reduce((acc, char) => {
-            return acc.replaceAll(char, "");
-          }, item.value);
+      const { changedBlockId, currSelection } = getBlockId({ textId: id });
 
-          return {
-            value: newValue,
-            id: uuid(),
-            options: filteredOptions.map(
-              (char) => CHARS_KEYS[CHARS_VALUES.indexOf(char)]
-            ),
-          };
-        });
+      // gets the current line and the current block, adding the new text after the cursor
+      if (isOnlyOneLine) {
+        const currText = globalState
+          .get(contextName)
+          .find(({ id: textId }) => textId === id)?.text;
 
-        const newText = [];
+        if (!currText) return;
 
-        currText.forEach((item) => {
-          if (item.id !== changedBlockId) {
-            newText.push(item);
-            return;
+        const block = currText.find(({ id }) => id === changedBlockId);
+
+        // if needed, splices the block in three
+        const baseValue = block?.value?.slice?.() ?? "";
+
+        const spliced1 = baseValue.slice(0, currSelection);
+        const spliced2 = baseValue.slice(currSelection);
+
+        const newContent = currText.reduce((acc, item) => {
+          if (item.id === changedBlockId) {
+            acc.push({
+              value: spliced1,
+              id: item.id,
+              options: item.options,
+            });
+
+            newText.forEach((item) => {
+              acc.push(item);
+            });
+
+            acc.push({
+              value: spliced2,
+              id: uuid(),
+              options: item.options,
+            });
+          } else {
+            acc.push(item);
           }
 
-          const { value, options } = item;
+          return acc;
+        }, []);
 
-          const valueBefore = value.slice(0, currSelection);
-          const valueAfter = value.slice(currSelection);
+        handleUpdate(id, newContent);
 
-          newText.push({
-            value: valueBefore,
-            id: item.id,
-            options,
-          });
+        const lastNewBlock = newText[newText.length - 1];
 
-          blocksFormatted.forEach((item) => {
-            newText.push(item);
-          });
-
-          newText.push({
-            value: valueAfter,
-            id: uuid(),
-            options,
-          });
-        });
-
-        const lastNewBlock = blocksFormatted[blocksFormatted.length - 1];
-
-        if (lastNewBlock == null) return;
-
-        // add the lastNewBlock focus
         info.current = {
-          selection: lastNewBlock?.value?.length,
-          blockId: lastNewBlock?.id,
+          selection: lastNewBlock?.value?.length ?? 0,
+          blockId: lastNewBlock.id,
         };
-
-        handleUpdate(id, newText);
 
         stateStorage.set(
           `${contextName}_decoration-${lastNewBlock.id}`,
           new Date()
         );
-      });
+      } else {
+        // adds the new text after the current line
+        const content = globalState.get(contextName);
+
+        const newContent = content.reduce((acc, item) => {
+          if (item.id === id) {
+            acc.push(item);
+
+            newText.forEach((item) => {
+              acc.push(item);
+            });
+          } else {
+            acc.push(item);
+          }
+
+          return acc;
+        }, []);
+
+        stateStorage.set(contextName, newContent);
+
+        const lastLine = newText[newText.length - 1];
+        const lastNewBlock = lastLine.text[lastLine.text.length - 1];
+
+        info.current = {
+          selection: lastNewBlock?.value?.length ?? 0,
+          blockId: lastNewBlock.id,
+        };
+
+        stateStorage.set(
+          `${contextName}_decoration-${lastNewBlock.id}`,
+          new Date()
+        );
+      }
     },
     [
       addToCtrlZ,
@@ -1656,7 +1672,6 @@ function Component({ text, id, position }: IEditable) {
       deleteMultipleLetters,
       findChildOptions,
       getBlockId,
-      getOptions,
       handleUpdate,
       id,
       info,
