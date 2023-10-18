@@ -5,6 +5,7 @@ import { useContextName } from "../../context/WriterContext";
 import { IDecoration } from "../../interface";
 import { DCode } from "./style";
 import { useGTTranslate } from "@geavila/gt-design";
+import clsx from "clsx";
 
 const STYLE_MAP = {
   bold: {
@@ -72,7 +73,7 @@ const Decoration = memo(
       let node = tagRef.current.childNodes[0];
 
       // if there's a code option, the node is another element
-      if (options.includes("code")) {
+      if (options.includes("code") && node) {
         const codeNodes =
           tagRef.current.childNodes[0]?.childNodes[0]?.childNodes;
 
@@ -108,11 +109,8 @@ const Decoration = memo(
         cursorPositionValue = cursorPositionValue === 0 ? 0 : nodePosition + 1;
       }
 
-      if (
-        (node == null || info.current.selection === -1) &&
-        onlyOneBlockAndIsEmpty === false
-      ) {
-        return;
+      if (node == null || info.current.selection === -1) {
+        node = tagRef.current;
       }
 
       if (onlyOneBlockAndIsEmpty) {
@@ -175,11 +173,13 @@ const Decoration = memo(
 
     const { translateThis } = useGTTranslate();
 
+    const isEmpty = useMemo(()=>parentText.length === 1 && value.length === 0, [parentText.length, value.length]);
+
     const tagOptions = {
       ref: tagRef,
       "data-block-id": id,
       placeholder: onlyOneBlockAndIsEmpty && translateThis("SCRIBERE.EMPTY"),
-      className: onlyOneBlockAndIsEmpty && "placeholder",
+      className: clsx(onlyOneBlockAndIsEmpty && "placeholder", isEmpty && "empty"),
       style: {
         ...style,
         ...(isHighlight.next && {
@@ -200,7 +200,7 @@ const Decoration = memo(
         <DCode {...tagOptions}>
           <Code
             // @ts-expect-error - uh
-            text={value || " "}
+            text={value}
             language="javascript"
             theme={currTheme === "darkTheme" ? dracula : atomOneLight}
           />
@@ -208,7 +208,7 @@ const Decoration = memo(
       );
     }
 
-    return <span {...tagOptions}>{value || " "}</span>;
+    return <span {...tagOptions}>{value || ""}</span>;
   }
 );
 

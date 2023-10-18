@@ -13,31 +13,20 @@ import {
   stateStorage,
   useTriggerState,
 } from "react-trigger-state";
+import { dga } from "../../../../utils/dga";
+import { dgb } from "../../../../utils/dgb";
+import uuid from "../../../../utils/uuid";
 import { useWriterContext } from "../../context/WriterContext";
+import useDecoration from "../../hooks/useDecoration";
 import useDeleteMultiple from "../../hooks/useDeleteMultiple";
 import useGetCurrBlockId from "../../hooks/useGetCurrBlockId";
 import usePositions from "../../hooks/usePositions";
+import useSingleDecoration from "../../hooks/useSingleDecoration";
 import { IEditable } from "../../interface";
 import Popup from "../../popup/Popup";
+import { PopupFunctions } from "../../popup/interface";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
-import uuid from "../../../../utils/uuid";
-import { dgb } from "../../../../utils/dgb";
-import { PopupFunctions } from "../../popup/interface";
-import { dga } from "../../../../utils/dga";
-
-const OPTIONS_CHARS = {
-  bold: "**",
-  italic: "<<<",
-  underline: "__",
-  strikethrough: "~~",
-  code: "```",
-  highlight: "^^^",
-};
-
-const CHARS_KEYS = Object.keys(OPTIONS_CHARS);
-
-const CHARS_VALUES = Object.values(OPTIONS_CHARS);
 
 function Component({ text, id, position }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
@@ -56,6 +45,11 @@ function Component({ text, id, position }: IEditable) {
     addToCtrlZ,
     info,
   } = useWriterContext();
+
+  const { saveDecoration, addSingleDecoration } = useSingleDecoration({
+    id,
+    text,
+  });
 
   const { deleteMultipleLetters } = useDeleteMultiple({ text, id, info });
 
@@ -77,7 +71,15 @@ function Component({ text, id, position }: IEditable) {
 
     const isCodeBlock = block?.firstChild?.nodeName === "CODE";
 
-    if (!block) return;
+    if (!block) {
+      const span = document.querySelector(`[data-block-id="${firstBlock}"]`);
+
+      range.setStart(span, 0);
+      range.setEnd(span, 0);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      return;
+    }
 
     if (isCodeBlock) {
       range.setStart(block?.firstChild, 0);
@@ -539,9 +541,13 @@ function Component({ text, id, position }: IEditable) {
           }, []);
 
           globalState.set("first_selection", newId);
+          stateStorage.set(contextName, newContent);
 
           stateStorage.set(`${contextName}_decoration-${newId}`, new Date());
-          stateStorage.set(contextName, newContent);
+          info.current = {
+            selection: 0,
+            blockId: newId,
+          };
 
           // add to the undo
           addToCtrlZ({
@@ -704,94 +710,76 @@ function Component({ text, id, position }: IEditable) {
 
   const copyEntireBlock = useCallback(() => {
     // copy all the text
-    const currText = globalState
-      .get(contextName)
-      .find(({ id: textId }) => textId === id).text;
+    const lineId = document.querySelector(`[data-line-id="${id}"]`);
 
-    const copyStuff = currText.reduce((acc, item) => {
-      const { value, options } = item;
+    // Create a Blob for the HTML content and a Blob for the plain text
+    const htmlBlob = new Blob([lineId.outerHTML], { type: "text/html" });
+    // @ts-expect-error - it sure is a text
+    const textBlob = new Blob([lineId.innerText], { type: "text/plain" });
 
-      const optionsToUse = options.reduce((acc, item) => {
-        if (OPTIONS_CHARS[item]) {
-          acc.push(OPTIONS_CHARS[item]);
-        }
+    // Create a ClipboardItem with both HTML and text representations
+    const clipboardItem = new ClipboardItem({
+      "text/html": htmlBlob,
+      "text/plain": textBlob,
+    });
 
-        return acc;
-      }, []);
-
-      const optionsRight = optionsToUse.join("");
-
-      const optionsLeft = optionsToUse.reverse().join("");
-
-      acc += `${optionsLeft}${value}${optionsRight}`;
-
-      return acc;
-    }, "");
-
-    // copy the text to the clipboard
-    navigator.clipboard.writeText(copyStuff);
-  }, [contextName, id]);
+    // Use the Clipboard API to copy the modified content
+    navigator.clipboard.write([clipboardItem]);
+  }, [id]);
 
   const copyText = useCallback(() => {
-    if (!window.getSelection().toString().length) {
+    const selection = window.getSelection();
+    if (!selection.toString().length) {
       copyEntireBlock();
       return;
     }
 
-    const { selectedBlocks, last, first } = getSelectedBlocks();
+    // Create a new div element to hold the selected text
+    let textCopied = selection.getRangeAt(0).cloneContents();
 
-    let copyStuff = "";
+    if (!textCopied.querySelector("[data-block-id]")) {
+      const { changedBlockId, isCodeBlock } = getBlockId({ textId: id });
 
-    selectedBlocks.forEach((item, index) => {
-      const { value, options } = item;
+      if (isCodeBlock) {
+        const code = document.createElement("code");
+        code.appendChild(textCopied);
 
-      const isLast = index === selectedBlocks.length - 1;
-      const isFirst = index === 0;
-      const isOnlyOne = selectedBlocks.length === 1;
-
-      const optionsToUse = options.reduce((acc, item) => {
-        if (OPTIONS_CHARS[item]) {
-          acc.push(OPTIONS_CHARS[item]);
-        }
-
-        return acc;
-      }, []);
-
-      const optionsRight = optionsToUse.join("");
-
-      const optionsLeft = optionsToUse.reverse().join("");
-
-      let usedValue = "";
-      const letters = value.split("");
-
-      if (isOnlyOne) {
-        letters.forEach((item, index) => {
-          if (index > first.index - 1 && index < last.index + 1) {
-            usedValue += item;
-          }
-        });
-      } else if (isFirst) {
-        letters.forEach((item, index) => {
-          if (index > first.index - 1) {
-            usedValue += item;
-          }
-        });
-      } else if (isLast) {
-        letters.forEach((item, index) => {
-          if (index < last.index + 1) {
-            usedValue += item;
-          }
-        });
+        // @ts-expect-error - it sure is a text
+        textCopied = code;
       } else {
-        usedValue = value;
-      }
+        // gets the style of the block
+        const block = document.querySelector(
+          `[data-block-id="${changedBlockId}"]`
+        );
 
-      copyStuff += `${optionsLeft}${usedValue}${optionsRight}`;
+        const style = block?.getAttribute("style");
+
+        const span = document.createElement("span");
+        span.setAttribute("style", style ?? "");
+        span.appendChild(textCopied);
+
+        // @ts-expect-error - it sure is a text
+        textCopied = span;
+      }
+    }
+
+    // Create a Blob for the HTML content and a Blob for the plain text
+    const div = document.createElement("div");
+    div.appendChild(textCopied);
+    const htmlBlob = new Blob([div.innerHTML], { type: "text/html" });
+    const textBlob = new Blob([div.innerText], { type: "text/plain" });
+
+    // Create a ClipboardItem with both HTML and text representations
+    const clipboardItem = new ClipboardItem({
+      "text/html": htmlBlob,
+      "text/plain": textBlob,
     });
 
-    // copy the text to the clipboard
-    navigator.clipboard.writeText(copyStuff);
-  }, [copyEntireBlock, getSelectedBlocks]);
+    // Use the Clipboard API to copy the modified content
+    navigator.clipboard.write([clipboardItem]);
+  }, [copyEntireBlock, getBlockId, id]);
+
+  const { addDecoration } = useDecoration({ id, text });
 
   const handleCtrlEvents = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>, ctrlPressed: boolean) => {
@@ -828,7 +816,7 @@ function Component({ text, id, position }: IEditable) {
 
         return true;
       } else if (e.key === "c") {
-        e.preventDefault();
+        // e.preventDefault();
         copyText();
 
         return true;
@@ -863,32 +851,53 @@ function Component({ text, id, position }: IEditable) {
       } else if (e.key === "b") {
         e.preventDefault();
 
-        popupRef.current.bold?.click();
+        if (!popupRef.current.bold) {
+          saveDecoration("bold");
+        } else {
+          addDecoration("bold");
+        }
+
         return true;
       } else if (e.key === "i") {
         e.preventDefault();
-
-        popupRef.current.italic?.click();
+        if (!popupRef.current.italic) {
+          saveDecoration("italic");
+        } else {
+          popupRef.current.italic?.click?.();
+        }
         return true;
       } else if (e.key === "u") {
         e.preventDefault();
+        if (!popupRef.current.underline) {
+          saveDecoration("underline");
+        } else {
+          popupRef.current.underline?.click?.();
+        }
 
-        popupRef.current.underline?.click();
         return true;
       } else if (e.key === "s") {
         e.preventDefault();
-
-        popupRef.current.strikethrough?.click();
+        if (!popupRef.current.strikethrough) {
+          saveDecoration("strikethrough");
+        } else {
+          popupRef.current.strikethrough?.click?.();
+        }
         return true;
       } else if (e.key === "h") {
         e.preventDefault();
-
-        popupRef.current.highlight?.click();
+        if (!popupRef.current.highlight) {
+          saveDecoration("highlight");
+        } else {
+          popupRef.current.highlight?.click?.();
+        }
         return true;
       } else if (e.key === "e") {
         e.preventDefault();
-
-        popupRef.current.code?.click();
+        if (!popupRef.current.code) {
+          saveDecoration("code");
+        } else {
+          popupRef.current.code?.click?.();
+        }
         return true;
       } else if (e.key === "Backspace") {
         e.preventDefault();
@@ -898,6 +907,8 @@ function Component({ text, id, position }: IEditable) {
       return true;
     },
     [
+      addDecoration,
+      saveDecoration,
       addToCtrlZ,
       contextName,
       copyText,
@@ -1085,7 +1096,11 @@ function Component({ text, id, position }: IEditable) {
         const selection = window.getSelection();
         const currText = globalState
           .get(contextName)
-          .find(({ id: textId }) => textId === id).text;
+          .find(({ id: textId }) => textId === id)?.text;
+
+        if (!currText) return;
+
+        if (addSingleDecoration(event.key)) return;
 
         const isCodeBlock =
           selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
@@ -1114,7 +1129,6 @@ function Component({ text, id, position }: IEditable) {
 
         const newText = currText.map((item) => {
           if (item.id === changedBlockId) {
-            globalState.set("next_prev_value", { changedBlockId, newValue });
             prevVal = item.value;
             item.value = newValue;
           }
@@ -1140,6 +1154,7 @@ function Component({ text, id, position }: IEditable) {
       });
     },
     [
+      addSingleDecoration,
       addToCtrlZ,
       contextName,
       deleteMultipleLetters,
@@ -1163,8 +1178,9 @@ function Component({ text, id, position }: IEditable) {
       !ref.current ||
       selectionRange.start == null ||
       selectionRange.id !== id
-    )
+    ) {
       return;
+    }
 
     info.current = {
       selection: 0,
@@ -1260,12 +1276,19 @@ function Component({ text, id, position }: IEditable) {
     if (!startBlock || !endBlock) {
       return;
     }
-
     range.setStart(startBlock, selectionRange.start);
     range.setEnd(endBlock, selectionRange.end);
 
     selection.removeAllRanges();
     selection.addRange(range);
+
+    setTimeout(() => {
+      range.setStart(startBlock, selectionRange.start);
+      range.setEnd(endBlock, selectionRange.end);
+
+      selection.removeAllRanges();
+      selection.addRange(range);
+    });
   }, [id, info, selectionRange]);
 
   const [showPopup, setShowPopup] = useState(false);
@@ -1336,6 +1359,93 @@ function Component({ text, id, position }: IEditable) {
     [hasFocusId, text]
   );
 
+  const getOptions = useCallback((child: ChildNode) => {
+    // returns if has some option: bold, italic, underline, strikethrough, highlight, code
+
+    const options = [];
+
+    // @ts-expect-error it sure does
+    const style = child?.getAttribute?.("style")?.replace(" ", "") || "";
+
+    const possibleOptions = {
+      bold: "bold",
+      italic: "italic",
+      underline: "underline",
+      strikethrough: "strikethrough",
+      monospace: "code",
+      "font-weight:700;": "bold",
+    };
+
+    const possibleTags = {
+      STRONG: "bold",
+      EM: "italic",
+      U: "underline",
+      S: "strikethrough",
+      CODE: "code",
+    };
+
+    Object.entries(possibleOptions).forEach(([key, value]) => {
+      if (style.includes(key)) {
+        options.push(value);
+      }
+    });
+
+    Object.entries(possibleTags).forEach(([key, value]) => {
+      if (child.nodeName === key) {
+        options.push(value);
+      }
+    });
+
+    return options;
+  }, []);
+
+  const findChildOptions = useCallback(
+    (child: ChildNode, prevOptions = [], prevChild = []) => {
+      const children = Array.from(child.childNodes);
+
+      prevOptions.push(...getOptions(child));
+
+      if (prevOptions.includes("code")) {
+        prevChild.push({
+          options: [...new Set(prevOptions)],
+          value: child.textContent ?? "",
+          id: uuid(),
+        });
+      } else {
+        children.forEach((item) => {
+          const options = [...prevOptions, ...getOptions(item)];
+          // without duplicates
+          if (item.nodeName === "#text") {
+            prevChild.push({
+              options: [...new Set(options)],
+              value: item.textContent ?? "",
+              id: uuid(),
+            });
+
+            return;
+          }
+
+          const hasChildren = item.childNodes.length > 0;
+          const isCode = item.nodeName === "CODE";
+
+          if (isCode) {
+            options.push("code");
+            prevChild.push({
+              options: [...new Set(options)],
+              value: item.textContent ?? "",
+              id: uuid(),
+            });
+          } else if (hasChildren) {
+            findChildOptions(item, options, prevChild);
+          }
+        });
+      }
+
+      return prevChild;
+    },
+    [getOptions]
+  );
+
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement>) => {
       e.preventDefault();
@@ -1345,7 +1455,6 @@ function Component({ text, id, position }: IEditable) {
         action: "delete_letters",
       });
 
-      const copiedText = e.clipboardData.getData("text/plain");
       const selection = window.getSelection();
 
       const numberOfChars = selection.toString().length;
@@ -1354,7 +1463,18 @@ function Component({ text, id, position }: IEditable) {
         deleteMultipleLetters();
       }
 
-      setTimeout(() => {
+      const copiedText = e.clipboardData.getData("text/html");
+
+      // transforms the copiedText into html
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(copiedText, "text/html");
+
+      // if the copied text is not html, it will be plain text
+      const isPlainText = doc.body.innerHTML === "";
+
+      if (isPlainText) {
+        const plainText = e.clipboardData.getData("text/plain");
+
         const { changedBlockId, currSelection } = getBlockId({ textId: id });
 
         const currText = globalState
@@ -1363,147 +1483,194 @@ function Component({ text, id, position }: IEditable) {
 
         if (!currText) return;
 
-        // transforms the copiedText into an array of blocks
-        // ex.: "^^^**H**^^^^^^***ell***^^^^^^o^^^" -> [{ value: "H", options: ["highlight", "bold"] }, { value: "ell", options: ["highlight", "bold","italic"] }, { value: "o", options: ["highlight"] }]
-        const chars = copiedText.split("");
+        const block = currText.find(({ id }) => id === changedBlockId);
 
-        let currOption = "";
-        let endOption = "";
-        let newWords = "";
-        let searchingForTheEnd = false;
+        const baseValue = block?.value?.slice?.() ?? "";
 
-        const newBlocks = [];
+        const newValue =
+          baseValue.slice(0, currSelection) +
+          plainText +
+          baseValue.slice(currSelection);
 
-        chars.forEach((item, index) => {
-          if (searchingForTheEnd) {
-            if (item === currOption[0]) {
-              endOption += item;
-
-              if (endOption === currOption) {
-                searchingForTheEnd = false;
-                newBlocks.push({
-                  value: newWords,
-                  options: [currOption],
-                });
-
-                currOption = "";
-                newWords = "";
-                endOption = "";
-              }
-            } else {
-              newWords += endOption + item;
-              endOption = "";
-            }
-            return;
+        const newContent = currText.map((item) => {
+          if (item.id === changedBlockId) {
+            item.value = newValue;
           }
 
-          if (currOption || CHARS_VALUES.some((char) => char.includes(item))) {
-            currOption += item;
-
-            const isAKey = CHARS_VALUES.includes(currOption);
-
-            const isNextAKey = CHARS_VALUES.includes(
-              currOption + chars[index + 1]
-            );
-
-            // if the current option is a key and the next one is not, it means that the current option is the end of the option and the start of the word
-            if (isAKey && !isNextAKey) {
-              searchingForTheEnd = true;
-
-              if (newWords) {
-                newBlocks.push({
-                  value: newWords,
-                  options: [],
-                });
-
-                newWords = "";
-              }
-            }
-
-            return;
-          }
-
-          newWords += item;
+          return item;
         });
 
-        if (newWords) {
-          newBlocks.push({
-            value: newWords,
-            options: [],
+        handleUpdate(id, newContent);
+
+        info.current = {
+          selection: currSelection + plainText.length,
+          blockId: changedBlockId,
+        };
+
+        stateStorage.set(
+          `${contextName}_decoration-${changedBlockId}`,
+          new Date()
+        );
+        return;
+      }
+
+      // avoids selecting multiple families, that is do not copies son and father
+      let children = Array.from(doc.body.querySelectorAll("p, div, h1, h2"));
+
+      children = children.filter((item) => {
+        const parent = item.parentElement;
+
+        if (!parent) return true;
+
+        const parentIsNotInList = !children.includes(parent);
+
+        return parentIsNotInList;
+      });
+
+      // it's only one line if none of the children is a P or DIV tag
+      const isOnlyOneLine = doc.body.querySelector("p, div, h1, h2") === null;
+
+      if (isOnlyOneLine) {
+        // @ts-expect-error works fine
+        children = Array.from(doc.body.childNodes);
+      }
+
+      const newText = children.reduce((acc, child) => {
+        // if the child is a comment, do nothing
+        if (child.nodeName === "#comment") return acc;
+
+        // if is an \n, do nothing
+        if (child.nodeName === "#text" && child.textContent.includes("\n")) {
+          return acc;
+        }
+
+        if (child.nodeName === "#text") {
+          if (isOnlyOneLine) {
+            acc.push({
+              value: child.textContent ?? "",
+              id: uuid(),
+              options: [],
+            });
+          } else {
+            acc.push({
+              id: uuid(),
+              text: child.textContent,
+            });
+          }
+
+          return acc;
+        }
+
+        const multiWords = findChildOptions(child, [], []);
+
+        if (multiWords.length === 0) return acc;
+
+        if (isOnlyOneLine) {
+          acc.push(...multiWords);
+        } else {
+          acc.push({
+            id: uuid(),
+            text: multiWords,
           });
         }
 
-        const blocksFormatted = newBlocks.map((item) => {
-          const filteredOptions = [
-            ...CHARS_VALUES.filter((char) => item.value.includes(char)),
-            ...item.options,
-          ];
+        return acc;
+      }, []);
 
-          const newValue = filteredOptions.reduce((acc, char) => {
-            return acc.replaceAll(char, "");
-          }, item.value);
+      const { changedBlockId, currSelection } = getBlockId({ textId: id });
 
-          return {
-            value: newValue,
-            id: uuid(),
-            options: filteredOptions.map(
-              (char) => CHARS_KEYS[CHARS_VALUES.indexOf(char)]
-            ),
-          };
-        });
+      // gets the current line and the current block, adding the new text after the cursor
+      if (isOnlyOneLine) {
+        const currText = globalState
+          .get(contextName)
+          .find(({ id: textId }) => textId === id)?.text;
 
-        const newText = [];
+        if (!currText) return;
 
-        currText.forEach((item) => {
-          if (item.id !== changedBlockId) {
-            newText.push(item);
-            return;
+        const block = currText.find(({ id }) => id === changedBlockId);
+
+        // if needed, splices the block in three
+        const baseValue = block?.value?.slice?.() ?? "";
+
+        const spliced1 = baseValue.slice(0, currSelection);
+        const spliced2 = baseValue.slice(currSelection);
+
+        const newContent = currText.reduce((acc, item) => {
+          if (item.id === changedBlockId) {
+            acc.push({
+              value: spliced1,
+              id: item.id,
+              options: item.options,
+            });
+
+            newText.forEach((item) => {
+              acc.push(item);
+            });
+
+            acc.push({
+              value: spliced2,
+              id: uuid(),
+              options: item.options,
+            });
+          } else {
+            acc.push(item);
           }
 
-          const { value, options } = item;
+          return acc;
+        }, []);
 
-          const valueBefore = value.slice(0, currSelection);
-          const valueAfter = value.slice(currSelection);
+        handleUpdate(id, newContent);
 
-          newText.push({
-            value: valueBefore,
-            id: item.id,
-            options,
-          });
+        const lastNewBlock = newText[newText.length - 1];
 
-          blocksFormatted.forEach((item) => {
-            newText.push(item);
-          });
-
-          newText.push({
-            value: valueAfter,
-            id: uuid(),
-            options,
-          });
-        });
-
-        const lastNewBlock = blocksFormatted[blocksFormatted.length - 1];
-
-        if (lastNewBlock == null) return;
-
-        // add the lastNewBlock focus
         info.current = {
-          selection: lastNewBlock?.value?.length,
-          blockId: lastNewBlock?.id,
+          selection: lastNewBlock?.value?.length ?? 0,
+          blockId: lastNewBlock.id,
         };
-
-        handleUpdate(id, newText);
 
         stateStorage.set(
           `${contextName}_decoration-${lastNewBlock.id}`,
           new Date()
         );
-      });
+      } else {
+        // adds the new text after the current line
+        const content = globalState.get(contextName);
+
+        const newContent = content.reduce((acc, item) => {
+          if (item.id === id) {
+            acc.push(item);
+
+            newText.forEach((item) => {
+              acc.push(item);
+            });
+          } else {
+            acc.push(item);
+          }
+
+          return acc;
+        }, []);
+
+        stateStorage.set(contextName, newContent);
+
+        const lastLine = newText[newText.length - 1];
+        const lastNewBlock = lastLine.text[lastLine.text.length - 1];
+
+        info.current = {
+          selection: lastNewBlock?.value?.length ?? 0,
+          blockId: lastNewBlock.id,
+        };
+
+        stateStorage.set(
+          `${contextName}_decoration-${lastNewBlock.id}`,
+          new Date()
+        );
+      }
     },
     [
       addToCtrlZ,
       contextName,
       deleteMultipleLetters,
+      findChildOptions,
       getBlockId,
       handleUpdate,
       id,

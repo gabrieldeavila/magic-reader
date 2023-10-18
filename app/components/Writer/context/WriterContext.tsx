@@ -425,6 +425,7 @@ const WriterContextProvider = ({
   const handleBlur = useCallback(
     (e) => {
       const { dataLineId } = getBlockId({});
+
       const prevSelected = globalState.get("prev-selected");
       const selection = window.getSelection().toString().length;
       const selectedClicked = globalState.get("clicked-item");
@@ -460,6 +461,14 @@ const WriterContextProvider = ({
       // when selection is empty, no popup is shown
       if (currRange === 0) {
         globalState.set("popup_anchor", null);
+      } else {
+        // gets all the spans with the empty class
+        const spans = document.querySelectorAll("span.empty");
+
+        spans.forEach((span) => {
+          // removes the placeholder attribute
+          span.removeAttribute("placeholder");
+        });
       }
 
       stateStorage.set(`has_focus_ev-${dataLineId}`, true);
@@ -518,15 +527,15 @@ const WriterContextProvider = ({
       ) {
         const currWords = block.value
           .find(({ id }) => id === block.blockId)
-          .value.split(" ");
+          ?.value?.split(" ");
 
         const prevWords = lastItem.value
           .find(({ id }) => id === block.blockId)
-          .value.split(" ");
+          ?.value?.split(" ");
 
-        const diff = currWords.length - prevWords.length;
+        const diff = currWords?.length - prevWords?.length;
 
-        if (!diff) {
+        if (!diff && currWords) {
           return;
         }
       }
@@ -595,6 +604,19 @@ const WriterContextProvider = ({
     };
   }, [handleKeyDown, redo, undo]);
 
+  useEffect(() => {
+    // add listener to windows focus
+    const handleFocus = () => {
+      globalState.set("clicked-item", true);
+    };
+
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, []);
+
   return (
     <WriterContext.Provider
       value={{
@@ -615,7 +637,6 @@ const WriterContextProvider = ({
           globalState.set("clicked-item", false);
           handleBlur(e);
         }}
-        onFocus={handleBlur}
         onClick={(e) => {
           handleBlur(e);
           globalState.set("clicked-item", true);
