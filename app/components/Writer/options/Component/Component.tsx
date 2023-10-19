@@ -1468,6 +1468,7 @@ function Component({ text, id, position }: IEditable) {
 
       // if the copied text is not html, it will be plain text
       const isPlainText = doc.body.innerHTML === "";
+      console.log(doc);
 
       if (isPlainText) {
         const plainText = e.clipboardData.getData("text/plain");
@@ -1512,7 +1513,11 @@ function Component({ text, id, position }: IEditable) {
       }
 
       // avoids selecting multiple families, that is do not copies son and father
-      let children = Array.from(doc.body.querySelectorAll("p, div, h1, h2"));
+      let children = Array.from(
+        doc.body.querySelectorAll(
+          "p, div, h1, h2, p~span, div~span, h1~span, h2~span, p~a, div~a, h1~a, h2~a"
+        )
+      );
 
       children = children.filter((item) => {
         const parent = item.parentElement;
