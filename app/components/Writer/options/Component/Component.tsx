@@ -17,7 +17,6 @@ import { dga } from "../../../../utils/dga";
 import { dgb } from "../../../../utils/dgb";
 import uuid from "../../../../utils/uuid";
 import { useWriterContext } from "../../context/WriterContext";
-import useDecoration from "../../hooks/useDecoration";
 import useDeleteMultiple from "../../hooks/useDeleteMultiple";
 import useGetCurrBlockId from "../../hooks/useGetCurrBlockId";
 import usePositions from "../../hooks/usePositions";
@@ -779,8 +778,6 @@ function Component({ text, id, position }: IEditable) {
     navigator.clipboard.write([clipboardItem]);
   }, [copyEntireBlock, getBlockId, id]);
 
-  const { addDecoration } = useDecoration({ id, text });
-
   const handleCtrlEvents = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>, ctrlPressed: boolean) => {
       if (!ctrlPressed) return false;
@@ -852,9 +849,10 @@ function Component({ text, id, position }: IEditable) {
         e.preventDefault();
 
         if (!popupRef.current.bold) {
+          console.log("ooo");
           saveDecoration("bold");
         } else {
-          addDecoration("bold");
+          popupRef.current.bold?.click?.();
         }
 
         return true;
@@ -907,7 +905,6 @@ function Component({ text, id, position }: IEditable) {
       return true;
     },
     [
-      addDecoration,
       saveDecoration,
       addToCtrlZ,
       contextName,
