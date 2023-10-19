@@ -1635,7 +1635,10 @@ function Component({ text, id, position }: IEditable) {
 
         const newContent = content.reduce((acc, item) => {
           if (item.id === id) {
-            acc.push(item);
+            // when it's a line with no text, it's feel more natural to add the text in the same line
+            if (!(item.text.length === 1 && item.text[0].value.length === 0)) {
+              acc.push(item);
+            }
 
             newText.forEach((item) => {
               acc.push(item);
