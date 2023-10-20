@@ -1625,8 +1625,11 @@ function Component({ text, id, position }: IEditable) {
         const spliced1 = baseValue.slice(0, currSelection);
         const spliced2 = baseValue.slice(currSelection);
 
-        const newContent = currText.reduce<IText[]>((acc, item) => {
+        let foundTheBlock = false;
+
+        let newContent = currText.reduce<IText[]>((acc, item) => {
           if (item.id === changedBlockId) {
+            foundTheBlock = true;
             acc.push({
               value: spliced1,
               id: item.id,
@@ -1650,7 +1653,12 @@ function Component({ text, id, position }: IEditable) {
           return acc;
         }, []);
 
-        handleUpdate(id, newContent);
+        if (!foundTheBlock) {
+          // @ts-expect-error - only IText falls here
+          newContent = newText;
+        }
+
+        handleUpdate(lineId, newContent);
 
         const lastNewBlock = newText[newText.length - 1];
 
@@ -1667,8 +1675,12 @@ function Component({ text, id, position }: IEditable) {
       } else {
         // adds the new text after the current line
         const content = globalState.get(contextName);
-        const newContent = content.reduce((acc, item) => {
+        let foundTheLine = false;
+
+        let newContent = content.reduce((acc, item) => {
           if (item.id === id) {
+            foundTheLine = true;
+
             // when it's a line with no text, it's feel more natural to add the text in the same line
             // so we avoid keeping the line empty
             if (!(item.text.length === 1 && item.text[0].value.length === 0)) {
@@ -1684,6 +1696,10 @@ function Component({ text, id, position }: IEditable) {
 
           return acc;
         }, []);
+
+        if (!foundTheLine) {
+          newContent = newText;
+        }
 
         stateStorage.set(contextName, newContent);
 
