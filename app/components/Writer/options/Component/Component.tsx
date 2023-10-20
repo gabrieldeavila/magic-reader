@@ -765,6 +765,13 @@ function Component({ text, id, position }: IEditable) {
     // Create a Blob for the HTML content and a Blob for the plain text
     const div = document.createElement("div");
     div.appendChild(textCopied);
+
+    // removes all children with data-popup
+    const popups = div.querySelectorAll("[data-popup]");
+    popups.forEach((item) => {
+      item.remove();
+    });
+
     const htmlBlob = new Blob([div.innerHTML], { type: "text/html" });
     const textBlob = new Blob([div.innerText], { type: "text/plain" });
 

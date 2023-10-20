@@ -669,6 +669,7 @@ const PopupComp = (
       isUp={isUp}
       contentEditable={false}
       ref={ref}
+      data-popup={id}
     >
       <WPopup.Content>
         <WPopup.Item>
