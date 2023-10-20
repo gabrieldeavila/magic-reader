@@ -1085,15 +1085,19 @@ function Component({ text, id, position }: IEditable) {
 
       const numberOfChars = selection.toString().length;
 
+      let lineId = id;
+
       if (numberOfChars) {
-        deleteMultipleLetters();
+        // get the id of the line of the first selected letter
+        lineId = deleteMultipleLetters();
       }
 
       setTimeout(() => {
         const selection = window.getSelection();
+
         const currText = globalState
           .get(contextName)
-          .find(({ id: textId }) => textId === id)?.text;
+          .find(({ id: textId }) => textId === lineId)?.text;
 
         if (!currText) return;
 
@@ -1135,14 +1139,14 @@ function Component({ text, id, position }: IEditable) {
 
         if (!numberOfChars) {
           addToCtrlZ({
-            lineId: id,
+            lineId: lineId,
             blockId: changedBlockId,
             value: prevVal,
             action: "change",
           });
         }
 
-        handleUpdate(id, newText);
+        handleUpdate(lineId, newText);
 
         info.current = {
           selection: cursorPositionValue + 1,
