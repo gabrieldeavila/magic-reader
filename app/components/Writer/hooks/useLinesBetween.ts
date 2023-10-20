@@ -42,8 +42,8 @@ function useLinesBetween() {
       let newFirstLineId;
 
       if (
-        (tempLinesBetween[0].text.length === 0 ||
-          tempLinesBetween[0].text[0]?.value.length === 0) &&
+        (tempLinesBetween[0]?.text?.length === 0 ||
+          tempLinesBetween[0]?.text[0]?.value?.length === 0) &&
         linesBetween[0]?.text?.[0]?.id
       ) {
         newFirstLineId = linesBetween[0].text[0].id;

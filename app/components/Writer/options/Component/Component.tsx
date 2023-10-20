@@ -1089,7 +1089,7 @@ function Component({ text, id, position }: IEditable) {
 
       if (numberOfChars) {
         // get the id of the line of the first selected letter
-        lineId = deleteMultipleLetters();
+        lineId = deleteMultipleLetters() ?? id;
       }
 
       setTimeout(() => {
@@ -1459,9 +1459,10 @@ function Component({ text, id, position }: IEditable) {
       const selection = window.getSelection();
 
       const numberOfChars = selection.toString().length;
+      let lineId = id;
 
       if (numberOfChars) {
-        deleteMultipleLetters();
+        lineId = deleteMultipleLetters() ?? id;
       }
 
       const copiedText = e.clipboardData.getData("text/html");
@@ -1472,7 +1473,6 @@ function Component({ text, id, position }: IEditable) {
 
       // if the copied text is not html, it will be plain text
       const isPlainText = doc.body.innerHTML === "";
-      console.log(doc);
 
       if (isPlainText) {
         const plainText = e.clipboardData.getData("text/plain");
@@ -1481,7 +1481,7 @@ function Component({ text, id, position }: IEditable) {
 
         const currText = globalState
           .get(contextName)
-          .find(({ id: textId }) => textId === id)?.text;
+          .find(({ id: textId }) => textId === lineId)?.text;
 
         if (!currText) return;
 
@@ -1502,7 +1502,7 @@ function Component({ text, id, position }: IEditable) {
           return item;
         });
 
-        handleUpdate(id, newContent);
+        handleUpdate(lineId, newContent);
 
         info.current = {
           selection: currSelection + plainText.length,
@@ -1583,13 +1583,13 @@ function Component({ text, id, position }: IEditable) {
         return acc;
       }, []);
 
-      const { changedBlockId, currSelection } = getBlockId({ textId: id });
+      const { changedBlockId, currSelection } = getBlockId({ textId: lineId });
 
       // gets the current line and the current block, adding the new text after the cursor
       if (isOnlyOneLine) {
         const currText = globalState
           .get(contextName)
-          .find(({ id: textId }) => textId === id)?.text;
+          .find(({ id: textId }) => textId === lineId)?.text;
 
         if (!currText) return;
 
