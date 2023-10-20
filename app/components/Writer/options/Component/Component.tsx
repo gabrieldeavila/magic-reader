@@ -21,7 +21,7 @@ import useDeleteMultiple from "../../hooks/useDeleteMultiple";
 import useGetCurrBlockId from "../../hooks/useGetCurrBlockId";
 import usePositions from "../../hooks/usePositions";
 import useSingleDecoration from "../../hooks/useSingleDecoration";
-import { IEditable } from "../../interface";
+import { IEditable, ILinesBetween, IText, LineOrText } from "../../interface";
 import Popup from "../../popup/Popup";
 import { PopupFunctions } from "../../popup/interface";
 import { Editable } from "../../style";
@@ -849,7 +849,6 @@ function Component({ text, id, position }: IEditable) {
         e.preventDefault();
 
         if (!popupRef.current.bold) {
-          console.log("ooo");
           saveDecoration("bold");
         } else {
           popupRef.current.bold?.click?.();
@@ -1450,11 +1449,6 @@ function Component({ text, id, position }: IEditable) {
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement>) => {
       e.preventDefault();
-      addToCtrlZ({
-        lineId: id,
-        value: structuredClone(text),
-        action: "delete_letters",
-      });
 
       const selection = window.getSelection();
 
@@ -1475,6 +1469,15 @@ function Component({ text, id, position }: IEditable) {
       const isPlainText = doc.body.innerHTML === "";
 
       if (isPlainText) {
+        // if has numberOfChars, it already deleted the letters
+        if (!numberOfChars) {
+          addToCtrlZ({
+            lineId: id,
+            value: structuredClone(text),
+            action: "delete_letters",
+          });
+        }
+
         const plainText = e.clipboardData.getData("text/plain");
 
         const { changedBlockId, currSelection } = getBlockId({ textId: id });
@@ -1517,7 +1520,7 @@ function Component({ text, id, position }: IEditable) {
       }
 
       // avoids selecting multiple families, that is do not copies son and father
-      let children = Array.from(
+      let children: ChildNode[] = Array.from(
         doc.body.querySelectorAll(
           "p, div, h1, h2, p~span, div~span, h1~span, h2~span, p~a, div~a, h1~a, h2~a"
         )
@@ -1537,16 +1540,24 @@ function Component({ text, id, position }: IEditable) {
       const isOnlyOneLine = doc.body.querySelector("p, div, h1, h2") === null;
 
       if (isOnlyOneLine) {
-        // @ts-expect-error works fine
         children = Array.from(doc.body.childNodes);
+
+        // if has numberOfChars, it already deleted the letters
+        if (!numberOfChars) {
+          addToCtrlZ({
+            lineId: id,
+            value: structuredClone(text),
+            action: "delete_letters",
+          });
+        }
       }
 
-      const newText = children.reduce((acc, child) => {
+      const newText = children.reduce<LineOrText[]>((acc, child) => {
         // if the child is a comment, do nothing
         if (child.nodeName === "#comment") return acc;
 
         // if is an \n, do nothing
-        if (child.nodeName === "#text" && child.textContent.includes("\n")) {
+        if (child.nodeName === "#text" && child.textContent?.includes("\n")) {
           return acc;
         }
 
@@ -1560,7 +1571,13 @@ function Component({ text, id, position }: IEditable) {
           } else {
             acc.push({
               id: uuid(),
-              text: child.textContent,
+              text: [
+                {
+                  value: child.textContent ?? "",
+                  id: uuid(),
+                  options: [],
+                },
+              ],
             });
           }
 
@@ -1587,7 +1604,7 @@ function Component({ text, id, position }: IEditable) {
 
       // gets the current line and the current block, adding the new text after the cursor
       if (isOnlyOneLine) {
-        const currText = globalState
+        const currText: ILinesBetween["text"] = globalState
           .get(contextName)
           .find(({ id: textId }) => textId === lineId)?.text;
 
@@ -1601,7 +1618,7 @@ function Component({ text, id, position }: IEditable) {
         const spliced1 = baseValue.slice(0, currSelection);
         const spliced2 = baseValue.slice(currSelection);
 
-        const newContent = currText.reduce((acc, item) => {
+        const newContent = currText.reduce<IText[]>((acc, item) => {
           if (item.id === changedBlockId) {
             acc.push({
               value: spliced1,
@@ -1610,6 +1627,7 @@ function Component({ text, id, position }: IEditable) {
             });
 
             newText.forEach((item) => {
+              // @ts-expect-error - only IText falls here
               acc.push(item);
             });
 
@@ -1630,7 +1648,8 @@ function Component({ text, id, position }: IEditable) {
         const lastNewBlock = newText[newText.length - 1];
 
         info.current = {
-          selection: lastNewBlock?.value?.length ?? 0,
+          // @ts-expect-error - only IText falls here
+          selection: (lastNewBlock?.value ?? "").length,
           blockId: lastNewBlock.id,
         };
 
@@ -1641,10 +1660,10 @@ function Component({ text, id, position }: IEditable) {
       } else {
         // adds the new text after the current line
         const content = globalState.get(contextName);
-
         const newContent = content.reduce((acc, item) => {
           if (item.id === id) {
             // when it's a line with no text, it's feel more natural to add the text in the same line
+            // so we avoid keeping the line empty
             if (!(item.text.length === 1 && item.text[0].value.length === 0)) {
               acc.push(item);
             }
@@ -1661,7 +1680,16 @@ function Component({ text, id, position }: IEditable) {
 
         stateStorage.set(contextName, newContent);
 
+        addToCtrlZ({
+          lineId: id,
+          // @ts-expect-error - only ILinesBetween falls here
+          linesBetween: structuredClone(newText),
+          action: "add_multi_lines",
+          position: position,
+        });
+
         const lastLine = newText[newText.length - 1];
+        // @ts-expect-error - only ILinesBetween falls here
         const lastNewBlock = lastLine.text[lastLine.text.length - 1];
 
         info.current = {
@@ -1684,6 +1712,7 @@ function Component({ text, id, position }: IEditable) {
       handleUpdate,
       id,
       info,
+      position,
       text,
     ]
   );

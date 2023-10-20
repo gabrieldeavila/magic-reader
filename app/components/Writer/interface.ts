@@ -41,18 +41,21 @@ type undoActions =
   | "delete_letters"
   | "add_line"
   | "delete_line"
-  | "delete_multi_lines";
+  | "delete_multi_lines"
+  | "add_multi_lines";
 
 interface prevLineInfo {
   id: string;
   text: IText[];
 }
 
-interface linesBetween {
+export interface ILinesBetween {
   id: string;
   text: IText[];
 }
 [];
+
+export type LineOrText = ILinesBetween | IText;
 
 export interface IWriterContext {
   content: IWritterContent[];
@@ -75,7 +78,7 @@ export interface IWriterContext {
     action: undoActions;
     position?: number;
     prevLineInfo?: prevLineInfo;
-    linesBetween?: linesBetween;
+    linesBetween?: ILinesBetween;
   }) => void;
   contextName: string;
   info: React.MutableRefObject<IWriterInfo>;

@@ -161,9 +161,11 @@ const WriterContextProvider = ({
       ? "filter"
       : "map";
 
-    const prevent = ["delete_line", "delete_multi_lines"].includes(
-      lastItem.action
-    );
+    const prevent = [
+      "delete_line",
+      "delete_multi_lines",
+      "add_multi_lines",
+    ].includes(lastItem.action);
 
     // now find the lineId and blockId of the content
     let updateContent = prevent
@@ -250,7 +252,21 @@ const WriterContextProvider = ({
       stateStorage.set("redo", newRedo);
     }
 
-    if (lastItem.action === "delete_line") {
+    if (lastItem.action === "add_multi_lines") {
+      updateContent = updateContent.reduce((acc, item) => {
+        const hasId = lastItem.linesBetween?.find?.(({ id }) => id === item.id);
+
+        if (!hasId) {
+          acc.push(item);
+        }
+
+        return acc;
+      }, []);
+
+      const newRedo = [...(globalState.get("redo") || []), { ...lastItem }];
+      stateStorage.set("redo", newRedo);
+      setContent([...updateContent]);
+    } else if (lastItem.action === "delete_line") {
       updateContent.splice(lastItem.position - 1, 0, {
         id: lastItem.lineId,
         text: lastItem.value,
@@ -313,6 +329,7 @@ const WriterContextProvider = ({
 
         return false;
       }
+
       const isBtw = lastItem.linesBetween?.find?.(({ id }) => id === item.id);
 
       if (lastItem.action === "delete_multi_lines" && isBtw) {
@@ -376,6 +393,20 @@ const WriterContextProvider = ({
       ];
 
       stateStorage.set("undo", newUndo);
+      setContent([...updateContent]);
+    } else if (lastItem.action === "add_multi_lines") {
+      updateContent = updateContent.reduce((acc, item, position) => {
+        const isInPosition = position === lastItem.position;
+        console.log(position, lastItem.position, isInPosition);
+        acc.push(item);
+
+        if (isInPosition) {
+          acc.push(...lastItem.linesBetween);
+        }
+
+        return acc;
+      }, []);
+
       setContent([...updateContent]);
     } else if (lastItem.action === "delete_multi_lines") {
       // add to the redo
