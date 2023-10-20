@@ -116,6 +116,7 @@ const PopupComp = (
     const focus = selection.focusNode?.parentElement;
 
     let position = focus?.getBoundingClientRect?.();
+    let blockInfo = { block: focus, offset: selection.focusOffset };
 
     const anchorComesFirst = !!(
       anchor?.compareDocumentPosition(focus) & Node.DOCUMENT_POSITION_FOLLOWING
@@ -133,6 +134,7 @@ const PopupComp = (
 
       if (!isPrevAnchorOutOfScreen) {
         position = anchor?.getBoundingClientRect?.();
+        blockInfo = { block: anchor, offset: selection.anchorOffset };
       } else {
         isPrevAnchor = false;
       }
@@ -144,7 +146,18 @@ const PopupComp = (
 
     const width = ref.current?.getBoundingClientRect()?.width;
 
-    const left = position.right + width;
+    // create a new range
+    const rangeOffset = document.createRange();
+    // select the block
+    rangeOffset.selectNode(blockInfo.block.firstChild);
+    // set the start offset
+    rangeOffset.setStart(blockInfo.block.firstChild, blockInfo.offset);
+    rangeOffset.setEnd(blockInfo.block.firstChild, blockInfo.offset);
+
+    // get the position of the start offset
+    const infoRange = rangeOffset.getBoundingClientRect();
+
+    const left = infoRange.right + width;
     // sees if the popup is out of the screen
     const isOutOfScreen = window.innerWidth < left;
 
@@ -152,17 +165,17 @@ const PopupComp = (
 
     let newLeft;
     const newTop =
-      position.top +
+      infoRange.top +
       window.scrollY +
       ((anchorComesFirst || isTopOutOfScreen) && !isPrevAnchor ? 25 : -40);
 
     if (isOutOfScreen) {
-      newLeft = position.left - width;
+      newLeft = infoRange.left -  width;
     } else {
-      newLeft = position.right - position.width;
+      newLeft = infoRange.right - infoRange.width;
     }
 
-    if (newLeft < 0) newLeft = position.x;
+    if (newLeft < 0) newLeft = infoRange.x;
 
     newPositions = {
       left: `${newLeft}px`,
