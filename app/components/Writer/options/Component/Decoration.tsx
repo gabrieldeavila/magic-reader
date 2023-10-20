@@ -127,6 +127,15 @@ const Decoration = memo(
       range.setStart(node, cursorPositionValue);
       range.setEnd(node, cursorPositionValue);
 
+      // scroll to the cursor
+      if (tagRef.current) {
+        tagRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "nearest",
+        });
+      }
+
       selection.removeAllRanges();
       selection.addRange(range);
     }, [id, info, value, decoration, onlyOneBlockAndIsEmpty, options]);
@@ -173,13 +182,19 @@ const Decoration = memo(
 
     const { translateThis } = useGTTranslate();
 
-    const isEmpty = useMemo(()=>parentText.length === 1 && value.length === 0, [parentText.length, value.length]);
+    const isEmpty = useMemo(
+      () => parentText.length === 1 && value.length === 0,
+      [parentText.length, value.length]
+    );
 
     const tagOptions = {
       ref: tagRef,
       "data-block-id": id,
       placeholder: onlyOneBlockAndIsEmpty && translateThis("SCRIBERE.EMPTY"),
-      className: clsx(onlyOneBlockAndIsEmpty && "placeholder", isEmpty && "empty"),
+      className: clsx(
+        onlyOneBlockAndIsEmpty && "placeholder",
+        isEmpty && "empty"
+      ),
       style: {
         ...style,
         ...(isHighlight.next && {
