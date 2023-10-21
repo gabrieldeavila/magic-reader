@@ -253,8 +253,12 @@ const WriterContextProvider = ({
     }
 
     if (lastItem.action === "add_multi_lines") {
-      updateContent = updateContent.reduce((acc, item) => {
+      updateContent = updateContent.reduce((acc, item, index) => {
         const hasId = lastItem.linesBetween?.find?.(({ id }) => id === item.id);
+
+        if (index === lastItem.position && lastItem.deletedLines) {
+          acc.push(...lastItem.deletedLines);
+        }
 
         if (!hasId) {
           acc.push(item);
@@ -397,7 +401,6 @@ const WriterContextProvider = ({
     } else if (lastItem.action === "add_multi_lines") {
       updateContent = updateContent.reduce((acc, item, position) => {
         const isInPosition = position === lastItem.position;
-        console.log(position, lastItem.position, isInPosition);
         acc.push(item);
 
         if (isInPosition) {
@@ -571,6 +574,23 @@ const WriterContextProvider = ({
         }
       }
 
+      if (block.action === "add_multi_lines") {
+        // gets the last line from the undo
+        const lastLine = prevState[prevState.length - 1];
+        if (lastLine?.action === "delete_multi_lines") {
+          // remove the last item, and add it to redo
+          const newBlock = {
+            ...blockInfo,
+            deletedLines: lastLine.linesBetween,
+          };
+
+          stateStorage.set("undo", [
+            ...prevState.slice(0, prevState.length - 1),
+            newBlock,
+          ]);
+          return;
+        }
+      }
       stateStorage.set("undo", [...prevState, blockInfo]);
     },
     [getBlockId]

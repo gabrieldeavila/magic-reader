@@ -1676,9 +1676,11 @@ function Component({ text, id, position }: IEditable) {
         // adds the new text after the current line
         const content = globalState.get(contextName);
         let foundTheLine = false;
+        let positionThatWasAdded = 0;
 
-        let newContent = content.reduce((acc, item) => {
+        let newContent = content.reduce((acc, item, index) => {
           if (item.id === id) {
+            positionThatWasAdded = index;
             foundTheLine = true;
 
             // when it's a line with no text, it's feel more natural to add the text in the same line
@@ -1698,7 +1700,12 @@ function Component({ text, id, position }: IEditable) {
         }, []);
 
         if (!foundTheLine) {
-          newContent = newText;
+          newContent = newContent.filter(
+            (item) => item.text.length >= 1 && item.text[0].value.length > 0
+          );
+
+          positionThatWasAdded = newContent.length;
+          newContent = [...newContent, ...newText];
         }
 
         stateStorage.set(contextName, newContent);
@@ -1708,7 +1715,7 @@ function Component({ text, id, position }: IEditable) {
           // @ts-expect-error - only ILinesBetween falls here
           linesBetween: structuredClone(newText),
           action: "add_multi_lines",
-          position: position,
+          position: positionThatWasAdded,
         });
 
         const lastLine = newText[newText.length - 1];
@@ -1735,7 +1742,6 @@ function Component({ text, id, position }: IEditable) {
       handleUpdate,
       id,
       info,
-      position,
       text,
     ]
   );

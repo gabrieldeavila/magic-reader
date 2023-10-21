@@ -79,6 +79,7 @@ export interface IWriterContext {
     position?: number;
     prevLineInfo?: prevLineInfo;
     linesBetween?: ILinesBetween;
+    deletedLines?: ILinesBetween;
   }) => void;
   contextName: string;
   info: React.MutableRefObject<IWriterInfo>;

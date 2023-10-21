@@ -61,7 +61,7 @@ function useDeleteMultiLines() {
       });
 
       const currContent = stateStorage.get(contextName).map((item) => {
-        if (lineParent.id === item.id) {
+        if (lineParent?.id === item.id) {
           return {
             ...lineParent,
             text: blocks,

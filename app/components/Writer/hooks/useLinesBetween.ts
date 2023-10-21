@@ -53,9 +53,9 @@ function useLinesBetween() {
       let newLastLineId;
 
       if (
-        (tempLinesBetween[tempLinesBetween.length - 1].text.length === 0 ||
-          tempLinesBetween[tempLinesBetween.length - 1].text[
-            tempLinesBetween[tempLinesBetween.length - 1].text.length - 1
+        (tempLinesBetween[tempLinesBetween.length - 1]?.text.length === 0 ||
+          tempLinesBetween[tempLinesBetween.length - 1]?.text[
+            tempLinesBetween[tempLinesBetween.length - 1]?.text.length - 1
           ]?.value.length === 0) &&
         linesBetween[linesBetween.length - 1]?.text?.[
           linesBetween[linesBetween.length - 1]?.text?.length - 1
