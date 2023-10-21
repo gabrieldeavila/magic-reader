@@ -1412,7 +1412,14 @@ function Component({ text, id, position }: IEditable) {
 
       prevOptions.push(...getOptions(child));
 
-      if (prevOptions.includes("code")) {
+      const allChildrenAreDivOrP = children.every(
+        (item) =>
+          item.nodeName === "P" ||
+          item.nodeName === "DIV" ||
+          item.nodeName === "BR"
+      );
+
+      if (prevOptions.includes("code") && !allChildrenAreDivOrP) {
         prevChild.push({
           options: [...new Set(prevOptions)],
           value: child.textContent ?? "",
@@ -1543,6 +1550,10 @@ function Component({ text, id, position }: IEditable) {
         return parentIsNotInList;
       });
 
+      // if all the children are only one div and has some class with monospace, it's a code block
+      const oneChildrenAndIsCode =
+        children.length === 1 && getOptions(children[0]).includes("code");
+
       // it's only one line if none of the children is a P or DIV tag
       const isOnlyOneLine = doc.body.querySelector("p, div, h1, h2") === null;
 
@@ -1598,10 +1609,26 @@ function Component({ text, id, position }: IEditable) {
         if (isOnlyOneLine) {
           acc.push(...multiWords);
         } else {
-          acc.push({
-            id: uuid(),
-            text: multiWords,
-          });
+          if (oneChildrenAndIsCode) {
+            multiWords.forEach((item) => {
+              acc.push({
+                id: uuid(),
+                text: [
+                  {
+                    value: item.value,
+                    id: item.id,
+                    options: item.options,
+                  },
+                ],
+              });
+            });
+          } else {
+            acc.push({
+              id: uuid(),
+              text: multiWords,
+            });
+          }
+          console.log(acc);
         }
 
         return acc;
