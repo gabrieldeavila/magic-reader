@@ -3,6 +3,7 @@ import {
   forwardRef,
   memo,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -116,6 +117,7 @@ const PopupComp = (
     const focus = selection.focusNode?.parentElement;
 
     let position = focus?.getBoundingClientRect?.();
+    let blockInfo = { block: focus, offset: selection.focusOffset };
 
     const anchorComesFirst = !!(
       anchor?.compareDocumentPosition(focus) & Node.DOCUMENT_POSITION_FOLLOWING
@@ -133,6 +135,7 @@ const PopupComp = (
 
       if (!isPrevAnchorOutOfScreen) {
         position = anchor?.getBoundingClientRect?.();
+        blockInfo = { block: anchor, offset: selection.anchorOffset };
       } else {
         isPrevAnchor = false;
       }
@@ -144,7 +147,18 @@ const PopupComp = (
 
     const width = ref.current?.getBoundingClientRect()?.width;
 
-    const left = position.right + width;
+    // create a new range
+    const rangeOffset = document.createRange();
+    // select the block
+    rangeOffset.selectNode(blockInfo.block.firstChild);
+    // set the start offset
+    rangeOffset.setStart(blockInfo.block.firstChild, blockInfo.offset);
+    rangeOffset.setEnd(blockInfo.block.firstChild, blockInfo.offset);
+
+    // get the position of the start offset
+    const infoRange = rangeOffset.getBoundingClientRect();
+
+    const left = infoRange.right + width;
     // sees if the popup is out of the screen
     const isOutOfScreen = window.innerWidth < left;
 
@@ -152,17 +166,16 @@ const PopupComp = (
 
     let newLeft;
     const newTop =
-      position.top +
-      window.scrollY +
+      infoRange.top +
       ((anchorComesFirst || isTopOutOfScreen) && !isPrevAnchor ? 25 : -40);
 
     if (isOutOfScreen) {
-      newLeft = position.left - width;
+      newLeft = infoRange.left - width;
     } else {
-      newLeft = position.right - position.width;
+      newLeft = infoRange.right - infoRange.width;
     }
 
-    if (newLeft < 0) newLeft = position.x;
+    if (newLeft < 0) newLeft = infoRange.x;
 
     newPositions = {
       left: `${newLeft}px`,
@@ -650,18 +663,30 @@ const PopupComp = (
     addDecoration("highlight");
   }, [addDecoration]);
 
+  useEffect(() => {
+    setTimeout(() => {
+      globalState.set("popup_field", popupRef.current);
+    });
+
+    return () => {
+      globalState.set("popup_field", null);
+    };
+  }, [popupRef]);
+
   return (
     <WPopup.Wrapper
       style={positions}
       isUp={isUp}
       contentEditable={false}
       ref={ref}
+      data-popup={id}
     >
       <WPopup.Content>
         <WPopup.Item>
           <WPopup.B
             ref={(el) => (popupRef.current.bold = el)}
             isSelected={selectedOptions.includes("bold")}
+            data-bold
             onClick={bold}
           >
             B
@@ -672,6 +697,7 @@ const PopupComp = (
           <WPopup.I
             ref={(el) => (popupRef.current.italic = el)}
             isSelected={selectedOptions.includes("italic")}
+            data-italic
             onClick={italic}
           >
             i
@@ -682,6 +708,7 @@ const PopupComp = (
           <WPopup.U
             ref={(el) => (popupRef.current.underline = el)}
             isSelected={selectedOptions.includes("underline")}
+            data-underline
             onClick={underline}
           >
             U
@@ -691,6 +718,7 @@ const PopupComp = (
         <WPopup.Item>
           <WPopup.S
             ref={(el) => (popupRef.current.strikethrough = el)}
+            data-strikethrough
             isSelected={selectedOptions.includes("strikethrough")}
             onClick={strikethrough}
           >
@@ -701,6 +729,7 @@ const PopupComp = (
         <WPopup.Item>
           <WPopup.Code
             ref={(el) => (popupRef.current.highlight = el)}
+            data-highlight
             isSelected={selectedOptions.includes("highlight")}
             onClick={highlight}
           >
@@ -711,6 +740,7 @@ const PopupComp = (
         <WPopup.Item>
           <WPopup.Code
             ref={(el) => (popupRef.current.code = el)}
+            data-code
             isSelected={selectedOptions.includes("code")}
             onClick={code}
           >

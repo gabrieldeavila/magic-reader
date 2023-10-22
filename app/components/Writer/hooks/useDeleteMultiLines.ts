@@ -61,7 +61,7 @@ function useDeleteMultiLines() {
       });
 
       const currContent = stateStorage.get(contextName).map((item) => {
-        if (lineParent.id === item.id) {
+        if (lineParent?.id === item.id) {
           return {
             ...lineParent,
             text: blocks,
@@ -70,7 +70,6 @@ function useDeleteMultiLines() {
 
         return item;
       });
-      console.log(first.index, first.id);
 
       info.current = {
         selection: first.index,
@@ -87,6 +86,8 @@ function useDeleteMultiLines() {
       stateStorage.set(`${contextName}_decoration-${first.id}`, new Date());
 
       stateStorage.set(contextName, currContent);
+
+      return lineParent.id;
     },
     [addToCtrlZ, contextName, deleteLine, info]
   );

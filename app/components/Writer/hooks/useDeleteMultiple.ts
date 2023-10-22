@@ -19,7 +19,6 @@ function useDeleteMultiple({ text, id, info }) {
       // @ts-expect-error - rest has the same type as the return of deleteMultiLine
       return deleteMultiLine({ first, ...rest });
     }
-
     addToCtrlZ({
       lineId: id,
       value: structuredClone(text),

@@ -161,15 +161,28 @@ const WriterContextProvider = ({
       ? "filter"
       : "map";
 
-    const prevent = ["delete_line", "delete_multi_lines"].includes(
-      lastItem.action
-    );
+    const prevent = [
+      "delete_line",
+      "delete_multi_lines",
+      "add_multi_lines",
+    ].includes(lastItem.action);
 
     // now find the lineId and blockId of the content
     let updateContent = prevent
       ? content
       : content[iterator]((item) => {
-          if (lastItem.action === "add_line" && item.id === lastItem.lineId) {
+          if (lastItem.action === "change_multi_lines") {
+            const lineText = lastItem.linesBetween.find(
+              ({ id }) => id === item.id
+            )?.text;
+
+            if (lineText) {
+              item.text = lineText;
+            }
+          } else if (
+            lastItem.action === "add_line" &&
+            item.id === lastItem.lineId
+          ) {
             const extra = lastItem.prevLineInfo
               ? {
                   prevLineInfo: {
@@ -225,7 +238,11 @@ const WriterContextProvider = ({
           return item;
         });
 
-    if (lastItem.action === "add_line") {
+    if (lastItem.action === "change_multi_lines") {
+      const newRedo = [...(globalState.get("redo") || []), { ...lastItem }];
+
+      stateStorage.set("redo", newRedo);
+    } else if (lastItem.action === "add_line") {
       updateContent = updateContent.map((item) => {
         if (item.id === prevLineCloned?.id) {
           item.text = lastItem.prevLineInfo.text;
@@ -250,7 +267,25 @@ const WriterContextProvider = ({
       stateStorage.set("redo", newRedo);
     }
 
-    if (lastItem.action === "delete_line") {
+    if (lastItem.action === "add_multi_lines") {
+      updateContent = updateContent.reduce((acc, item, index) => {
+        const hasId = lastItem.linesBetween?.find?.(({ id }) => id === item.id);
+
+        if (index === lastItem.position && lastItem.deletedLines) {
+          acc.push(...lastItem.deletedLines);
+        }
+
+        if (!hasId) {
+          acc.push(item);
+        }
+
+        return acc;
+      }, []);
+
+      const newRedo = [...(globalState.get("redo") || []), { ...lastItem }];
+      stateStorage.set("redo", newRedo);
+      setContent([...updateContent]);
+    } else if (lastItem.action === "delete_line") {
       updateContent.splice(lastItem.position - 1, 0, {
         id: lastItem.lineId,
         text: lastItem.value,
@@ -299,7 +334,16 @@ const WriterContextProvider = ({
 
     // now find the lineId and blockId of the content
     let updateContent = content[iterator]((item) => {
-      if (lastItem.action === "delete_line" && item.id === lastItem.lineId) {
+      if (lastItem.action === "change_multi_lines") {
+        const lineText = lastItem.value.find(({ id }) => id === item.id)?.text;
+
+        if (lineText) {
+          item.text = lineText;
+        }
+      } else if (
+        lastItem.action === "delete_line" &&
+        item.id === lastItem.lineId
+      ) {
         const newUndo = [
           ...(globalState.get("undo") || []),
           {
@@ -313,6 +357,7 @@ const WriterContextProvider = ({
 
         return false;
       }
+
       const isBtw = lastItem.linesBetween?.find?.(({ id }) => id === item.id);
 
       if (lastItem.action === "delete_multi_lines" && isBtw) {
@@ -352,6 +397,12 @@ const WriterContextProvider = ({
       return item;
     });
 
+    if (lastItem.action === "change_multi_lines") {
+      const newUndo = [...(globalState.get("undo") || []), { ...lastItem }];
+
+      stateStorage.set("undo", newUndo);
+    }
+
     if (preventMap) {
       updateContent.splice(lastItem.position + 1, 0, {
         id: lastItem.lineId,
@@ -376,6 +427,19 @@ const WriterContextProvider = ({
       ];
 
       stateStorage.set("undo", newUndo);
+      setContent([...updateContent]);
+    } else if (lastItem.action === "add_multi_lines") {
+      updateContent = updateContent.reduce((acc, item, position) => {
+        const isInPosition = position === lastItem.position;
+        acc.push(item);
+
+        if (isInPosition) {
+          acc.push(...lastItem.linesBetween);
+        }
+
+        return acc;
+      }, []);
+
       setContent([...updateContent]);
     } else if (lastItem.action === "delete_multi_lines") {
       // add to the redo
@@ -425,6 +489,7 @@ const WriterContextProvider = ({
   const handleBlur = useCallback(
     (e) => {
       const { dataLineId } = getBlockId({});
+      globalState.set("select_all_content", null);
 
       const prevSelected = globalState.get("prev-selected");
       const selection = window.getSelection().toString().length;
@@ -540,6 +605,23 @@ const WriterContextProvider = ({
         }
       }
 
+      if (block.action === "add_multi_lines") {
+        // gets the last line from the undo
+        const lastLine = prevState[prevState.length - 1];
+        if (lastLine?.action === "delete_multi_lines") {
+          // remove the last item, and add it to redo
+          const newBlock = {
+            ...blockInfo,
+            deletedLines: lastLine.linesBetween,
+          };
+
+          stateStorage.set("undo", [
+            ...prevState.slice(0, prevState.length - 1),
+            newBlock,
+          ]);
+          return;
+        }
+      }
       stateStorage.set("undo", [...prevState, blockInfo]);
     },
     [getBlockId]

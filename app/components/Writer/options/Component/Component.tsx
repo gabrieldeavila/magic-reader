@@ -17,16 +17,16 @@ import { dga } from "../../../../utils/dga";
 import { dgb } from "../../../../utils/dgb";
 import uuid from "../../../../utils/uuid";
 import { useWriterContext } from "../../context/WriterContext";
-import useDecoration from "../../hooks/useDecoration";
 import useDeleteMultiple from "../../hooks/useDeleteMultiple";
 import useGetCurrBlockId from "../../hooks/useGetCurrBlockId";
 import usePositions from "../../hooks/usePositions";
 import useSingleDecoration from "../../hooks/useSingleDecoration";
-import { IEditable } from "../../interface";
+import { IEditable, ILinesBetween, IText, LineOrText } from "../../interface";
 import Popup from "../../popup/Popup";
 import { PopupFunctions } from "../../popup/interface";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
+import { dgs } from "../../../../utils/dgs";
 
 function Component({ text, id, position }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
@@ -766,6 +766,13 @@ function Component({ text, id, position }: IEditable) {
     // Create a Blob for the HTML content and a Blob for the plain text
     const div = document.createElement("div");
     div.appendChild(textCopied);
+
+    // removes all children with data-popup
+    const popups = div.querySelectorAll("[data-popup]");
+    popups.forEach((item) => {
+      item.remove();
+    });
+
     const htmlBlob = new Blob([div.innerHTML], { type: "text/html" });
     const textBlob = new Blob([div.innerText], { type: "text/plain" });
 
@@ -779,11 +786,10 @@ function Component({ text, id, position }: IEditable) {
     navigator.clipboard.write([clipboardItem]);
   }, [copyEntireBlock, getBlockId, id]);
 
-  const { addDecoration } = useDecoration({ id, text });
-
   const handleCtrlEvents = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>, ctrlPressed: boolean) => {
       if (!ctrlPressed) return false;
+      const popupActions = document.querySelector("[data-popup]");
 
       if (e.key === "x") {
         e.preventDefault();
@@ -825,13 +831,27 @@ function Component({ text, id, position }: IEditable) {
       } else if (["a"].includes(e.key)) {
         // selects all the text
         e.preventDefault();
+        const shouldSelectAllContent =
+          globalState.get("select_all_content") === id;
+
+        let firstBlock = text?.[0]?.id;
+        let lastBlock = text?.[text.length - 1]?.id;
+
+        if (shouldSelectAllContent) {
+          globalState.set("select_all_content", null);
+          const content = globalState.get(contextName);
+          firstBlock = content[0]?.text[0]?.id;
+          lastBlock =
+            content[content.length - 1]?.text[
+              content[content.length - 1]?.text.length - 1
+            ]?.id;
+        } else {
+          globalState.set("select_all_content", id);
+        }
 
         const selection = window.getSelection();
 
         const range = document.createRange();
-
-        const firstBlock = text?.[0]?.id;
-        const lastBlock = text?.[text.length - 1]?.id;
 
         if (!firstBlock || !lastBlock) return;
 
@@ -851,52 +871,59 @@ function Component({ text, id, position }: IEditable) {
       } else if (e.key === "b") {
         e.preventDefault();
 
-        if (!popupRef.current.bold) {
+        if (!popupActions) {
+          console.log("iu", popupRef.current.bold);
           saveDecoration("bold");
         } else {
-          addDecoration("bold");
+          // @ts-expect-error - fix later
+          popupActions.querySelector("[data-bold]").click();
         }
 
         return true;
       } else if (e.key === "i") {
         e.preventDefault();
-        if (!popupRef.current.italic) {
+        if (!popupActions) {
           saveDecoration("italic");
         } else {
-          popupRef.current.italic?.click?.();
+          // @ts-expect-error - fix later
+          popupActions.querySelector("[data-italic]").click();
         }
         return true;
       } else if (e.key === "u") {
         e.preventDefault();
-        if (!popupRef.current.underline) {
+        if (!popupActions) {
           saveDecoration("underline");
         } else {
-          popupRef.current.underline?.click?.();
+          // @ts-expect-error - fix later
+          popupActions.querySelector("[data-underline]").click();
         }
 
         return true;
       } else if (e.key === "s") {
         e.preventDefault();
-        if (!popupRef.current.strikethrough) {
+        if (!popupActions) {
           saveDecoration("strikethrough");
         } else {
-          popupRef.current.strikethrough?.click?.();
+          // @ts-expect-error - fix later
+          popupActions.querySelector("[data-strikethrough]").click();
         }
         return true;
       } else if (e.key === "h") {
         e.preventDefault();
-        if (!popupRef.current.highlight) {
+        if (!popupActions) {
           saveDecoration("highlight");
         } else {
-          popupRef.current.highlight?.click?.();
+          // @ts-expect-error - fix later
+          popupActions.querySelector("[data-highlight]").click();
         }
         return true;
       } else if (e.key === "e") {
         e.preventDefault();
-        if (!popupRef.current.code) {
+        if (!popupActions) {
           saveDecoration("code");
         } else {
-          popupRef.current.code?.click?.();
+          // @ts-expect-error - fix later
+          popupActions.querySelector("[data-code]").click();
         }
         return true;
       } else if (e.key === "Backspace") {
@@ -907,7 +934,6 @@ function Component({ text, id, position }: IEditable) {
       return true;
     },
     [
-      addDecoration,
       saveDecoration,
       addToCtrlZ,
       contextName,
@@ -1055,6 +1081,190 @@ function Component({ text, id, position }: IEditable) {
     [contextName, getBlockId, id, info]
   );
 
+  // if  ", ' and ( are pressed, it will add the closing char
+  const addCustomChar = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>, inputChar: string) => {
+      const selection = window.getSelection();
+      const length = selection.toString().length;
+
+      const OPTIONS = {
+        "'": "'",
+        // eslint-disable-next-line @typescript-eslint/quotes
+        '"': '"',
+        "(": ")",
+        "[": "]",
+        "{": "}",
+      };
+
+      // eslint-disable-next-line @typescript-eslint/quotes
+      const isCustom = length && Object.keys(OPTIONS).includes(inputChar);
+
+      if (!isCustom) return false;
+
+      const content = globalState.get(contextName);
+
+      const [startNode, endNode] = dgs();
+
+      const startLine = content.find(
+        ({ id: textId }) => textId === startNode.lineId
+      )?.text;
+
+      const endLine = content.find(
+        ({ id: textId }) => textId === endNode.lineId
+      )?.text;
+
+      const startBlock = startLine?.find(
+        ({ id: blockId }) => blockId === startNode.blockId
+      );
+
+      const endBlock = endLine?.find(
+        ({ id: blockId }) => blockId === endNode.blockId
+      );
+
+      // add the closing char
+      const newStartBlock = {
+        ...startBlock,
+        value:
+          startBlock?.value.slice(0, startNode.index) +
+          inputChar +
+          startBlock?.value.slice(startNode.index),
+      };
+
+      const newEndBlock = {
+        ...endBlock,
+        value:
+          endBlock?.value.slice(0, endNode.index) +
+          OPTIONS[inputChar] +
+          endBlock?.value.slice(endNode.index),
+      };
+
+      if (startNode.lineId === endNode.lineId) {
+        if (startNode.blockId === endNode.blockId) {
+          const newValueWithStart = newStartBlock.value;
+
+          const newValue =
+            newValueWithStart.slice(0, endNode.index + 1) +
+            OPTIONS[inputChar] +
+            newValueWithStart.slice(endNode.index + 1);
+
+          const newBlock = {
+            ...startBlock,
+            value: newValue,
+          };
+
+          const newLine = startLine?.map((item) => {
+            if (item.id === startNode.blockId) {
+              return newBlock;
+            }
+
+            return item;
+          });
+
+          addToCtrlZ({
+            lineId: startNode.lineId,
+            blockId: startNode.blockId,
+            value: startBlock.value,
+            action: "change",
+          });
+
+          handleUpdate(startNode.lineId, newLine);
+        } else {
+          const newLine = startLine?.map((item) => {
+            if (item.id === startNode.blockId) {
+              return newStartBlock;
+            }
+
+            if (item.id === endNode.blockId) {
+              return newEndBlock;
+            }
+
+            return item;
+          });
+
+          addToCtrlZ({
+            // @ts-expect-error - fix later
+            linesBetween: [
+              {
+                id: startNode.lineId as string,
+                text: startLine as IText,
+              },
+            ],
+            value: [
+              {
+                id: startNode.lineId as string,
+                // @ts-expect-error - fix later
+                text: newLine as IText,
+              },
+            ],
+            action: "change_multi_lines",
+          });
+
+          handleUpdate(startNode.lineId, newLine);
+        }
+      } else {
+        const newStartLine = startLine?.map((item) => {
+          if (item.id === startNode.blockId) {
+            return newStartBlock;
+          }
+
+          return item;
+        });
+
+        const newEndLine = endLine?.map((item) => {
+          if (item.id === endNode.blockId) {
+            return newEndBlock;
+          }
+
+          return item;
+        });
+
+        addToCtrlZ({
+          // @ts-expect-error - fix later
+          linesBetween: [
+            {
+              id: startNode.lineId as string,
+              text: startLine as IText,
+            },
+            {
+              id: endNode.lineId as string,
+              text: endLine as IText,
+            },
+          ],
+          value: [
+            {
+              id: startNode.lineId as string,
+              // @ts-expect-error - fix later
+              text: newStartLine as IText,
+            },
+            {
+              id: endNode.lineId as string,
+              // @ts-expect-error - fix later
+              text: newEndLine as IText,
+            },
+          ],
+          action: "change_multi_lines",
+        });
+
+        handleUpdate(startNode.lineId, newStartLine);
+        handleUpdate(endNode.lineId, newEndLine);
+      }
+
+      info.current = {
+        selection: endNode.index + 1,
+        blockId: endNode.blockId,
+      };
+
+      stateStorage.set(
+        `${contextName}_decoration-${endNode.blockId}`,
+        new Date()
+      );
+
+      e.preventDefault();
+      return true;
+    },
+    [addToCtrlZ, contextName, handleUpdate, info]
+  );
+
   const handleChange = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       // only accept letters, numbers, spaces, special characters and accents
@@ -1068,6 +1278,8 @@ function Component({ text, id, position }: IEditable) {
       const newChar = verifyForAccents(event);
 
       const avoidAlt = handleAltEvents(event);
+
+      if (addCustomChar(event, inputChar)) return;
 
       if (!isAllowed && newChar !== false) {
         inputChar = newChar;
@@ -1088,15 +1300,19 @@ function Component({ text, id, position }: IEditable) {
 
       const numberOfChars = selection.toString().length;
 
+      let lineId = id;
+
       if (numberOfChars) {
-        deleteMultipleLetters();
+        // get the id of the line of the first selected letter
+        lineId = deleteMultipleLetters() ?? id;
       }
 
       setTimeout(() => {
         const selection = window.getSelection();
+
         const currText = globalState
           .get(contextName)
-          .find(({ id: textId }) => textId === id)?.text;
+          .find(({ id: textId }) => textId === lineId)?.text;
 
         if (!currText) return;
 
@@ -1138,14 +1354,14 @@ function Component({ text, id, position }: IEditable) {
 
         if (!numberOfChars) {
           addToCtrlZ({
-            lineId: id,
+            lineId: lineId,
             blockId: changedBlockId,
             value: prevVal,
             action: "change",
           });
         }
 
-        handleUpdate(id, newText);
+        handleUpdate(lineId, newText);
 
         info.current = {
           selection: cursorPositionValue + 1,
@@ -1154,6 +1370,7 @@ function Component({ text, id, position }: IEditable) {
       });
     },
     [
+      addCustomChar,
       addSingleDecoration,
       addToCtrlZ,
       contextName,
@@ -1405,7 +1622,14 @@ function Component({ text, id, position }: IEditable) {
 
       prevOptions.push(...getOptions(child));
 
-      if (prevOptions.includes("code")) {
+      const allChildrenAreDivOrP = children.every(
+        (item) =>
+          item.nodeName === "P" ||
+          item.nodeName === "DIV" ||
+          item.nodeName === "BR"
+      );
+
+      if (prevOptions.includes("code") && !allChildrenAreDivOrP) {
         prevChild.push({
           options: [...new Set(prevOptions)],
           value: child.textContent ?? "",
@@ -1449,18 +1673,14 @@ function Component({ text, id, position }: IEditable) {
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement>) => {
       e.preventDefault();
-      addToCtrlZ({
-        lineId: id,
-        value: structuredClone(text),
-        action: "delete_letters",
-      });
 
       const selection = window.getSelection();
 
       const numberOfChars = selection.toString().length;
+      let lineId = id;
 
       if (numberOfChars) {
-        deleteMultipleLetters();
+        lineId = deleteMultipleLetters() ?? id;
       }
 
       const copiedText = e.clipboardData.getData("text/html");
@@ -1473,13 +1693,22 @@ function Component({ text, id, position }: IEditable) {
       const isPlainText = doc.body.innerHTML === "";
 
       if (isPlainText) {
+        // if has numberOfChars, it already deleted the letters
+        if (!numberOfChars) {
+          addToCtrlZ({
+            lineId: id,
+            value: structuredClone(text),
+            action: "delete_letters",
+          });
+        }
+
         const plainText = e.clipboardData.getData("text/plain");
 
         const { changedBlockId, currSelection } = getBlockId({ textId: id });
 
         const currText = globalState
           .get(contextName)
-          .find(({ id: textId }) => textId === id)?.text;
+          .find(({ id: textId }) => textId === lineId)?.text;
 
         if (!currText) return;
 
@@ -1500,7 +1729,7 @@ function Component({ text, id, position }: IEditable) {
           return item;
         });
 
-        handleUpdate(id, newContent);
+        handleUpdate(lineId, newContent);
 
         info.current = {
           selection: currSelection + plainText.length,
@@ -1515,7 +1744,11 @@ function Component({ text, id, position }: IEditable) {
       }
 
       // avoids selecting multiple families, that is do not copies son and father
-      let children = Array.from(doc.body.querySelectorAll("p, div, h1, h2"));
+      let children: ChildNode[] = Array.from(
+        doc.body.querySelectorAll(
+          "p, div, h1, h2, p~span, div~span, h1~span, h2~span, p~a, div~a, h1~a, h2~a"
+        )
+      );
 
       children = children.filter((item) => {
         const parent = item.parentElement;
@@ -1527,20 +1760,32 @@ function Component({ text, id, position }: IEditable) {
         return parentIsNotInList;
       });
 
+      // if all the children are only one div and has some class with monospace, it's a code block
+      const oneChildrenAndIsCode =
+        children.length === 1 && getOptions(children[0]).includes("code");
+
       // it's only one line if none of the children is a P or DIV tag
       const isOnlyOneLine = doc.body.querySelector("p, div, h1, h2") === null;
 
       if (isOnlyOneLine) {
-        // @ts-expect-error works fine
         children = Array.from(doc.body.childNodes);
+
+        // if has numberOfChars, it already deleted the letters
+        if (!numberOfChars) {
+          addToCtrlZ({
+            lineId: id,
+            value: structuredClone(text),
+            action: "delete_letters",
+          });
+        }
       }
 
-      const newText = children.reduce((acc, child) => {
+      const newText = children.reduce<LineOrText[]>((acc, child) => {
         // if the child is a comment, do nothing
         if (child.nodeName === "#comment") return acc;
 
         // if is an \n, do nothing
-        if (child.nodeName === "#text" && child.textContent.includes("\n")) {
+        if (child.nodeName === "#text" && child.textContent?.includes("\n")) {
           return acc;
         }
 
@@ -1554,7 +1799,13 @@ function Component({ text, id, position }: IEditable) {
           } else {
             acc.push({
               id: uuid(),
-              text: child.textContent,
+              text: [
+                {
+                  value: child.textContent ?? "",
+                  id: uuid(),
+                  options: [],
+                },
+              ],
             });
           }
 
@@ -1568,22 +1819,37 @@ function Component({ text, id, position }: IEditable) {
         if (isOnlyOneLine) {
           acc.push(...multiWords);
         } else {
-          acc.push({
-            id: uuid(),
-            text: multiWords,
-          });
+          if (oneChildrenAndIsCode) {
+            multiWords.forEach((item) => {
+              acc.push({
+                id: uuid(),
+                text: [
+                  {
+                    value: item.value,
+                    id: item.id,
+                    options: item.options,
+                  },
+                ],
+              });
+            });
+          } else {
+            acc.push({
+              id: uuid(),
+              text: multiWords,
+            });
+          }
         }
 
         return acc;
       }, []);
 
-      const { changedBlockId, currSelection } = getBlockId({ textId: id });
+      const { changedBlockId, currSelection } = getBlockId({ textId: lineId });
 
       // gets the current line and the current block, adding the new text after the cursor
       if (isOnlyOneLine) {
-        const currText = globalState
+        const currText: ILinesBetween["text"] = globalState
           .get(contextName)
-          .find(({ id: textId }) => textId === id)?.text;
+          .find(({ id: textId }) => textId === lineId)?.text;
 
         if (!currText) return;
 
@@ -1595,8 +1861,11 @@ function Component({ text, id, position }: IEditable) {
         const spliced1 = baseValue.slice(0, currSelection);
         const spliced2 = baseValue.slice(currSelection);
 
-        const newContent = currText.reduce((acc, item) => {
+        let foundTheBlock = false;
+
+        let newContent = currText.reduce<IText[]>((acc, item) => {
           if (item.id === changedBlockId) {
+            foundTheBlock = true;
             acc.push({
               value: spliced1,
               id: item.id,
@@ -1604,6 +1873,7 @@ function Component({ text, id, position }: IEditable) {
             });
 
             newText.forEach((item) => {
+              // @ts-expect-error - only IText falls here
               acc.push(item);
             });
 
@@ -1619,12 +1889,18 @@ function Component({ text, id, position }: IEditable) {
           return acc;
         }, []);
 
-        handleUpdate(id, newContent);
+        if (!foundTheBlock) {
+          // @ts-expect-error - only IText falls here
+          newContent = newText;
+        }
+
+        handleUpdate(lineId, newContent);
 
         const lastNewBlock = newText[newText.length - 1];
 
         info.current = {
-          selection: lastNewBlock?.value?.length ?? 0,
+          // @ts-expect-error - only IText falls here
+          selection: (lastNewBlock?.value ?? "").length,
           blockId: lastNewBlock.id,
         };
 
@@ -1635,10 +1911,19 @@ function Component({ text, id, position }: IEditable) {
       } else {
         // adds the new text after the current line
         const content = globalState.get(contextName);
+        let foundTheLine = false;
+        let positionThatWasAdded = 0;
 
-        const newContent = content.reduce((acc, item) => {
+        let newContent = content.reduce((acc, item, index) => {
           if (item.id === id) {
-            acc.push(item);
+            positionThatWasAdded = index;
+            foundTheLine = true;
+
+            // when it's a line with no text, it's feel more natural to add the text in the same line
+            // so we avoid keeping the line empty
+            if (!(item.text.length === 1 && item.text[0].value.length === 0)) {
+              acc.push(item);
+            }
 
             newText.forEach((item) => {
               acc.push(item);
@@ -1650,9 +1935,27 @@ function Component({ text, id, position }: IEditable) {
           return acc;
         }, []);
 
+        if (!foundTheLine) {
+          newContent = newContent.filter(
+            (item) => item.text.length >= 1 && item.text[0].value.length > 0
+          );
+
+          positionThatWasAdded = newContent.length;
+          newContent = [...newContent, ...newText];
+        }
+
         stateStorage.set(contextName, newContent);
 
+        addToCtrlZ({
+          lineId: id,
+          // @ts-expect-error - only ILinesBetween falls here
+          linesBetween: structuredClone(newText),
+          action: "add_multi_lines",
+          position: positionThatWasAdded,
+        });
+
         const lastLine = newText[newText.length - 1];
+        // @ts-expect-error - only ILinesBetween falls here
         const lastNewBlock = lastLine.text[lastLine.text.length - 1];
 
         info.current = {
@@ -1672,6 +1975,7 @@ function Component({ text, id, position }: IEditable) {
       deleteMultipleLetters,
       findChildOptions,
       getBlockId,
+      getOptions,
       handleUpdate,
       id,
       info,
