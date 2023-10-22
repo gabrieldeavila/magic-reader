@@ -164,10 +164,9 @@ const PopupComp = (
     let newPositions = {};
 
     let newLeft;
-    // const newTop =
-    //   infoRange.top +
-    //   window.scrollY +
-    //   ((anchorComesFirst || isTopOutOfScreen) && !isPrevAnchor ? 25 : -40);
+    const newTop =
+      infoRange.top +
+      ((anchorComesFirst || isTopOutOfScreen) && !isPrevAnchor ? 25 : -40);
 
     if (isOutOfScreen) {
       newLeft = infoRange.left -  width;
@@ -179,7 +178,7 @@ const PopupComp = (
 
     newPositions = {
       left: `${newLeft}px`,
-      // top: `${- newTop + 70}px`,
+      top: `${newTop}px`,
     };
 
     setPositions(newPositions);
