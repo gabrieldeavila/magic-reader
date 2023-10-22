@@ -788,6 +788,7 @@ function Component({ text, id, position }: IEditable) {
   const handleCtrlEvents = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>, ctrlPressed: boolean) => {
       if (!ctrlPressed) return false;
+      const popupActions = document.querySelector("[data-popup]");
 
       if (e.key === "x") {
         e.preventDefault();
@@ -829,13 +830,27 @@ function Component({ text, id, position }: IEditable) {
       } else if (["a"].includes(e.key)) {
         // selects all the text
         e.preventDefault();
+        const shouldSelectAllContent =
+          globalState.get("select_all_content") === id;
+
+        let firstBlock = text?.[0]?.id;
+        let lastBlock = text?.[text.length - 1]?.id;
+
+        if (shouldSelectAllContent) {
+          globalState.set("select_all_content", null);
+          const content = globalState.get(contextName);
+          firstBlock = content[0]?.text[0]?.id;
+          lastBlock =
+            content[content.length - 1]?.text[
+              content[content.length - 1]?.text.length - 1
+            ]?.id;
+        } else {
+          globalState.set("select_all_content", id);
+        }
 
         const selection = window.getSelection();
 
         const range = document.createRange();
-
-        const firstBlock = text?.[0]?.id;
-        const lastBlock = text?.[text.length - 1]?.id;
 
         if (!firstBlock || !lastBlock) return;
 
@@ -855,52 +870,59 @@ function Component({ text, id, position }: IEditable) {
       } else if (e.key === "b") {
         e.preventDefault();
 
-        if (!popupRef.current.bold) {
+        if (!popupActions) {
+          console.log("iu", popupRef.current.bold);
           saveDecoration("bold");
         } else {
-          popupRef.current.bold?.click?.();
+          // @ts-expect-error - fix later
+          popupActions.querySelector("[data-bold]").click();
         }
 
         return true;
       } else if (e.key === "i") {
         e.preventDefault();
-        if (!popupRef.current.italic) {
+        if (!popupActions) {
           saveDecoration("italic");
         } else {
-          popupRef.current.italic?.click?.();
+          // @ts-expect-error - fix later
+          popupActions.querySelector("[data-italic]").click();
         }
         return true;
       } else if (e.key === "u") {
         e.preventDefault();
-        if (!popupRef.current.underline) {
+        if (!popupActions) {
           saveDecoration("underline");
         } else {
-          popupRef.current.underline?.click?.();
+          // @ts-expect-error - fix later
+          popupActions.querySelector("[data-underline]").click();
         }
 
         return true;
       } else if (e.key === "s") {
         e.preventDefault();
-        if (!popupRef.current.strikethrough) {
+        if (!popupActions) {
           saveDecoration("strikethrough");
         } else {
-          popupRef.current.strikethrough?.click?.();
+          // @ts-expect-error - fix later
+          popupActions.querySelector("[data-strikethrough]").click();
         }
         return true;
       } else if (e.key === "h") {
         e.preventDefault();
-        if (!popupRef.current.highlight) {
+        if (!popupActions) {
           saveDecoration("highlight");
         } else {
-          popupRef.current.highlight?.click?.();
+          // @ts-expect-error - fix later
+          popupActions.querySelector("[data-highlight]").click();
         }
         return true;
       } else if (e.key === "e") {
         e.preventDefault();
-        if (!popupRef.current.code) {
+        if (!popupActions) {
           saveDecoration("code");
         } else {
-          popupRef.current.code?.click?.();
+          // @ts-expect-error - fix later
+          popupActions.querySelector("[data-code]").click();
         }
         return true;
       } else if (e.key === "Backspace") {
@@ -1628,7 +1650,6 @@ function Component({ text, id, position }: IEditable) {
               text: multiWords,
             });
           }
-          console.log(acc);
         }
 
         return acc;

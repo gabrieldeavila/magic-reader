@@ -3,6 +3,7 @@ import {
   forwardRef,
   memo,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -169,7 +170,7 @@ const PopupComp = (
       ((anchorComesFirst || isTopOutOfScreen) && !isPrevAnchor ? 25 : -40);
 
     if (isOutOfScreen) {
-      newLeft = infoRange.left -  width;
+      newLeft = infoRange.left - width;
     } else {
       newLeft = infoRange.right - infoRange.width;
     }
@@ -555,6 +556,7 @@ const PopupComp = (
           blockId: selected[0].id,
         });
       }
+      console.log(areFromDiffLines);
 
       if (areFromDiffLines) {
         const { linesBetween } = multiLineInfo;
@@ -662,6 +664,16 @@ const PopupComp = (
     addDecoration("highlight");
   }, [addDecoration]);
 
+  useEffect(() => {
+    setTimeout(() => {
+      globalState.set("popup_field", popupRef.current);
+    });
+
+    return () => {
+      globalState.set("popup_field", null);
+    };
+  }, [popupRef]);
+
   return (
     <WPopup.Wrapper
       style={positions}
@@ -675,6 +687,7 @@ const PopupComp = (
           <WPopup.B
             ref={(el) => (popupRef.current.bold = el)}
             isSelected={selectedOptions.includes("bold")}
+            data-bold
             onClick={bold}
           >
             B
@@ -685,6 +698,7 @@ const PopupComp = (
           <WPopup.I
             ref={(el) => (popupRef.current.italic = el)}
             isSelected={selectedOptions.includes("italic")}
+            data-italic
             onClick={italic}
           >
             i
@@ -695,6 +709,7 @@ const PopupComp = (
           <WPopup.U
             ref={(el) => (popupRef.current.underline = el)}
             isSelected={selectedOptions.includes("underline")}
+            data-underline
             onClick={underline}
           >
             U
@@ -704,6 +719,7 @@ const PopupComp = (
         <WPopup.Item>
           <WPopup.S
             ref={(el) => (popupRef.current.strikethrough = el)}
+            data-strikethrough
             isSelected={selectedOptions.includes("strikethrough")}
             onClick={strikethrough}
           >
@@ -714,6 +730,7 @@ const PopupComp = (
         <WPopup.Item>
           <WPopup.Code
             ref={(el) => (popupRef.current.highlight = el)}
+            data-highlight
             isSelected={selectedOptions.includes("highlight")}
             onClick={highlight}
           >
@@ -724,6 +741,7 @@ const PopupComp = (
         <WPopup.Item>
           <WPopup.Code
             ref={(el) => (popupRef.current.code = el)}
+            data-code
             isSelected={selectedOptions.includes("code")}
             onClick={code}
           >
