@@ -171,7 +171,18 @@ const WriterContextProvider = ({
     let updateContent = prevent
       ? content
       : content[iterator]((item) => {
-          if (lastItem.action === "add_line" && item.id === lastItem.lineId) {
+          if (lastItem.action === "change_multi_lines") {
+            const lineText = lastItem.linesBetween.find(
+              ({ id }) => id === item.id
+            )?.text;
+
+            if (lineText) {
+              item.text = lineText;
+            }
+          } else if (
+            lastItem.action === "add_line" &&
+            item.id === lastItem.lineId
+          ) {
             const extra = lastItem.prevLineInfo
               ? {
                   prevLineInfo: {
@@ -227,7 +238,11 @@ const WriterContextProvider = ({
           return item;
         });
 
-    if (lastItem.action === "add_line") {
+    if (lastItem.action === "change_multi_lines") {
+      const newRedo = [...(globalState.get("redo") || []), { ...lastItem }];
+
+      stateStorage.set("redo", newRedo);
+    } else if (lastItem.action === "add_line") {
       updateContent = updateContent.map((item) => {
         if (item.id === prevLineCloned?.id) {
           item.text = lastItem.prevLineInfo.text;
@@ -319,7 +334,16 @@ const WriterContextProvider = ({
 
     // now find the lineId and blockId of the content
     let updateContent = content[iterator]((item) => {
-      if (lastItem.action === "delete_line" && item.id === lastItem.lineId) {
+      if (lastItem.action === "change_multi_lines") {
+        const lineText = lastItem.value.find(({ id }) => id === item.id)?.text;
+
+        if (lineText) {
+          item.text = lineText;
+        }
+      } else if (
+        lastItem.action === "delete_line" &&
+        item.id === lastItem.lineId
+      ) {
         const newUndo = [
           ...(globalState.get("undo") || []),
           {
@@ -372,6 +396,12 @@ const WriterContextProvider = ({
 
       return item;
     });
+
+    if (lastItem.action === "change_multi_lines") {
+      const newUndo = [...(globalState.get("undo") || []), { ...lastItem }];
+
+      stateStorage.set("undo", newUndo);
+    }
 
     if (preventMap) {
       updateContent.splice(lastItem.position + 1, 0, {
@@ -459,6 +489,7 @@ const WriterContextProvider = ({
   const handleBlur = useCallback(
     (e) => {
       const { dataLineId } = getBlockId({});
+      globalState.set("select_all_content", null);
 
       const prevSelected = globalState.get("prev-selected");
       const selection = window.getSelection().toString().length;

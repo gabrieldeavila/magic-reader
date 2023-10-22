@@ -38,6 +38,7 @@ export interface IShortcuts extends IEditable {
 
 type undoActions =
   | "change"
+  | "change_multi_lines"
   | "delete_letters"
   | "add_line"
   | "delete_line"

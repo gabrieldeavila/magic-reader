@@ -26,6 +26,7 @@ import Popup from "../../popup/Popup";
 import { PopupFunctions } from "../../popup/interface";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
+import { dgs } from "../../../../utils/dgs";
 
 function Component({ text, id, position }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
@@ -1080,6 +1081,190 @@ function Component({ text, id, position }: IEditable) {
     [contextName, getBlockId, id, info]
   );
 
+  // if  ", ' and ( are pressed, it will add the closing char
+  const addCustomChar = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>, inputChar: string) => {
+      const selection = window.getSelection();
+      const length = selection.toString().length;
+
+      const OPTIONS = {
+        "'": "'",
+        // eslint-disable-next-line @typescript-eslint/quotes
+        '"': '"',
+        "(": ")",
+        "[": "]",
+        "{": "}",
+      };
+
+      // eslint-disable-next-line @typescript-eslint/quotes
+      const isCustom = length && Object.keys(OPTIONS).includes(inputChar);
+
+      if (!isCustom) return false;
+
+      const content = globalState.get(contextName);
+
+      const [startNode, endNode] = dgs();
+
+      const startLine = content.find(
+        ({ id: textId }) => textId === startNode.lineId
+      )?.text;
+
+      const endLine = content.find(
+        ({ id: textId }) => textId === endNode.lineId
+      )?.text;
+
+      const startBlock = startLine?.find(
+        ({ id: blockId }) => blockId === startNode.blockId
+      );
+
+      const endBlock = endLine?.find(
+        ({ id: blockId }) => blockId === endNode.blockId
+      );
+
+      // add the closing char
+      const newStartBlock = {
+        ...startBlock,
+        value:
+          startBlock?.value.slice(0, startNode.index) +
+          inputChar +
+          startBlock?.value.slice(startNode.index),
+      };
+
+      const newEndBlock = {
+        ...endBlock,
+        value:
+          endBlock?.value.slice(0, endNode.index) +
+          OPTIONS[inputChar] +
+          endBlock?.value.slice(endNode.index),
+      };
+
+      if (startNode.lineId === endNode.lineId) {
+        if (startNode.blockId === endNode.blockId) {
+          const newValueWithStart = newStartBlock.value;
+
+          const newValue =
+            newValueWithStart.slice(0, endNode.index + 1) +
+            OPTIONS[inputChar] +
+            newValueWithStart.slice(endNode.index + 1);
+
+          const newBlock = {
+            ...startBlock,
+            value: newValue,
+          };
+
+          const newLine = startLine?.map((item) => {
+            if (item.id === startNode.blockId) {
+              return newBlock;
+            }
+
+            return item;
+          });
+
+          addToCtrlZ({
+            lineId: startNode.lineId,
+            blockId: startNode.blockId,
+            value: startBlock.value,
+            action: "change",
+          });
+
+          handleUpdate(startNode.lineId, newLine);
+        } else {
+          const newLine = startLine?.map((item) => {
+            if (item.id === startNode.blockId) {
+              return newStartBlock;
+            }
+
+            if (item.id === endNode.blockId) {
+              return newEndBlock;
+            }
+
+            return item;
+          });
+
+          addToCtrlZ({
+            // @ts-expect-error - fix later
+            linesBetween: [
+              {
+                id: startNode.lineId as string,
+                text: startLine as IText,
+              },
+            ],
+            value: [
+              {
+                id: startNode.lineId as string,
+                // @ts-expect-error - fix later
+                text: newLine as IText,
+              },
+            ],
+            action: "change_multi_lines",
+          });
+
+          handleUpdate(startNode.lineId, newLine);
+        }
+      } else {
+        const newStartLine = startLine?.map((item) => {
+          if (item.id === startNode.blockId) {
+            return newStartBlock;
+          }
+
+          return item;
+        });
+
+        const newEndLine = endLine?.map((item) => {
+          if (item.id === endNode.blockId) {
+            return newEndBlock;
+          }
+
+          return item;
+        });
+
+        addToCtrlZ({
+          // @ts-expect-error - fix later
+          linesBetween: [
+            {
+              id: startNode.lineId as string,
+              text: startLine as IText,
+            },
+            {
+              id: endNode.lineId as string,
+              text: endLine as IText,
+            },
+          ],
+          value: [
+            {
+              id: startNode.lineId as string,
+              // @ts-expect-error - fix later
+              text: newStartLine as IText,
+            },
+            {
+              id: endNode.lineId as string,
+              // @ts-expect-error - fix later
+              text: newEndLine as IText,
+            },
+          ],
+          action: "change_multi_lines",
+        });
+
+        handleUpdate(startNode.lineId, newStartLine);
+        handleUpdate(endNode.lineId, newEndLine);
+      }
+
+      info.current = {
+        selection: endNode.index + 1,
+        blockId: endNode.blockId,
+      };
+
+      stateStorage.set(
+        `${contextName}_decoration-${endNode.blockId}`,
+        new Date()
+      );
+
+      e.preventDefault();
+      return true;
+    },
+    [addToCtrlZ, contextName, handleUpdate, info]
+  );
+
   const handleChange = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       // only accept letters, numbers, spaces, special characters and accents
@@ -1093,6 +1278,8 @@ function Component({ text, id, position }: IEditable) {
       const newChar = verifyForAccents(event);
 
       const avoidAlt = handleAltEvents(event);
+
+      if (addCustomChar(event, inputChar)) return;
 
       if (!isAllowed && newChar !== false) {
         inputChar = newChar;
@@ -1183,6 +1370,7 @@ function Component({ text, id, position }: IEditable) {
       });
     },
     [
+      addCustomChar,
       addSingleDecoration,
       addToCtrlZ,
       contextName,
@@ -1787,6 +1975,7 @@ function Component({ text, id, position }: IEditable) {
       deleteMultipleLetters,
       findChildOptions,
       getBlockId,
+      getOptions,
       handleUpdate,
       id,
       info,

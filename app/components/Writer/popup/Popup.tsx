@@ -556,7 +556,6 @@ const PopupComp = (
           blockId: selected[0].id,
         });
       }
-      console.log(areFromDiffLines);
 
       if (areFromDiffLines) {
         const { linesBetween } = multiLineInfo;
