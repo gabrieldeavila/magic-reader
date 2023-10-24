@@ -61,6 +61,15 @@
   },
 
   "SCRIBERE": {
-    "EMPTY": "Write something!"
+    "EMPTY": "Write something!",
+    "TURN_INTO": "Turn into a...",
+    "P": "Paragraph",
+    "H1": "Heading 1",
+    "H2": "Heading 2",
+    "H3": "Heading 3",
+    "BL": "Bullet List",
+    "NL": "Numbered List",
+    "TL": "Task List",
+    "AC": "Accordion"
   }
 }

@@ -21,6 +21,7 @@ import usePositions from "../hooks/usePositions";
 import { IPopup } from "../interface";
 import WPopup from "./style";
 import { PopupFunctions } from "./interface";
+import PopupSelect from "./select/select";
 
 const PopupComp = (
   { id, text, parentRef }: IPopup,
@@ -682,6 +683,11 @@ const PopupComp = (
       data-popup={id}
     >
       <WPopup.Content>
+        <WPopup.Item>
+          <PopupSelect />
+        </WPopup.Item>
+        <WPopup.Divider />
+
         <WPopup.Item>
           <WPopup.B
             ref={(el) => (popupRef.current.bold = el)}

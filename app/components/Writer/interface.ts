@@ -14,6 +14,7 @@ export interface IText {
 
 export interface IWritterContent {
   text: IText[];
+  type: "p" | "h1" | "h2";
   id: string;
 }
 
@@ -48,10 +49,12 @@ type undoActions =
 interface prevLineInfo {
   id: string;
   text: IText[];
+  type: "p" | "h1" | "h2";
 }
 
 export interface ILinesBetween {
   id: string;
+  type: "p" | "h1" | "h2";
   text: IText[];
 }
 [];

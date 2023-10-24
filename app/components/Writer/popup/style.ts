@@ -10,13 +10,24 @@ const PopupWrapper = styled.div<PopupWrapperProps>`
   z-index: 100;
   border-radius: 5px;
 
-  overflow: hidden;
-
-  ${shadows.basic}
+  ${shadows.basic};
 `;
 
 const PopupContent = styled.div`
   display: flex;
+  position: relative;
+
+  > * {
+    &:first-child {
+      border-top-left-radius: 5px;
+      border-bottom-left-radius: 5px;
+    }
+
+    &:last-child {
+      border-top-right-radius: 5px;
+      border-bottom-right-radius: 5px;
+    }
+  }
 `;
 
 const PopupItem = styled.div`
@@ -75,6 +86,11 @@ const Code = styled(Base)`
   align-items: center;
 `;
 
+const Divider = styled.div`
+  width: 1px;
+  background: var(--contrast-0_9);
+`;
+
 const WPopup = {
   Wrapper: PopupWrapper,
   Content: PopupContent,
@@ -84,8 +100,7 @@ const WPopup = {
   U: Underline,
   S: Strike,
   Code,
+  Divider,
 };
 
 export default WPopup;
-
-// const Options
