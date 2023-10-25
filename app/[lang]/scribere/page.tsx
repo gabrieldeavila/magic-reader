@@ -5,6 +5,7 @@ import uuid from "../../utils/uuid";
 const DEFAULT_CONTENT: IWritterContent[] = [
   {
     id: uuid(),
+    type: "p",
     text: [
       {
         value: "Hello ",
@@ -30,6 +31,7 @@ const DEFAULT_CONTENT: IWritterContent[] = [
   },
   {
     id: uuid(),
+    type: "p",
     text: [
       {
         value: "111",
@@ -40,6 +42,7 @@ const DEFAULT_CONTENT: IWritterContent[] = [
   },
   {
     id: uuid(),
+    type: "p",
     text: [
       {
         value: "2222",

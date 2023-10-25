@@ -28,7 +28,7 @@ import { Editable } from "../../style";
 import Decoration from "./Decoration";
 import { dgs } from "../../../../utils/dgs";
 
-function Component({ text, id, position }: IEditable) {
+function Component({ type, text, id, position }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
   const [keyDownEv] = useTriggerState({
     name: `key_down_ev-${id}`,
@@ -678,6 +678,7 @@ function Component({ text, id, position }: IEditable) {
           action: "add_line",
           position,
           prevLineInfo: {
+            type: type,
             id,
             text: textClone,
           },
@@ -705,6 +706,7 @@ function Component({ text, id, position }: IEditable) {
       info,
       position,
       text,
+      type,
     ]
   );
 
@@ -872,7 +874,6 @@ function Component({ text, id, position }: IEditable) {
         e.preventDefault();
 
         if (!popupActions) {
-          console.log("iu", popupRef.current.bold);
           saveDecoration("bold");
         } else {
           // @ts-expect-error - fix later
@@ -1799,6 +1800,7 @@ function Component({ text, id, position }: IEditable) {
           } else {
             acc.push({
               id: uuid(),
+              type: "p",
               text: [
                 {
                   value: child.textContent ?? "",
@@ -1822,6 +1824,7 @@ function Component({ text, id, position }: IEditable) {
           if (oneChildrenAndIsCode) {
             multiWords.forEach((item) => {
               acc.push({
+                type: "p",
                 id: uuid(),
                 text: [
                   {
@@ -1835,6 +1838,7 @@ function Component({ text, id, position }: IEditable) {
           } else {
             acc.push({
               id: uuid(),
+              type: "p",
               text: multiWords,
             });
           }
@@ -2043,8 +2047,10 @@ function Component({ text, id, position }: IEditable) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pasteEv]);
 
+  const DisEditable = Editable[type];
+  console.log(showPopup);
   return (
-    <Editable
+    <DisEditable
       ref={ref}
       contentEditable
       data-line-id={id}
@@ -2064,7 +2070,7 @@ function Component({ text, id, position }: IEditable) {
       {showPopup && hasFocusId && (
         <Popup ref={popupRef} id={id} text={text} parentRef={ref} />
       )}
-    </Editable>
+    </DisEditable>
   );
 }
 

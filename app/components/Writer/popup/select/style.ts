@@ -31,7 +31,16 @@ const Options = styled.div`
   background: var(--primary);
   width: 8rem;
   padding: 0.5rem;
-  ${shadows.basic}
+  ${shadows.basic};
+
+  /* hides and shows it */
+  ${({ show }: { show: boolean }) => `
+    opacity: ${show ? 1 : 0};
+    transform: ${show ? "scale(1) translateY(0)" : "scale(0.95) translateY(-1rem)"};
+    pointer-events: ${show ? "all" : "none"};
+  `}
+
+  transition: 0.2s ease-in-out;
 `;
 
 const Info = styled.p`

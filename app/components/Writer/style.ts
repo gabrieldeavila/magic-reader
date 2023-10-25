@@ -1,6 +1,6 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
-export const Editable = styled.p`
+const base = css`
   padding: 0.25rem 0.5rem;
   min-height: 24px;
   font-size: 1rem;
@@ -22,3 +22,46 @@ export const Editable = styled.p`
     cursor: text;
   }
 `;
+
+const p = styled.p`
+  ${base};
+`;
+
+const h1 = styled.h1`
+  ${base};
+  font-size: 2rem;
+  font-weight: 600;
+`;
+
+const h2 = styled.h2`
+  ${base};
+  font-size: 1.5rem;
+  font-weight: 500;
+`;
+
+const h3 = styled.h3`
+  ${base};
+  font-size: 1.25rem;
+  font-weight: 400;
+`;
+
+const ul = styled.div`
+  ${base};
+  list-style: disc;
+  padding-left: 1rem;
+`;
+
+const nl = styled.div`
+  ${base};
+  list-style: decimal;
+  padding-left: 1rem;
+`;
+
+export const Editable = {
+  p,
+  h1,
+  h2,
+  h3,
+  ul,
+  nl,
+};

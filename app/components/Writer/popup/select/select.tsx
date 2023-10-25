@@ -1,59 +1,94 @@
 import { ChevronDown } from "react-feather";
 import { Select } from "./style";
 import { useGTTranslate } from "@geavila/gt-design";
+import { useCallback, useState } from "react";
+import useGetCurrBlockId from "../../hooks/useGetCurrBlockId";
+import { useContextName } from "../../context/WriterContext";
+import { globalState, stateStorage } from "react-trigger-state";
 
 const OPTIONS = [
   {
-    key: "P",
+    key: "p",
     label: "SCRIBERE.P",
   },
   {
-    key: "H1",
+    key: "h1",
     label: "SCRIBERE.H1",
   },
   {
-    key: "H2",
+    key: "h2",
     label: "SCRIBERE.H2",
   },
   {
-    key: "H3",
+    key: "h3",
     label: "SCRIBERE.H3",
   },
   {
-    key: "BL",
+    key: "bl",
     label: "SCRIBERE.BL",
   },
   {
-    key: "NL",
+    key: "nl",
     label: "SCRIBERE.NL",
   },
   {
-    key: "TL",
+    key: "tl",
     label: "SCRIBERE.TL",
   },
   {
-    key: "AC",
+    key: "ac",
     label: "SCRIBERE.AC",
   },
 ];
 
 function PopupSelect() {
   const { translateThis } = useGTTranslate();
+  const [show, setShow] = useState(false);
+  const contextName = useContextName();
+
+  const handleShow = useCallback(() => {
+    setShow((prev) => !prev);
+  }, []);
+
+  const { getBlockId } = useGetCurrBlockId();
+
+  const handleChange = useCallback(
+    (option: string) => {
+      const { dataLineId } = getBlockId({});
+
+      const content = globalState.get(contextName).map((line) => {
+        if (line.id === dataLineId) {
+          return {
+            ...line,
+            type: option,
+          };
+        }
+
+        return line;
+      });
+
+      stateStorage.set(contextName, content);
+    },
+    [contextName, getBlockId]
+  );
 
   return (
     <>
       <Select.Wrapper>
-        <Select.Container>
+        <Select.Container onClick={handleShow}>
           <Select.Selected>Text</Select.Selected>
           <ChevronDown size={12} />
         </Select.Container>
       </Select.Wrapper>
 
-      <Select.Options>
+      <Select.Options show={show}>
         <Select.Info>{translateThis("SCRIBERE.TURN_INTO")}</Select.Info>
 
         {OPTIONS.map((option) => (
-          <Select.Option key={option.key}>
+          <Select.Option
+            onClick={() => handleChange(option.key)}
+            key={option.key}
+          >
             {translateThis(option.label)}
           </Select.Option>
         ))}
