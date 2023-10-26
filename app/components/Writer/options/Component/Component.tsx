@@ -517,6 +517,7 @@ function Component({ type, text, id, position }: IEditable) {
           const newId = uuid();
           const newText = {
             id: newId,
+            type,
             text: [
               {
                 id: uuid(),
@@ -667,6 +668,7 @@ function Component({ type, text, id, position }: IEditable) {
           0,
           {
             id: newId,
+            type,
             text: newLineText,
           }
         );
@@ -678,7 +680,7 @@ function Component({ type, text, id, position }: IEditable) {
           action: "add_line",
           position,
           prevLineInfo: {
-            type: type,
+            type,
             id,
             text: textClone,
           },
@@ -2047,7 +2049,7 @@ function Component({ type, text, id, position }: IEditable) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pasteEv]);
 
-  const DisEditable = Editable[type];
+  const DisEditable = Editable[type ?? "p"];
 
   return (
     <DisEditable

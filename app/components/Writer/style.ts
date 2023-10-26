@@ -45,10 +45,21 @@ const h3 = styled.h3`
   font-weight: 400;
 `;
 
-const ul = styled.div`
+const bl = styled.div`
   ${base};
   list-style: disc;
-  padding-left: 1rem;
+  padding-left: 2rem;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0.7rem;
+    top: 40%;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--contrast);
+  }
 `;
 
 const nl = styled.div`
@@ -62,6 +73,6 @@ export const Editable = {
   h1,
   h2,
   h3,
-  ul,
+  bl,
   nl,
 };

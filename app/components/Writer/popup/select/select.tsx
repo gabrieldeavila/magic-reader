@@ -44,7 +44,7 @@ const OPTIONS = [
 
 function PopupSelect({ type }: { type: scribereActions }) {
   const { translateThis } = useGTTranslate();
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState(false); 
   const contextName = useContextName();
 
   const handleShow = useCallback(() => {
