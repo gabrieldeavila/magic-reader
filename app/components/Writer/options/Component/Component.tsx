@@ -2048,7 +2048,7 @@ function Component({ type, text, id, position }: IEditable) {
   }, [pasteEv]);
 
   const DisEditable = Editable[type];
-  console.log(showPopup);
+
   return (
     <DisEditable
       ref={ref}
@@ -2068,7 +2068,7 @@ function Component({ type, text, id, position }: IEditable) {
       })}
 
       {showPopup && hasFocusId && (
-        <Popup ref={popupRef} id={id} text={text} parentRef={ref} />
+        <Popup ref={popupRef} type={type} id={id} text={text} parentRef={ref} />
       )}
     </DisEditable>
   );

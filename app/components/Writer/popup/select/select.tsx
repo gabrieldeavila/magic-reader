@@ -1,10 +1,11 @@
 import { ChevronDown } from "react-feather";
 import { Select } from "./style";
 import { useGTTranslate } from "@geavila/gt-design";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import useGetCurrBlockId from "../../hooks/useGetCurrBlockId";
 import { useContextName } from "../../context/WriterContext";
 import { globalState, stateStorage } from "react-trigger-state";
+import { scribereActions } from "../../interface";
 
 const OPTIONS = [
   {
@@ -41,7 +42,7 @@ const OPTIONS = [
   },
 ];
 
-function PopupSelect() {
+function PopupSelect({ type }: { type: scribereActions }) {
   const { translateThis } = useGTTranslate();
   const [show, setShow] = useState(false);
   const contextName = useContextName();
@@ -72,11 +73,18 @@ function PopupSelect() {
     [contextName, getBlockId]
   );
 
+  const typeToBeTranslated = useMemo(() => {
+    const upper = type.toUpperCase();
+    const name = `SCRIBERE.${upper}`;
+
+    return translateThis(name);
+  }, [translateThis, type]);
+
   return (
     <>
       <Select.Wrapper>
         <Select.Container onClick={handleShow}>
-          <Select.Selected>Text</Select.Selected>
+          <Select.Selected>{typeToBeTranslated}</Select.Selected>
           <ChevronDown size={12} />
         </Select.Container>
       </Select.Wrapper>

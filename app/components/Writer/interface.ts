@@ -6,6 +6,8 @@ type TOptions =
   | "code"
   | "highlight";
 
+export type scribereActions = "p" | "h1" | "h2" | "h3" | "ul" | "nl";
+
 export interface IText {
   options?: TOptions[];
   value: string;
@@ -14,7 +16,7 @@ export interface IText {
 
 export interface IWritterContent {
   text: IText[];
-  type: "p" | "h1" | "h2";
+  type: scribereActions;
   id: string;
 }
 
@@ -49,7 +51,7 @@ type undoActions =
 interface prevLineInfo {
   id: string;
   text: IText[];
-  type: "p" | "h1" | "h2";
+  type: scribereActions;
 }
 
 export interface ILinesBetween {
@@ -109,5 +111,6 @@ export interface IDecoration extends IText {
 export interface IPopup {
   id: string;
   parentRef: React.RefObject<HTMLDivElement>;
+  type: scribereActions;
   text: IText[];
 }

@@ -24,7 +24,7 @@ import { PopupFunctions } from "./interface";
 import PopupSelect from "./select/select";
 
 const PopupComp = (
-  { id, text, parentRef }: IPopup,
+  { id, text, parentRef, type }: IPopup,
   popupRef: React.MutableRefObject<PopupFunctions>
 ) => {
   const { toast } = useGTToastContext();
@@ -684,7 +684,7 @@ const PopupComp = (
     >
       <WPopup.Content>
         <WPopup.Item>
-          <PopupSelect />
+          <PopupSelect type={type} />
         </WPopup.Item>
         <WPopup.Divider />
 
