@@ -44,7 +44,7 @@ const OPTIONS = [
 
 function PopupSelect({ type }: { type: scribereActions }) {
   const { translateThis } = useGTTranslate();
-  const [show, setShow] = useState(false); 
+  const [show, setShow] = useState(false);
   const contextName = useContextName();
 
   const handleShow = useCallback(() => {
@@ -69,8 +69,18 @@ function PopupSelect({ type }: { type: scribereActions }) {
       });
 
       stateStorage.set(contextName, content);
+
+      const toUpdate = ["nl"];
+
+      if (toUpdate.includes(option)) {
+        stateStorage.set(`update_${option}`, new Date());
+      }
+
+      if (toUpdate.includes(type)) {
+        stateStorage.set(`update_${type}`, new Date());
+      }
     },
-    [contextName, getBlockId]
+    [contextName, getBlockId, type]
   );
 
   const typeToBeTranslated = useMemo(() => {

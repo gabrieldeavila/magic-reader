@@ -65,7 +65,42 @@ const bl = styled.div`
 const nl = styled.div`
   ${base};
   list-style: decimal;
-  padding-left: 1rem;
+  padding-left: 2rem;
+
+  &::before {
+    content: attr(data-placeholder-number) ". ";
+    position: absolute;
+    left: 0.7rem;
+    color: var(--contrast-0_1);
+  }
+`;
+
+const tl = styled.div`
+  ${base};
+  list-style: none;
+  padding-left: 2rem;
+  position: relative;
+`;
+
+export const TodoButton = styled.div`
+  position: absolute;
+  cursor: pointer;
+  user-select: none;
+  left: 0.7rem;
+  top: 0.6rem;
+  user-select: none;
+  background: none;
+  border: 1px solid var(--contrast-0_1);
+  border-radius: 0.25rem;
+  width: 13px;
+  height: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    margin-top: 1px;
+  }
 `;
 
 export const Editable = {
@@ -75,4 +110,5 @@ export const Editable = {
   h3,
   bl,
   nl,
+  tl,
 };

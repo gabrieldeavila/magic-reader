@@ -6,7 +6,7 @@ type TOptions =
   | "code"
   | "highlight";
 
-export type scribereActions = "p" | "h1" | "h2" | "h3" | "ul" | "nl";
+export type scribereActions = "p" | "h1" | "h2" | "h3" | "ul" | "nl" | "tl";
 
 export interface IText {
   options?: TOptions[];

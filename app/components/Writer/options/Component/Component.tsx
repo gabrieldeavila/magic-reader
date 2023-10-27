@@ -27,6 +27,7 @@ import { PopupFunctions } from "../../popup/interface";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
 import { dgs } from "../../../../utils/dgs";
+import useCustomComps from "../../hooks/useCustomComps";
 
 function Component({ type, text, id, position }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
@@ -2049,6 +2050,8 @@ function Component({ type, text, id, position }: IEditable) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pasteEv]);
 
+  const { customProps, customComp } = useCustomComps({ type, id });
+
   const DisEditable = Editable[type ?? "p"];
 
   return (
@@ -2058,7 +2061,10 @@ function Component({ type, text, id, position }: IEditable) {
       data-line-id={id}
       data-scribere
       suppressContentEditableWarning
+      {...customProps}
     >
+      {customComp}
+
       {text.map((item, index) => {
         return (
           <Decoration
