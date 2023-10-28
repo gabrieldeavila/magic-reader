@@ -14,9 +14,14 @@ export interface IText {
   id: string;
 }
 
+export interface ITodo {
+  checked: boolean;
+}
+
 export interface IWritterContent {
   text: IText[];
   type: scribereActions;
+  customStyle?: ITodo;
   id: string;
 }
 

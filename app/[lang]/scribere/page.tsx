@@ -42,7 +42,7 @@ const DEFAULT_CONTENT: IWritterContent[] = [
   },
   {
     id: uuid(),
-    type: "p",
+    type: "tl",
     text: [
       {
         value: "2222",

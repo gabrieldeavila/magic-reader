@@ -29,7 +29,7 @@ import Decoration from "./Decoration";
 import { dgs } from "../../../../utils/dgs";
 import useCustomComps from "../../hooks/useCustomComps";
 
-function Component({ type, text, id, position }: IEditable) {
+function Component({ type, text, id, position, customStyle }: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
   const [keyDownEv] = useTriggerState({
     name: `key_down_ev-${id}`,
@@ -2050,7 +2050,7 @@ function Component({ type, text, id, position }: IEditable) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pasteEv]);
 
-  const { customProps, customComp } = useCustomComps({ type, id });
+  const { customProps, customComp } = useCustomComps({ type, id, customStyle });
 
   const DisEditable = Editable[type ?? "p"];
 

@@ -1,11 +1,23 @@
 import { useMemo } from "react";
-import { globalState, useTriggerState } from "react-trigger-state";
-import { useContextName } from "../context/WriterContext";
-import { scribereActions } from "../interface";
-import { TodoButton } from "../style";
 import { Check } from "react-feather";
+import {
+  globalState,
+  stateStorage,
+  useTriggerState,
+} from "react-trigger-state";
+import { useContextName } from "../context/WriterContext";
+import { IWritterContent, scribereActions } from "../interface";
+import { TodoButton } from "../style";
 
-function useCustomComps({ id, type }: { id: string; type: scribereActions }) {
+function useCustomComps({
+  id,
+  type,
+  customStyle,
+}: {
+  id: string;
+  type: scribereActions;
+  customStyle?: IWritterContent["customStyle"];
+}) {
   const contextName = useContextName();
   const [update] = useTriggerState({ name: `update_${type}` });
 
@@ -30,21 +42,52 @@ function useCustomComps({ id, type }: { id: string; type: scribereActions }) {
       return { ["data-placeholder-number"]: number };
     }
 
+    if (type === "tl") {
+      return {
+        style: {
+          textDecoration: customStyle?.checked ? "line-through" : "none",
+        },
+      };
+    }
+
     return {};
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contextName, id, type, update]);
+  }, [contextName, id, type, update, customStyle]);
 
   const customComp = useMemo(() => {
     if (type === "tl") {
       return (
-        <TodoButton>
-          <Check size={12} stroke="var(--info)" />
+        <TodoButton
+          data-todo
+          onClick={() => {
+            const content = globalState.get(contextName);
+
+            const newContent = content.map((item) => {
+              if (item.id === id) {
+                return {
+                  ...item,
+                  customStyle: {
+                    ...item.customStyle,
+                    checked: !item.customStyle?.checked,
+                  },
+                };
+              }
+
+              return item;
+            });
+
+            stateStorage.set(contextName, newContent);
+          }}
+        >
+          {customStyle?.checked && (
+            <Check data-todo size={12} stroke="var(--info)" />
+          )}
         </TodoButton>
       );
     }
 
     return null;
-  }, [type]);
+  }, [contextName, customStyle?.checked, id, type]);
 
   return { customProps, customComp };
 }

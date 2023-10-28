@@ -720,6 +720,18 @@ const WriterContextProvider = ({
           handleBlur(e);
         }}
         onClick={(e) => {
+          const datas = ["todo"];
+
+          const hasSomeData = datas.some((data) =>
+            (e.target as Element).hasAttribute(`data-${data}`)
+          );
+
+          if (hasSomeData) {
+            // removes all the selection
+            window.getSelection().removeAllRanges();
+            return;
+          }
+
           handleBlur(e);
           globalState.set("clicked-item", true);
           handleClick();
