@@ -59,6 +59,7 @@ interface prevLineInfo {
   id: string;
   text: IText[];
   type: scribereActions;
+  align?: TAlign;
 }
 
 export interface ILinesBetween {

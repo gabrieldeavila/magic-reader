@@ -526,6 +526,7 @@ function Component({
           const newText = {
             id: newId,
             type,
+            align,
             text: [
               {
                 id: uuid(),
@@ -677,6 +678,7 @@ function Component({
           {
             id: newId,
             type,
+            align,
             text: newLineText,
           }
         );
@@ -689,6 +691,7 @@ function Component({
           position,
           prevLineInfo: {
             type,
+            align,
             id,
             text: textClone,
           },
@@ -705,6 +708,7 @@ function Component({
     },
     [
       addToCtrlZ,
+      align,
       contextName,
       deleteBlock,
       deleteLine,
@@ -2057,7 +2061,12 @@ function Component({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pasteEv]);
 
-  const { customProps, customComp } = useCustomComps({ type, id, customStyle, align });
+  const { customProps, customComp } = useCustomComps({
+    type,
+    id,
+    customStyle,
+    align,
+  });
 
   const DisEditable = Editable[type ?? "p"];
 
