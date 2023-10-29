@@ -26,6 +26,7 @@ import { dcs } from "../../../utils/dcs";
 import { dga } from "../../../utils/dga";
 import TOC from "../TOC/TOC";
 import { StyledWriter } from "../style";
+import useResize from "../hooks/useResize";
 
 export const WriterContext = createContext<IWriterContext>({
   content: [],
@@ -701,6 +702,10 @@ const WriterContextProvider = ({
     };
   }, []);
 
+  const writterRef = useRef<HTMLDivElement>(null);
+
+  useResize(writterRef);
+
   return (
     <WriterContext.Provider
       value={{
@@ -715,7 +720,7 @@ const WriterContextProvider = ({
       }}
     >
       <StyledWriter.Wrapper>
-        <StyledWriter.Container>
+        <StyledWriter.Container ref={writterRef}>
           <TOC />
 
           <ReadWrite

@@ -8,22 +8,34 @@ const DEFAULT_CONTENT: IWritterContent[] = [
     type: "h1",
     text: [
       {
-        value: "Hello ",
+        value: "Title 1!",
         options: [],
         id: uuid(),
       },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "h2",
+    text: [
       {
-        value: "World",
+        value: "Code Example",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "p",
+    text: [
+      {
+        value: "Next is a code ",
         options: ["bold"],
         id: uuid(),
       },
       {
-        value: " hehe",
-        options: [],
-        id: uuid(),
-      },
-      {
-        value: " const a = b === c",
+        value: "const a = b === c",
         options: ["code"],
         id: uuid(),
       },
@@ -34,7 +46,7 @@ const DEFAULT_CONTENT: IWritterContent[] = [
     type: "h2",
     text: [
       {
-        value: "111",
+        value: "Todo List",
         options: [],
         id: uuid(),
       },
@@ -45,7 +57,18 @@ const DEFAULT_CONTENT: IWritterContent[] = [
     type: "tl",
     text: [
       {
-        value: "2222",
+        value: "Do something",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "tl",
+    text: [
+      {
+        value: "Do another thing....",
         options: [],
         id: uuid(),
       },
