@@ -24,6 +24,7 @@ import Component from "../options/Component/Component";
 import { ReadWrite } from "../options/Component/style";
 import { dcs } from "../../../utils/dcs";
 import { dga } from "../../../utils/dga";
+import TOC from "../TOC/TOC";
 
 export const WriterContext = createContext<IWriterContext>({
   content: [],
@@ -712,6 +713,8 @@ const WriterContextProvider = ({
         addToCtrlZ,
       }}
     >
+      <TOC />
+
       <ReadWrite
         contentEditable
         onKeyDown={handleKeyDown}

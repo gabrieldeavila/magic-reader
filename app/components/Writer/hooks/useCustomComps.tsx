@@ -30,7 +30,13 @@ function useCustomComps({
       },
     };
 
-    if (type === "nl") {
+    if (["h1", "h2", "h3"].includes(type)) {
+      // adds an anchor to the header, so it can be linked
+      props = {
+        ...props,
+        id,
+      };
+    } else if (type === "nl") {
       const content = globalState.get(contextName);
 
       const position = content.findIndex((item) => item.id === id);

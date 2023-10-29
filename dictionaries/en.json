@@ -71,5 +71,7 @@
     "NL": "Numbered List",
     "TL": "Task List",
     "AC": "Accordion"
-  }
+  },
+
+  "TOC": "Table of Contents"
 }

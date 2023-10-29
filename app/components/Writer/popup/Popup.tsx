@@ -148,45 +148,48 @@ const PopupComp = (
     handleColors();
 
     const width = ref.current?.getBoundingClientRect()?.width;
+    try {
+      // create a new range
+      const rangeOffset = document.createRange();
+      // select the block
+      rangeOffset.selectNode(blockInfo.block.firstChild);
+      // set the start offset
+      rangeOffset.setStart(blockInfo.block.firstChild, blockInfo.offset);
+      rangeOffset.setEnd(blockInfo.block.firstChild, blockInfo.offset);
 
-    // create a new range
-    const rangeOffset = document.createRange();
-    // select the block
-    rangeOffset.selectNode(blockInfo.block.firstChild);
-    // set the start offset
-    rangeOffset.setStart(blockInfo.block.firstChild, blockInfo.offset);
-    rangeOffset.setEnd(blockInfo.block.firstChild, blockInfo.offset);
+      // get the position of the start offset
+      const infoRange = rangeOffset.getBoundingClientRect();
 
-    // get the position of the start offset
-    const infoRange = rangeOffset.getBoundingClientRect();
+      const left = infoRange.right + width;
+      // sees if the popup is out of the screen
+      const isOutOfScreen = window.innerWidth < left;
 
-    const left = infoRange.right + width;
-    // sees if the popup is out of the screen
-    const isOutOfScreen = window.innerWidth < left;
+      let newPositions = {};
 
-    let newPositions = {};
-    console.log(infoRange.height);
-    let newLeft;
-    const newTop =
-      infoRange.top +
-      ((anchorComesFirst || isTopOutOfScreen) && !isPrevAnchor
-        ? infoRange.height + 5
-        : -40);
+      let newLeft;
+      const newTop =
+        infoRange.top +
+        ((anchorComesFirst || isTopOutOfScreen) && !isPrevAnchor
+          ? infoRange.height + 5
+          : -40);
 
-    if (isOutOfScreen) {
-      newLeft = infoRange.left - width;
-    } else {
-      newLeft = infoRange.right - infoRange.width;
+      if (isOutOfScreen) {
+        newLeft = infoRange.left - width;
+      } else {
+        newLeft = infoRange.right - infoRange.width;
+      }
+
+      if (newLeft < 0) newLeft = infoRange.x;
+
+      newPositions = {
+        left: `${newLeft}px`,
+        top: `${newTop}px`,
+      };
+
+      setPositions(newPositions);
+    } catch (e) {
+      console.log(e);
     }
-
-    if (newLeft < 0) newLeft = infoRange.x;
-
-    newPositions = {
-      left: `${newLeft}px`,
-      top: `${newTop}px`,
-    };
-
-    setPositions(newPositions);
   }, [handleColors, updatePositions]);
 
   const doTheDecoration = useCallback(
