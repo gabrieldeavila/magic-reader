@@ -22,9 +22,10 @@ import { IPopup } from "../interface";
 import WPopup from "./style";
 import { PopupFunctions } from "./interface";
 import PopupSelect from "./select/select";
+import Align from "./align/Align";
 
 const PopupComp = (
-  { id, text, parentRef, type }: IPopup,
+  { id, text, parentRef, type, align }: IPopup,
   popupRef: React.MutableRefObject<PopupFunctions>
 ) => {
   const { toast } = useGTToastContext();
@@ -686,6 +687,7 @@ const PopupComp = (
         <WPopup.Item>
           <PopupSelect type={type} />
         </WPopup.Item>
+
         <WPopup.Divider />
 
         <WPopup.Item>
@@ -752,6 +754,12 @@ const PopupComp = (
           >
             <Code size={14} />
           </WPopup.Code>
+        </WPopup.Item>
+
+        <WPopup.Divider />
+
+        <WPopup.Item>
+          <Align id={id} align={align} />
         </WPopup.Item>
       </WPopup.Content>
     </WPopup.Wrapper>

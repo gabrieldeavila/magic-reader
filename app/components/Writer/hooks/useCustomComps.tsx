@@ -6,22 +6,30 @@ import {
   useTriggerState,
 } from "react-trigger-state";
 import { useContextName } from "../context/WriterContext";
-import { IWritterContent, scribereActions } from "../interface";
+import { IKeys, IWritterContent, scribereActions } from "../interface";
 import { TodoButton } from "../style";
 
 function useCustomComps({
   id,
   type,
   customStyle,
+  align,
 }: {
   id: string;
   type: scribereActions;
   customStyle?: IWritterContent["customStyle"];
+  align?: IWritterContent["align"];
 }) {
   const contextName = useContextName();
   const [update] = useTriggerState({ name: `update_${type}` });
 
   const customProps = useMemo(() => {
+    let props: IKeys = {
+      style: {
+        textAlign: align ?? "left",
+      },
+    };
+
     if (type === "nl") {
       const content = globalState.get(contextName);
 
@@ -39,20 +47,23 @@ function useCustomComps({
         }
       }
 
-      return { ["data-placeholder-number"]: number };
-    }
-
-    if (type === "tl") {
-      return {
+      props = {
+        ...props,
+        ["data-placeholder-number"]: number,
+      };
+    } else if (type === "tl") {
+      props = {
+        ...props,
         style: {
+          ...props.style,
           textDecoration: customStyle?.checked ? "line-through" : "none",
         },
       };
     }
 
-    return {};
+    return props;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contextName, id, type, update, customStyle]);
+  }, [contextName, id, type, update, customStyle, align]);
 
   const customComp = useMemo(() => {
     if (type === "tl") {

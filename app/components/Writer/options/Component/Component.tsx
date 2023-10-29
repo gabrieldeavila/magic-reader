@@ -29,7 +29,14 @@ import Decoration from "./Decoration";
 import { dgs } from "../../../../utils/dgs";
 import useCustomComps from "../../hooks/useCustomComps";
 
-function Component({ type, text, id, position, customStyle }: IEditable) {
+function Component({
+  type,
+  text,
+  align,
+  id,
+  position,
+  customStyle,
+}: IEditable) {
   const ref = useRef<HTMLDivElement>(null);
   const [keyDownEv] = useTriggerState({
     name: `key_down_ev-${id}`,
@@ -1323,7 +1330,7 @@ function Component({ type, text, id, position, customStyle }: IEditable) {
         if (addSingleDecoration(event.key)) return;
 
         const isCodeBlock =
-          selection.anchorNode.parentElement?.parentElement.tagName === "CODE";
+          selection.anchorNode.parentElement?.parentElement?.tagName === "CODE";
 
         const changedBlockId = isCodeBlock
           ? selection.anchorNode.parentElement.parentElement.parentElement.parentElement.getAttribute(
@@ -2050,7 +2057,7 @@ function Component({ type, text, id, position, customStyle }: IEditable) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pasteEv]);
 
-  const { customProps, customComp } = useCustomComps({ type, id, customStyle });
+  const { customProps, customComp } = useCustomComps({ type, id, customStyle, align });
 
   const DisEditable = Editable[type ?? "p"];
 
@@ -2076,7 +2083,14 @@ function Component({ type, text, id, position, customStyle }: IEditable) {
       })}
 
       {showPopup && hasFocusId && (
-        <Popup ref={popupRef} type={type} id={id} text={text} parentRef={ref} />
+        <Popup
+          ref={popupRef}
+          align={align}
+          type={type}
+          id={id}
+          text={text}
+          parentRef={ref}
+        />
       )}
     </DisEditable>
   );

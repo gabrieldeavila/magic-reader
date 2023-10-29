@@ -35,12 +35,8 @@ const OPTIONS = [
   {
     key: "tl",
     label: "SCRIBERE.TL",
-  },
-  {
-    key: "ac",
-    label: "SCRIBERE.AC",
-  },
-];
+  }
+]; 
 
 function PopupSelect({ type }: { type: scribereActions }) {
   const { translateThis } = useGTTranslate();

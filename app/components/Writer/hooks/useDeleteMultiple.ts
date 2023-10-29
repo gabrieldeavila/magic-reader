@@ -19,11 +19,17 @@ function useDeleteMultiple({ text, id, info }) {
       // @ts-expect-error - rest has the same type as the return of deleteMultiLine
       return deleteMultiLine({ first, ...rest });
     }
+
+    if (!first || !last) {
+      console.log("---");
+      return;
+    }
+
     addToCtrlZ({
       lineId: id,
       value: structuredClone(text),
       action: "delete_letters",
-      blockId: first.id,
+      blockId: first?.id,
     });
 
     const firstIndex = text.findIndex(({ id }) => id === first.id);

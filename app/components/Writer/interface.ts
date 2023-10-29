@@ -7,6 +7,7 @@ type TOptions =
   | "highlight";
 
 export type scribereActions = "p" | "h1" | "h2" | "h3" | "ul" | "nl" | "tl";
+export type TAlign = "left" | "center" | "right" | "justify";
 
 export interface IText {
   options?: TOptions[];
@@ -22,6 +23,7 @@ export interface IWritterContent {
   text: IText[];
   type: scribereActions;
   customStyle?: ITodo;
+  align?: TAlign;
   id: string;
 }
 
@@ -118,4 +120,10 @@ export interface IPopup {
   parentRef: React.RefObject<HTMLDivElement>;
   type: scribereActions;
   text: IText[];
+  align?: TAlign;
+}
+
+export interface IKeys {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
 }
