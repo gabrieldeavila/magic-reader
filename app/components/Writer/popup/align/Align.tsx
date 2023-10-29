@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlignCenter,
   AlignJustify,
@@ -27,15 +27,43 @@ function Align({
 }) {
   const Selected = useMemo(() => OPTIONS[align ?? "left"], [align]);
 
+  const ref = useRef<HTMLDivElement>(null);
+  const optionsRef = useRef<HTMLDivElement>(null);
+  const [show, setShow] = useState(false);
+
+  const handleShow = useCallback(() => {
+    setShow((prev) => !prev);
+  }, []);
+
+  useEffect(() => {
+    // sets show to false when clicked outside
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        ref.current &&
+        !ref.current.contains(event.target as Node) &&
+        optionsRef.current &&
+        !optionsRef.current.contains(event.target as Node)
+      ) {
+        setShow(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <>
-      <AlignWrapper>
+      <AlignWrapper ref={ref} onClick={handleShow}>
         <Selected size={15} />
 
         <ChevronDown size={13} />
       </AlignWrapper>
 
-      <AlignOptions>
+      <AlignOptions ref={optionsRef} show={show}>
         {Object.keys(OPTIONS).map((key: keyof typeof OPTIONS) => (
           <AlignItem key={key} option={key} id={id} align={align} />
         ))}

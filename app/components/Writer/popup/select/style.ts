@@ -47,6 +47,7 @@ const Options = styled.div`
 const Info = styled.p`
   font-size: 0.7rem;
   font-weight: 400;
+  text-align: left;
 `;
 
 const Option = styled.div`

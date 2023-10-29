@@ -23,6 +23,16 @@ export const AlignOptions = styled.div`
   flex-direction: column;
   border-radius: 5px;
 
+  transition: 0.2s ease-in-out;
+
+  ${({ show }: { show: boolean }) => `
+    opacity: ${show ? 1 : 0};
+    transform: ${
+      show ? "scale(1) translateY(0)" : "scale(0.95) translateY(-1rem)"
+    };
+    pointer-events: ${show ? "all" : "none"};
+  `}
+
   ${shadows.basic};
 `;
 

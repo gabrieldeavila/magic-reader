@@ -1,7 +1,7 @@
 import { ChevronDown } from "react-feather";
 import { Select } from "./style";
 import { useGTTranslate } from "@geavila/gt-design";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useGetCurrBlockId from "../../hooks/useGetCurrBlockId";
 import { useContextName } from "../../context/WriterContext";
 import { globalState, stateStorage } from "react-trigger-state";
@@ -35,13 +35,16 @@ const OPTIONS = [
   {
     key: "tl",
     label: "SCRIBERE.TL",
-  }
-]; 
+  },
+];
 
 function PopupSelect({ type }: { type: scribereActions }) {
   const { translateThis } = useGTTranslate();
   const [show, setShow] = useState(false);
   const contextName = useContextName();
+
+  const ref = useRef<HTMLDivElement>(null);
+  const optionsRef = useRef<HTMLDivElement>(null);
 
   const handleShow = useCallback(() => {
     setShow((prev) => !prev);
@@ -86,16 +89,36 @@ function PopupSelect({ type }: { type: scribereActions }) {
     return translateThis(name);
   }, [translateThis, type]);
 
+  useEffect(() => {
+    // sets show to false when clicked outside
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        ref.current &&
+        !ref.current.contains(event.target as Node) &&
+        optionsRef.current &&
+        !optionsRef.current.contains(event.target as Node)
+      ) {
+        setShow(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <>
-      <Select.Wrapper>
+      <Select.Wrapper ref={ref}>
         <Select.Container onClick={handleShow}>
           <Select.Selected>{typeToBeTranslated}</Select.Selected>
           <ChevronDown size={12} />
         </Select.Container>
       </Select.Wrapper>
 
-      <Select.Options show={show}>
+      <Select.Options show={show} ref={optionsRef}>
         <Select.Info>{translateThis("SCRIBERE.TURN_INTO")}</Select.Info>
 
         {OPTIONS.map((option) => (
