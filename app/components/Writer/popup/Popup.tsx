@@ -165,11 +165,13 @@ const PopupComp = (
     const isOutOfScreen = window.innerWidth < left;
 
     let newPositions = {};
-
+    console.log(infoRange.height);
     let newLeft;
     const newTop =
       infoRange.top +
-      ((anchorComesFirst || isTopOutOfScreen) && !isPrevAnchor ? 25 : -40);
+      ((anchorComesFirst || isTopOutOfScreen) && !isPrevAnchor
+        ? infoRange.height + 5
+        : -40);
 
     if (isOutOfScreen) {
       newLeft = infoRange.left - width;
