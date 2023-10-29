@@ -2076,6 +2076,7 @@ function Component({
       contentEditable
       data-line-id={id}
       data-scribere
+      onDrop={(e) => e.preventDefault()}
       suppressContentEditableWarning
       {...customProps}
     >

@@ -2,6 +2,7 @@ import styled from "styled-components";
 
 const Wrapper = styled.div`
   padding: 1rem;
+  user-select: none;
 `;
 
 const Container = styled.div``;

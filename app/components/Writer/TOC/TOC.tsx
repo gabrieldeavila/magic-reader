@@ -1,4 +1,3 @@
-import { useGTTranslate } from "@geavila/gt-design";
 import { useMemo } from "react";
 import { useTriggerState } from "react-trigger-state";
 import { useContextName } from "../context/WriterContext";
@@ -12,24 +11,10 @@ const getText = (text: IText[]) => {
 };
 
 function TOC() {
-  const { translateThis } = useGTTranslate();
   const contextName = useContextName();
   const [content] = useTriggerState({ name: contextName });
 
   const headers = useMemo(() => {
-    /* returns something like 
-      {"Header 1" : {
-        id: "header-1",
-        inside: {
-          "Header 1.1": {
-            id: "header-1-1",
-            inside: {}
-          }
-        }
-      }
-      }
-      */
-
     const temps = {
       h1: null,
       h2: null,
@@ -46,32 +31,69 @@ function TOC() {
         }
       }
 
+      const lastH1 = acc.length - 1;
+      const lastH2 =
+        temps.h1 == null ? acc.length - 1 : acc[lastH1]?.inside?.length - 1;
+
       if (item.type === "h3") {
         if (temps.h1 == null && temps.h2 == null) {
-          acc[getText(item.text)] = {
+          acc.push({
             id: item.id,
+            text: getText(item.text),
             type: item.type,
-          };
+          });
 
           return acc;
         }
 
         if (temps.h1 !== null && temps.h2 !== null) {
-          acc[getText(temps.h1.text)].inside[getText(temps.h2.text)].inside[
-            getText(item.text)
-          ] = {
+          const h3Text = getText(item.text);
+
+          acc[lastH2].inside[lastH2].inside.push({
             id: item.id,
             type: item.type,
-          };
+            text: h3Text,
+          });
 
           return acc;
         }
 
         if (temps.h1 !== null && temps.h2 == null) {
-          acc[getText(temps.h1.text)].inside[getText(item.text)] = {
+          const h3Text = getText(item.text);
+
+          if (!acc[lastH1]) {
+            acc.push({
+              id: temps.h1.id,
+              type: temps.h1.type,
+              inside: [],
+            });
+          }
+
+          acc[lastH1].inside.push({
             id: item.id,
             type: item.type,
-          };
+            text: h3Text,
+          });
+
+          return acc;
+        }
+
+        if (temps.h1 == null && temps.h2 !== null) {
+          const h3Text = getText(item.text);
+
+          if (!acc[lastH2]) {
+            acc.push({
+              id: temps.h2.id,
+              type: temps.h2.type,
+              inside: [],
+            });
+          }
+
+          acc[lastH2].inside.push({
+            id: item.id,
+            type: item.type,
+            text: h3Text,
+          });
 
           return acc;
         }
@@ -81,21 +103,33 @@ function TOC() {
         temps.h2 = item;
 
         if (temps.h1 == null) {
-          acc[getText(item.text)] = {
+          acc.push({
             id: item.id,
             type: item.type,
-            inside: {},
-          };
+            text: getText(item.text),
+            inside: [],
+          });
 
           return acc;
         }
 
         if (temps.h1 !== null) {
-          acc[getText(temps.h1.text)].inside[getText(item.text)] = {
+          const h2Text = getText(item.text);
+
+          if (!acc[lastH1]) {
+            acc.push({
+              id: temps.h1.id,
+              type: temps.h1.type,
+              inside: [],
+            });
+          }
+
+          acc[lastH1].inside.push({
             id: item.id,
             type: item.type,
-            inside: {},
-          };
+            text: h2Text,
+            inside: [],
+          });
 
           return acc;
         }
@@ -104,29 +138,29 @@ function TOC() {
       if (item.type === "h1") {
         temps.h1 = item;
 
-        acc[getText(item.text)] = {
+        acc.push({
           id: item.id,
           type: item.type,
-          inside: {},
-        };
+          text: getText(item.text),
+          inside: [],
+        });
 
         return acc;
       }
 
       return acc;
-    }, {});
+    }, []);
 
     return tempHeader;
   }, [content]);
 
+  if (headers.length === 0) return null;
+
   return (
     <STOC.Wrapper>
       <STOC.Container>
-        <STOC.Title>{translateThis("TOC")}</STOC.Title>
-
-        {Object.entries(headers).map(([header, values]) => {
-          // @ts-expect-error FIXME
-          return <TOCLink key={values.id} header={header} values={values} />;
+        {headers.map((header) => {
+          return <TOCLink key={header.id} header={header} />;
         })}
       </STOC.Container>
     </STOC.Wrapper>
@@ -135,21 +169,20 @@ function TOC() {
 
 export default TOC;
 
-const TOCLink = ({ header, values }: { header: string; values: IKeys }) => {
-  const href = useMemo(() => `#${values.id}`, [values.id]);
+const TOCLink = ({ header }: { header: IKeys }) => {
+  const href = useMemo(() => `#${header.id}`, [header.id]);
 
   const children = useMemo(() => {
-    return values.inside == null
-      ? null
-      : Object.entries(values.inside).map(([header, values]) => {
-          // @ts-expect-error FIXME
-          return <TOCLink key={values.id} header={header} values={values} />;
-        });
-  }, [values.inside]);
+    return header.inside?.length > 0
+      ? header.inside.map((header) => {
+          return <TOCLink key={header.id} header={header} />;
+        })
+      : null;
+  }, [header.inside]);
 
   return (
     <STOC.List>
-      <a href={href}>{header}</a>
+      <a href={href}>{header.text}</a>
       {children}
     </STOC.List>
   );
