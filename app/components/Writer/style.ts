@@ -9,6 +9,8 @@ const base = css`
   font-weight: 200;
   position: relative;
   white-space: pre-wrap;
+  padding-left: 2rem;
+  padding-right: 2rem;
 
   .empty {
     min-height: 17px;
@@ -49,6 +51,7 @@ const bl = styled.div`
   ${base};
   list-style: disc;
   padding-left: 2rem;
+  margin-left: 1.3rem;
 
   &::before {
     content: "";
@@ -66,6 +69,7 @@ const nl = styled.div`
   ${base};
   list-style: decimal;
   padding-left: 2rem;
+  margin-left: 1.3rem;
 
   &::before {
     content: attr(data-placeholder-number) ". ";
@@ -79,6 +83,7 @@ const tl = styled.div`
   ${base};
   list-style: none;
   padding-left: 2rem;
+  margin-left: 1.3rem;
   position: relative;
 `;
 
@@ -102,6 +107,21 @@ export const TodoButton = styled.div`
     margin-top: 1px;
   }
 `;
+
+const WritterWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+`;
+
+const WritterContainer = styled.div`
+  max-width: 800px;
+  min-height: 100vh;
+`;
+
+export const StyledWriter = {
+  Wrapper: WritterWrapper,
+  Container: WritterContainer,
+};
 
 export const Editable = {
   p,

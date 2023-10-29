@@ -25,6 +25,7 @@ import { ReadWrite } from "../options/Component/style";
 import { dcs } from "../../../utils/dcs";
 import { dga } from "../../../utils/dga";
 import TOC from "../TOC/TOC";
+import { StyledWriter } from "../style";
 
 export const WriterContext = createContext<IWriterContext>({
   content: [],
@@ -713,42 +714,46 @@ const WriterContextProvider = ({
         addToCtrlZ,
       }}
     >
-      <TOC />
+      <StyledWriter.Wrapper>
+        <StyledWriter.Container>
+          <TOC />
 
-      <ReadWrite
-        contentEditable
-        onKeyDown={handleKeyDown}
-        onBlur={(e) => {
-          globalState.set("clicked-item", false);
-          handleBlur(e);
-        }}
-        onClick={(e) => {
-          const datas = ["todo"];
+          <ReadWrite
+            contentEditable
+            onKeyDown={handleKeyDown}
+            onBlur={(e) => {
+              globalState.set("clicked-item", false);
+              handleBlur(e);
+            }}
+            onClick={(e) => {
+              const datas = ["todo"];
 
-          const hasSomeData = datas.some((data) =>
-            (e.target as Element).hasAttribute(`data-${data}`)
-          );
+              const hasSomeData = datas.some((data) =>
+                (e.target as Element).hasAttribute(`data-${data}`)
+              );
 
-          if (hasSomeData) {
-            // removes all the selection
-            window.getSelection().removeAllRanges();
-            return;
-          }
+              if (hasSomeData) {
+                // removes all the selection
+                window.getSelection().removeAllRanges();
+                return;
+              }
 
-          handleBlur(e);
-          globalState.set("clicked-item", true);
-          handleClick();
-        }}
-        onDragStart={handleDrag}
-        onDrop={handleDrag}
-        onSelectCapture={handleSelect}
-        onPaste={handlePaste}
-        suppressContentEditableWarning
-      >
-        {content.map((item, index) => {
-          return <Component key={index} {...item} position={index} />;
-        })}
-      </ReadWrite>
+              handleBlur(e);
+              globalState.set("clicked-item", true);
+              handleClick();
+            }}
+            onDragStart={handleDrag}
+            onDrop={handleDrag}
+            onSelectCapture={handleSelect}
+            onPaste={handlePaste}
+            suppressContentEditableWarning
+          >
+            {content.map((item, index) => {
+              return <Component key={index} {...item} position={index} />;
+            })}
+          </ReadWrite>
+        </StyledWriter.Container>
+      </StyledWriter.Wrapper>
     </WriterContext.Provider>
   );
 };
