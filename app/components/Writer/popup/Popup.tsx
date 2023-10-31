@@ -68,6 +68,8 @@ const PopupComp = (
 
   const [selectedOptions, setSelectedOptions] = useState([]);
 
+  const [isMultiLine, setIsMultiLine] = useState(false);
+
   const handleColors = useCallback(() => {
     const {
       firstNodeIndex,
@@ -76,6 +78,9 @@ const PopupComp = (
       areFromDiffLines,
       multiLineInfo,
     } = getFirstAndLastNode();
+
+    setIsMultiLine(areFromDiffLines);
+
     const selected = (selectedLetters ?? mimic).slice(
       firstNodeIndex,
       lastNodeIndex + 1
@@ -689,11 +694,14 @@ const PopupComp = (
       data-popup={id}
     >
       <WPopup.Content>
-        <WPopup.Item>
-          <PopupSelect type={type} />
-        </WPopup.Item>
-
-        <WPopup.Divider />
+        {!isMultiLine && (
+          <>
+            <WPopup.Item>
+              <PopupSelect type={type} />
+            </WPopup.Item>
+            <WPopup.Divider />
+          </>
+        )}
 
         <WPopup.Item>
           <WPopup.B
@@ -761,11 +769,14 @@ const PopupComp = (
           </WPopup.Code>
         </WPopup.Item>
 
-        <WPopup.Divider />
-
-        <WPopup.Item>
-          <Align id={id} align={align} />
-        </WPopup.Item>
+        {!isMultiLine && (
+          <>
+            <WPopup.Divider />
+            <WPopup.Item>
+              <Align id={id} align={align} />
+            </WPopup.Item>
+          </>
+        )}
       </WPopup.Content>
     </WPopup.Wrapper>
   );
