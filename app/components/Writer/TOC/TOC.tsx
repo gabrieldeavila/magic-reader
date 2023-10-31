@@ -183,7 +183,7 @@ const TOCLink = ({ header }: { header: IKeys }) => {
 
   return (
     <STOC.List>
-      <a href={href}>{header.text}</a>
+      <STOC.A href={href}>{header.text}</STOC.A>
       {children}
     </STOC.List>
   );
