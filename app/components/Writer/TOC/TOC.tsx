@@ -25,9 +25,10 @@ function TOC() {
         temps[item.type] = item;
 
         const level = item.type.replace("h", "");
+
         // clear the lower levels
-        for (let i = parseInt(level) + 1; i <= Object.keys(temps).length; i++) {
-          temps[`h${i}`] = null;
+        if (level === "1") {
+          temps.h2 = null;
         }
       }
 

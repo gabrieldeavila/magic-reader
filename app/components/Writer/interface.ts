@@ -6,7 +6,7 @@ type TOptions =
   | "code"
   | "highlight";
 
-export type scribereActions = "p" | "h1" | "h2" | "h3" | "ul" | "nl" | "tl";
+export type scribereActions = "p" | "h1" | "h2" | "h3" | "bl" | "nl" | "tl";
 export type TAlign = "left" | "center" | "right" | "justify";
 
 export interface IText {
