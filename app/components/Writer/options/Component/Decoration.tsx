@@ -29,6 +29,11 @@ const STYLE_MAP = {
     backgroundColor: "var(--highlight)",
     color: "var(--highlightText)",
   },
+  external_link: {
+    borderBottom: "0.1rem solid var(--textBtn)",
+    color: "var(--textBtn)",
+    cursor: "pointer",
+  }
 };
 
 const Decoration = memo(

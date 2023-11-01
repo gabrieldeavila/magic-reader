@@ -61,6 +61,17 @@
   },
 
   "SCRIBERE": {
-    "EMPTY": "Escreva algo!"
-  }
+    "EMPTY": "Escreva algo!",
+    "TURN_INTO": "Transformar em ...",
+    "P": "Parágrafo",
+    "H1": "Título 1",
+    "H2": "Título 2",
+    "H3": "Título 3",
+    "BL": "Lista com marcadores",
+    "NL": "Lista numerada",
+    "TL": "Lista de tarefas",
+    "AC": "Menu de expansível"
+  },
+
+  "TOC": "Índice"
 }

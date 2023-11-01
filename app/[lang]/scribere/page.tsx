@@ -5,44 +5,238 @@ import uuid from "../../utils/uuid";
 const DEFAULT_CONTENT: IWritterContent[] = [
   {
     id: uuid(),
+    type: "h1",
+    align: "center",
     text: [
       {
-        value: "Hello ",
+        value: "This is Scribere",
         options: [],
         id: uuid(),
       },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "p",
+    text: [
       {
-        value: "World",
+        value: "",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "h2",
+    text: [
+      {
+        value: "Basic",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "p",
+    text: [
+      {
+        value: "Never ",
+        options: ["highlight"],
+        id: uuid(),
+      },
+      {
+        value: "gonna ",
         options: ["bold"],
         id: uuid(),
       },
       {
-        value: " hehe",
-        options: [],
+        value: "give",
+        options: ["italic"],
         id: uuid(),
       },
       {
-        value: " const a = b === c",
-        options: ["code"],
+        value: " you",
+        options: ["underline"],
         id: uuid(),
       },
-    ],
-  },
-  {
-    id: uuid(),
-    text: [
       {
-        value: "111",
-        options: [],
+        value: " up",
+        options: ["strikethrough"],
         id: uuid(),
       },
     ],
   },
   {
     id: uuid(),
+    type: "p",
     text: [
       {
-        value: "2222",
+        value: "",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "h2",
+    text: [
+      {
+        value: "Code",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+
+  {
+    id: uuid(),
+    type: "p",
+    text: [
+      {
+        value: "Next is a code ",
+        options: [],
+        id: uuid(),
+      },
+      {
+        value: "const a = b === c",
+        options: ["code", "bold"],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "p",
+    text: [
+      {
+        value: "",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "h2",
+    text: [
+      {
+        value: "Todo List",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "tl",
+    text: [
+      {
+        value: "Clean the house",
+        options: ["italic"],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "tl",
+    customStyle: {
+      checked: true,
+    },
+    text: [
+      {
+        value: "Buy groceries",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "p",
+    text: [
+      {
+        value: "",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "h2",
+    text: [
+      {
+        value: "Numbered List",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "nl",
+    text: [
+      {
+        value: "Go outside",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "nl",
+    text: [
+      {
+        value: "Go back inside",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "p",
+    text: [
+      {
+        value: "",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "h2",
+    text: [
+      {
+        value: "Bullet list",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "bl",
+    text: [
+      {
+        value: "Something",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "bl",
+    text: [
+      {
+        value: "Something 2",
         options: [],
         id: uuid(),
       },

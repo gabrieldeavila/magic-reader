@@ -4,16 +4,32 @@ type TOptions =
   | "underline"
   | "strikethrough"
   | "code"
-  | "highlight";
+  | "highlight"
+  | "external_link";
+
+export type scribereActions = "p" | "h1" | "h2" | "h3" | "bl" | "nl" | "tl";
+export type TAlign = "left" | "center" | "right" | "justify";
+
+export interface ILink {
+  url: string;
+}
 
 export interface IText {
   options?: TOptions[];
+  customStyle?: ITodo;
   value: string;
   id: string;
 }
 
+export interface ITodo {
+  checked: boolean;
+}
+
 export interface IWritterContent {
   text: IText[];
+  type: scribereActions;
+  customStyle?: ITodo;
+  align?: TAlign;
   id: string;
 }
 
@@ -48,10 +64,13 @@ type undoActions =
 interface prevLineInfo {
   id: string;
   text: IText[];
+  type: scribereActions;
+  align?: TAlign;
 }
 
 export interface ILinesBetween {
   id: string;
+  type: "p" | "h1" | "h2";
   text: IText[];
 }
 [];
@@ -106,5 +125,12 @@ export interface IDecoration extends IText {
 export interface IPopup {
   id: string;
   parentRef: React.RefObject<HTMLDivElement>;
+  type: scribereActions;
   text: IText[];
+  align?: TAlign;
+}
+
+export interface IKeys {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
 }

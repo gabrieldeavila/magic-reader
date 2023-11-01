@@ -9,4 +9,5 @@ export interface PopupFunctions {
   strikethrough?: HTMLButtonElement;
   code?: HTMLButtonElement;
   highlight?: HTMLButtonElement;
+  external_link?: HTMLButtonElement;
 }
