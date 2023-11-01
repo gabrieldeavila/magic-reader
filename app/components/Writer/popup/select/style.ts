@@ -19,7 +19,7 @@ const Selected = styled.p`
   color: var(--contrast);
   font-size: 0.8rem;
   user-select: none;
-  font-weight: 200;
+  font-weight: 300;
 `;
 
 const Options = styled.div`
@@ -58,7 +58,7 @@ const Option = styled.div`
   background: var(--primary);
   transition: 0.2s ease-in-out;
   padding: 0 0.5rem;
-  font-weight: 100;
+  font-weight: 200;
 
   &:hover {
     background: var(--secondary);
