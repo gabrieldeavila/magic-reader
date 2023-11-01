@@ -71,6 +71,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
       }
 
       const allAlreadyHaveOption = selectedOptions.includes(decoration);
+      console.log(allAlreadyHaveOption, decoration, selectedOptions);
 
       // removes the first and last selected
       const selectedWithoutFirstAndLast = wordsSelected
@@ -485,6 +486,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
   );
 
   return {
+    selectedOptions,
     setSelectedOptions,
     addDecoration,
   };

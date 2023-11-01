@@ -4,13 +4,19 @@ type TOptions =
   | "underline"
   | "strikethrough"
   | "code"
-  | "highlight";
+  | "highlight"
+  | "external_link";
 
 export type scribereActions = "p" | "h1" | "h2" | "h3" | "bl" | "nl" | "tl";
 export type TAlign = "left" | "center" | "right" | "justify";
 
+export interface ILink {
+  url: string;
+}
+
 export interface IText {
   options?: TOptions[];
+  customStyle?: ITodo;
   value: string;
   id: string;
 }
