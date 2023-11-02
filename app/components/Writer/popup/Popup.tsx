@@ -311,19 +311,18 @@ const PopupComp = (
         </WPopup.Item>
 
         <WPopup.Divider />
-
-        <WPopup.Item>
-          <Link
-            addDecoration={addDecoration}
-            text={text}
-            id={id}
-            popupRef={popupRef}
-            selectedOptions={selectedOptions}
-          />
-        </WPopup.Item>
- 
         {!isMultiLine && (
           <>
+            <WPopup.Item>
+              <Link
+                addDecoration={addDecoration}
+                text={text}
+                id={id}
+                popupRef={popupRef}
+                selectedOptions={selectedOptions}
+              />
+            </WPopup.Item>
+
             <WPopup.Divider />
             <WPopup.Item>
               <Align id={id} align={align} />

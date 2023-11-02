@@ -731,7 +731,7 @@ const WriterContextProvider = ({
             onBlur={(e) => {
               const relatedTarget = e.relatedTarget as HTMLElement;
 
-              if (relatedTarget.closest("[data-link]")) {
+              if (relatedTarget?.closest("[data-link]")) {
                 return;
               }
 

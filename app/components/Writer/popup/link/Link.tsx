@@ -39,7 +39,6 @@ function Link({
         optionsRef.current &&
         !optionsRef.current.contains(event.target as Node)
       ) {
-        console.log("Nao, bocó");
         setShow(false);
       }
     }
