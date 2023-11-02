@@ -520,6 +520,8 @@ const WriterContextProvider = ({
       const { dataLineId } = getBlockId({});
       const prevSelected = globalState.get("prev-selected");
 
+      if (e.target.tagName === "INPUT") return;
+
       if (prevSelected !== dataLineId) {
         stateStorage.set(`has_focus_ev-${prevSelected}`, false);
       }
@@ -727,6 +729,12 @@ const WriterContextProvider = ({
             contentEditable
             onKeyDown={handleKeyDown}
             onBlur={(e) => {
+              const relatedTarget = e.relatedTarget as HTMLElement;
+
+              if (relatedTarget.closest("[data-link]")) {
+                return;
+              }
+
               globalState.set("clicked-item", false);
               handleBlur(e);
             }}
@@ -736,6 +744,10 @@ const WriterContextProvider = ({
               const hasSomeData = datas.some((data) =>
                 (e.target as Element).hasAttribute(`data-${data}`)
               );
+
+              if ((e.target as HTMLElement).closest("[data-link]")) {
+                return;
+              }
 
               if (hasSomeData) {
                 // removes all the selection

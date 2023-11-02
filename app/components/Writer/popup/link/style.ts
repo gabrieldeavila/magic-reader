@@ -3,7 +3,18 @@ import styled from "styled-components";
 
 const LinkWrapper = styled.div`
   position: absolute;
+  pointer-events: all;
+
   top: 110%;
+  right: 0;
+
+  ${({ show }: { show: boolean }) => `
+    opacity: ${show ? 1 : 0};
+    transform: ${
+      show ? "scale(1) translateY(0)" : "scale(0.95) translateY(-1rem)"
+    };
+    pointer-events: ${show ? "all" : "none"};
+  `}
 `;
 
 const LinkContainer = styled.div`

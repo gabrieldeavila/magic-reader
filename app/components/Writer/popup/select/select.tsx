@@ -66,7 +66,7 @@ function PopupSelect({ type }: { type: scribereActions }) {
 
         return line;
       });
-      console.log(content);
+
       stateStorage.set(contextName, content);
 
       const toUpdate = ["nl"];
