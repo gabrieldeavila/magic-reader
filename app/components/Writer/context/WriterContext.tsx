@@ -21,7 +21,7 @@ import {
   IWritterContent,
 } from "../interface";
 import Component from "../options/Component/Component";
-import { ReadWrite } from "../options/Component/style";
+import { ReadWrite, Selector } from "../options/Component/style";
 import { dcs } from "../../../utils/dcs";
 import { dga } from "../../../utils/dga";
 import TOC from "../TOC/TOC";
@@ -552,6 +552,10 @@ const WriterContextProvider = ({
 
   const handlePaste = useCallback(
     (e) => {
+      if ((e.target as HTMLElement).closest("[data-link]")) {
+        return;
+      }
+
       const { dataLineId } = getBlockId({});
       stateStorage.set(`paste_ev-${dataLineId}`, { e, date: new Date() });
     },
@@ -723,6 +727,8 @@ const WriterContextProvider = ({
     >
       <StyledWriter.Wrapper>
         <StyledWriter.Container ref={writterRef}>
+          <Selector data-link-selector />
+
           <TOC />
 
           <ReadWrite
@@ -731,7 +737,10 @@ const WriterContextProvider = ({
             onBlur={(e) => {
               const relatedTarget = e.relatedTarget as HTMLElement;
 
-              if (relatedTarget?.closest("[data-link]")) {
+              if (
+                relatedTarget?.closest("[data-link]") ||
+                e.target.closest("[data-link]")
+              ) {
                 return;
               }
 

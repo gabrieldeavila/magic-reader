@@ -18,3 +18,11 @@ export const DCode = styled.span`
 export const ReadWrite = styled.div`
   outline: none;
 `;
+
+export const Selector = styled.div`
+  position: fixed;
+  background: var(--contrast);
+  opacity: 0.7;
+  border-radius: 0.2rem;
+  z-index: 2;
+`;

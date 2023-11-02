@@ -188,7 +188,7 @@ const PopupComp = (
 
       setPositions(newPositions);
     } catch (e) {
-      console.log(e);
+      console.log("remember to fix this error");
     }
   }, [handleColors, updatePositions]);
 
@@ -310,9 +310,9 @@ const PopupComp = (
           </WPopup.Code>
         </WPopup.Item>
 
-        <WPopup.Divider />
         {!isMultiLine && (
           <>
+            <WPopup.Divider />
             <WPopup.Item>
               <Link
                 addDecoration={addDecoration}
