@@ -43,6 +43,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
       selected,
       isLast,
       anchorComesFirst,
+      custom,
     }) => {
       const wordsBeforeSelected = [];
       const wordsAfterSelected = [];
@@ -80,6 +81,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
             return {
               ...item,
               options: item.options.filter((option) => option !== decoration),
+              custom,
             };
           }
 
@@ -129,6 +131,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
               newWords.push({
                 ...firstWord,
                 value: second,
+                custom,
                 options: firstWord.options.includes(decoration)
                   ? allAlreadyHaveOption
                     ? firstWord.options.filter(
@@ -157,6 +160,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
           const firstWordSliced2 = {
             ...firstWord,
             value: firstWord.value.slice(selected[0].index),
+            custom,
             options: firstWord.options.includes(decoration)
               ? allAlreadyHaveOption
                 ? firstWord.options.filter((option) => option !== decoration)
@@ -170,6 +174,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
       } else if (selected?.[0]?.index != null) {
         newWords.push({
           ...wordsSelected[0],
+          custom,
           options: wordsSelected[0].options.includes(decoration)
             ? allAlreadyHaveOption
               ? wordsSelected[0].options.filter(
@@ -198,6 +203,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
             0,
             selected[selected.length - 1].index + 1
           ),
+          custom,
           options: lastWord.options.includes(decoration)
             ? allAlreadyHaveOption
               ? lastWord.options.filter((option) => option !== decoration)
@@ -218,6 +224,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
       ) {
         newWords.push({
           ...wordsSelected[wordsSelected.length - 1],
+          custom,
           options: wordsSelected[wordsSelected.length - 1].options.includes(
             decoration
           )
@@ -367,7 +374,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
   );
 
   const addDecoration = useCallback(
-    (decoration: string) => {
+    (decoration: string, custom?: Record<string, any>) => {
       const {
         firstNodeIndex,
         areTheSame,
@@ -451,6 +458,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
               selected: decSelected,
               isLast: key === linesBetween.length - 1,
               anchorComesFirst,
+              custom,
             });
 
           if (key === 0) {
@@ -479,6 +487,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
         selected,
         isLast: true,
         anchorComesFirst,
+        custom,
       });
     },
     [addToCtrlZ, doTheDecoration, getFirstAndLastNode, id, mimic, text, toast]

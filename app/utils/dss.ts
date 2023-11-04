@@ -18,10 +18,8 @@ export const dss = (
   const range = document.createRange();
 
   const first = dgb(firstId, false, firstIndex);
-  console.log(lastIndex);
 
   const last = dgb(lastId, false, lastIndex);
-  console.log(first, last, firstId, firstIndex);
 
   if (!first || !last) return;
 

@@ -1,11 +1,11 @@
+import { useGTTranslate } from "@geavila/gt-design";
+import clsx from "clsx";
 import { memo, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Code, atomOneLight, dracula } from "react-code-blocks";
 import { useTriggerState } from "react-trigger-state";
 import { useContextName } from "../../context/WriterContext";
 import { IDecoration } from "../../interface";
 import { DCode } from "./style";
-import { useGTTranslate } from "@geavila/gt-design";
-import clsx from "clsx";
 
 const STYLE_MAP = {
   bold: {
@@ -33,7 +33,7 @@ const STYLE_MAP = {
     borderBottom: "0.1rem solid var(--textBtn)",
     color: "var(--textBtn)",
     cursor: "pointer",
-  }
+  },
 };
 
 const Decoration = memo(
@@ -212,6 +212,7 @@ const Decoration = memo(
           borderBottomLeftRadius: "0px",
           paddingLeft: "0px",
         }),
+        position: "relative" as const,
       },
     };
 

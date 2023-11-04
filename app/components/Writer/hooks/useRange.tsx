@@ -19,11 +19,12 @@ function useRange() {
 
     if (!text) return {};
 
-    const { first, last } = getSelectedBlocks(text);
+    const info = getSelectedBlocks(text);
+    const { first, last } = info;
+    globalState.set("prev_range", { first, last });
 
     const range = dss(first.id, first.index, last.id, last.index);
     const bounds = range.getBoundingClientRect();
-
     const selector = document.querySelector(
       "[data-link-selector]"
     ) as HTMLElement;
@@ -36,19 +37,36 @@ function useRange() {
     document.body.style.overflow = "hidden";
   }, [contextName, getBlockId, getSelectedBlocks]);
 
-  useEffect(() => {
-    return () => {
-      document.body.style.overflow = "auto";
-      const selector = document.querySelector(
-        "[data-link-selector]"
-      ) as HTMLElement;
+  const hideSelector = useCallback(() => {
+    document.body.style.overflow = "auto";
+    const selector = document.querySelector(
+      "[data-link-selector]"
+    ) as HTMLElement;
 
-      selector.style.top = "0px";
-      selector.style.width = "0px";
-    };
+    selector.style.top = "0px";
+    selector.style.width = "0px";
   }, []);
 
-  return { getSelectedRange };
+  useEffect(() => {
+    return () => {
+      hideSelector();
+    };
+  }, [hideSelector]);
+
+  const setPrevRange = useCallback(() => {
+    const { first, last } = globalState.get("prev_range");
+
+    const range = dss(first.id, first.index, last.id, last.index);
+
+    const selection = window.getSelection();
+
+    if (!selection) return;
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }, []);
+
+  return { getSelectedRange, hideSelector, setPrevRange };
 }
 
 export default useRange;

@@ -1,7 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { ExternalLink } from "react-feather";
-import { globalState } from "react-trigger-state";
-import { useContextName } from "../../context/WriterContext";
 import useRange from "../../hooks/useRange";
 import { IText } from "../../interface";
 import { PopupFunctions } from "../interface";
@@ -12,38 +16,41 @@ function Link({
   popupRef,
   selectedOptions,
   addDecoration,
-  text,
-  id,
 }: {
   id: string;
   text: IText[];
   popupRef: React.MutableRefObject<PopupFunctions>;
   selectedOptions: string[];
-  addDecoration: (type: string) => void;
+  addDecoration: (type: string, customStyle?: Record<string, any>) => void;
 }) {
   const [show, setShow] = useState(false);
   const ref = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [input, setInput] = useState("");
   const optionsRef = useRef<HTMLDivElement>(null);
-  const contextName = useContextName();
 
-  const { getSelectedRange } = useRange();
+  const { getSelectedRange, hideSelector, setPrevRange } = useRange();
+
+  const includes = useMemo(
+    () => selectedOptions.includes("external_link"),
+    [selectedOptions]
+  );
 
   const externalLink = useCallback(() => {
-    const includes = selectedOptions.includes("external_link");
+    if (show) {
+      inputRef.current?.focus?.();
+      return;
+    }
+
     getSelectedRange();
+
     setShow((prev) => !prev);
 
     // add focus to input
     setTimeout(() => {
       inputRef.current?.focus?.();
     });
-
-    if (!includes) {
-      // addDecoration("external_link");
-    }
-  }, [getSelectedRange, selectedOptions]);
+  }, [getSelectedRange, show]);
 
   const handleKeyDown = useCallback((e) => {
     e.stopPropagation();
@@ -70,10 +77,15 @@ function Link({
   }, []);
 
   const handleApply = useCallback(() => {
-    const content = globalState.get(contextName);
+    hideSelector();
+    setPrevRange();
 
-    console.log(text, input);
-  }, [contextName, id, input, text]);
+    setTimeout(() => {
+      addDecoration("external_link", {
+        link: input,
+      });
+    });
+  }, [addDecoration, hideSelector, input, setPrevRange]);
 
   return (
     <>
@@ -99,7 +111,7 @@ function Link({
               placeholder="https://example.com"
             />
             <LinkStyle.Apply onClick={handleApply}>Apply</LinkStyle.Apply>
-            <LinkStyle.Remove>Remove</LinkStyle.Remove>
+            {includes && <LinkStyle.Remove>Remove</LinkStyle.Remove>}
           </LinkStyle.Container>
         </LinkStyle.Wrapper>
       </WPopup.Item>

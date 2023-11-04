@@ -34,6 +34,7 @@ module.exports = {
     "comma-dangle": "off",
     "@typescript-eslint/member-delimiter-style": "off",
     "@typescript-eslint/space-before-function-paren": "off",
+    "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/comma-dangle": "off",
     "react/prop-types": 1,
   },
