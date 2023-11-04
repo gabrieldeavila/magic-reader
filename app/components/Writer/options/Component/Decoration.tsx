@@ -30,7 +30,6 @@ const STYLE_MAP = {
     color: "var(--highlightText)",
   },
   external_link: {
-    borderBottom: "0.1rem solid var(--textBtn)",
     color: "var(--textBtn)",
     cursor: "pointer",
   },
@@ -44,6 +43,7 @@ const Decoration = memo(
     parentText,
     info,
     onlyOneBlockAndIsEmpty,
+    custom,
   }: IDecoration) => {
     const tagRef = useRef<HTMLDivElement>(null);
     const name = useContextName();
@@ -192,9 +192,18 @@ const Decoration = memo(
       [parentText.length, value.length]
     );
 
+    const isLink = useMemo(() => options.includes("external_link"), [options]);
+
     const tagOptions = {
       ref: tagRef,
+      href: isLink ? custom.link : null,
       "data-block-id": id,
+      onClick: (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+        if (isLink) {
+          e.preventDefault();
+          window.open(custom.link, "_blank");
+        }
+      },
       placeholder: onlyOneBlockAndIsEmpty && translateThis("SCRIBERE.EMPTY"),
       className: clsx(
         onlyOneBlockAndIsEmpty && "placeholder",
@@ -218,7 +227,8 @@ const Decoration = memo(
 
     if (options.includes("code") && value.length > 0) {
       return (
-        <DCode {...tagOptions}>
+        // @ts-expect-error - uh
+        <DCode {...tagOptions} as={isLink ? "a" : null}>
           <Code
             // @ts-expect-error - uh
             text={value}
@@ -229,7 +239,10 @@ const Decoration = memo(
       );
     }
 
-    return <span {...tagOptions}>{value || ""}</span>;
+    const Component = isLink ? "a" : "span";
+
+    // @ts-expect-error - uh
+    return <Component {...tagOptions}>{value || ""}</Component>;
   }
 );
 

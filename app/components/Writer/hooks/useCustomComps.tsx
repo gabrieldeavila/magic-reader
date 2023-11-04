@@ -67,8 +67,6 @@ function useCustomComps({
       };
     }
 
-    if()
-
     return props;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contextName, id, type, update, customStyle, align]);
