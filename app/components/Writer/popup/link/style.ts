@@ -7,6 +7,7 @@ const LinkWrapper = styled.div`
 
   top: 110%;
   right: 0;
+  transition: 0.2s ease-in-out;
 
   ${({ show }: { show: boolean }) => `
     opacity: ${show ? 1 : 0};

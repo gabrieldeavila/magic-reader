@@ -196,14 +196,15 @@ const Decoration = memo(
 
     const tagOptions = {
       ref: tagRef,
-      href: isLink ? custom.link : null,
+      href: isLink ? custom?.link : null,
       "data-block-id": id,
       onClick: (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
         if (isLink) {
           e.preventDefault();
-          window.open(custom.link, "_blank");
+          window.open(custom?.link, "_blank");
         }
       },
+      title: isLink ? custom?.link : null,
       placeholder: onlyOneBlockAndIsEmpty && translateThis("SCRIBERE.EMPTY"),
       className: clsx(
         onlyOneBlockAndIsEmpty && "placeholder",

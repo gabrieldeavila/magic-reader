@@ -31,7 +31,6 @@ function Nav({ logo }: { logo: string }) {
 
   const handleGoBack = useCallback(() => {
     const lang = stateStorage.get("lang");
-    console.log("aa");
     router.push(`/${lang}/legere`);
   }, [router]);
 

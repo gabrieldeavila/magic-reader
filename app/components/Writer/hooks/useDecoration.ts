@@ -71,7 +71,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
         });
       }
 
-      const allAlreadyHaveOption = selectedOptions.includes(decoration);
+      const allAlreadyHaveOption = !custom && selectedOptions.includes(decoration);
 
       // removes the first and last selected
       const selectedWithoutFirstAndLast = wordsSelected

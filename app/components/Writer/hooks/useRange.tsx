@@ -43,6 +43,8 @@ function useRange() {
       "[data-link-selector]"
     ) as HTMLElement;
 
+    if (!selector) return;
+
     selector.style.top = "0px";
     selector.style.width = "0px";
   }, []);
