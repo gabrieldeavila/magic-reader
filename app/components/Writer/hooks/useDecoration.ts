@@ -124,6 +124,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
               newWords.push({
                 ...firstWord,
                 value: first,
+                custom,
               });
             }
 
@@ -145,6 +146,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
             if (third) {
               newWords.push({
                 ...firstWord,
+                custom,
                 value: third,
               });
             }
@@ -154,6 +156,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
         } else {
           const firstWordSliced = {
             ...firstWord,
+            custom,
             value: firstWord.value.slice(0, selected[0].index),
           };
 
@@ -236,7 +239,6 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
             : [...wordsSelected[wordsSelected.length - 1].options, decoration],
         });
       }
-
       newWords.push(...wordsAfterSelected);
 
       // sees if can merge some words, because they have the same options
@@ -260,6 +262,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
         if (tempOptions.length > 0) {
           finalWords.push({
             ...tempOptions[0],
+            custom,
             value: tempOptions.map(({ value }) => value).join(""),
           });
         }
@@ -272,6 +275,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
       if (tempOptions.length > 0) {
         finalWords.push({
           ...tempOptions[0],
+          custom,
           value: tempOptions.map(({ value }) => value).join(""),
         });
       }
