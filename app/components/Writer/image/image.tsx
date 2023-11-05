@@ -1,6 +1,10 @@
 import EmojiPicker from "emoji-picker-react";
-import { memo, useCallback, useEffect, useRef } from "react";
-import { stateStorage, useTriggerState } from "react-trigger-state";
+import { memo, useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import {
+  globalState,
+  stateStorage,
+  useTriggerState,
+} from "react-trigger-state";
 import WritterImg from "./style";
 
 function Image() {
@@ -18,6 +22,7 @@ function Image() {
   });
 
   const ref = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
 
   const handleClick = useCallback(() => {
     setShowEmoji((prev) => !prev);
@@ -28,6 +33,32 @@ function Image() {
     document.title = `${emoji} ${title}`;
   }, [title, emoji]);
 
+  const handleTitle = useCallback(
+    (e: React.KeyboardEvent<HTMLHeadingElement>) => {
+      const currPos = window.getSelection()?.anchorOffset || 0;
+      globalState.set("curr_pos", currPos);
+
+      setTitle(e.currentTarget.textContent || " ");
+    },
+    [setTitle]
+  );
+
+  useLayoutEffect(() => {
+    const currPos = globalState.get("curr_pos");
+
+    // set the cursor to the end of the text
+    const range = document.createRange();
+    const sel = window.getSelection();
+    if (!sel) return;
+    const node = titleRef.current?.childNodes[0];
+    if (!node) return;
+
+    range.setStart(node, currPos);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }, [title]);
+
   return (
     <>
       <WritterImg.Wrapper>
@@ -36,7 +67,9 @@ function Image() {
           <WritterImg.Emoji ref={ref} role="button" onClick={handleClick}>
             {emoji}
           </WritterImg.Emoji>
-          <WritterImg.H1>{title}</WritterImg.H1>
+          <WritterImg.H1 ref={titleRef} onKeyUp={handleTitle} contentEditable>
+            {title}
+          </WritterImg.H1>
         </WritterImg.Title>
       </WritterImg.Wrapper>
       {showEmoji && <Emoji parentRef={ref} />}

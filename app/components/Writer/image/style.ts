@@ -20,12 +20,17 @@ const Title = styled.div`
   justify-content: center;
   margin-top: -1.5rem;
   gap: 0.5rem;
+  max-width: 100%;
+  padding: 0 2rem;
 `;
 
 const H1 = styled.h1`
   font-size: 2rem;
   font-weight: 700;
   color: var(--contrast);
+  outline: none;
+  word-break: break-word;
+  text-align: center;
 
   /* add shadow */
   text-shadow: 0 0 0.5rem var(--primary);
