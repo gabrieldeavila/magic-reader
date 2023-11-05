@@ -27,6 +27,7 @@ import { dga } from "../../../utils/dga";
 import TOC from "../TOC/TOC";
 import { StyledWriter } from "../style";
 import useResize from "../hooks/useResize";
+import Image from "../image/image";
 
 export const WriterContext = createContext<IWriterContext>({
   content: [],
@@ -725,6 +726,7 @@ const WriterContextProvider = ({
         addToCtrlZ,
       }}
     >
+      <Image />
       <StyledWriter.Wrapper>
         <StyledWriter.Container ref={writterRef}>
           <Selector data-link-selector />
