@@ -201,7 +201,10 @@ const Decoration = memo(
       onClick: (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
         if (isLink) {
           e.preventDefault();
-          window.open(custom?.link, "_blank");
+          // if the link doesn't have http or https, add it
+          const http = custom?.link?.includes("http") ? "" : "https://";
+
+          window.open(`${http}${custom?.link}`, "_blank");
         }
       },
       title: isLink ? custom?.link : null,
