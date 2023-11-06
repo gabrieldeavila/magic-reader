@@ -222,7 +222,7 @@ const Decoration = memo(
           borderBottomLeftRadius: "0px",
           paddingLeft: "0px",
         }),
-        position: "relative" as const,
+        // position: "relative" as const,
       },
     };
 

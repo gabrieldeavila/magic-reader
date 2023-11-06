@@ -1,11 +1,20 @@
 import EmojiPicker from "emoji-picker-react";
-import { memo, useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   globalState,
   stateStorage,
   useTriggerState,
 } from "react-trigger-state";
 import WritterImg from "./style";
+import { Button, useGTTranslate } from "@geavila/gt-design";
+import Unsplash from "./unsplash";
 
 function Image() {
   const [emoji] = useTriggerState({
@@ -59,10 +68,26 @@ function Image() {
     sel.addRange(range);
   }, [title]);
 
+  const [showBtn, setShowBtn] = useState(false);
+
+  const [showImg] = useTriggerState({
+    name: "show_img",
+    initial: false,
+  });
+
+  const [img] = useTriggerState({
+    name: "img",
+    initial:
+      "https://images.unsplash.com/photo-1607970669494-309137683be5?ixlib=rb-1.2.1&q=85&fm=jpg&crop=entropy&cs=srgb&w=3600",
+  });
+
   return (
     <>
-      <WritterImg.Wrapper>
-        <WritterImg.Image src="https://images.unsplash.com/photo-1607970669494-309137683be5?ixlib=rb-1.2.1&q=85&fm=jpg&crop=entropy&cs=srgb&w=3600" />
+      <WritterImg.Wrapper
+        onMouseEnter={() => setShowBtn(true)}
+        onMouseLeave={() => setShowBtn(false)}
+      >
+        <WritterImg.Image src={img} />
         <WritterImg.Title>
           <WritterImg.Emoji ref={ref} role="button" onClick={handleClick}>
             {emoji}
@@ -71,11 +96,31 @@ function Image() {
             {title}
           </WritterImg.H1>
         </WritterImg.Title>
+        <ChangeImg show={showBtn && !showImg} />
+        {showImg && <Unsplash />}
       </WritterImg.Wrapper>
       {showEmoji && <Emoji parentRef={ref} />}
+      {/* {show} */}
     </>
   );
 }
+
+const ChangeImg = memo(({ show }: { show: boolean }) => {
+  const { translateThis } = useGTTranslate();
+
+  return (
+    <WritterImg.Change show={show}>
+      <Button.Normal
+        defaultSize="sm"
+        onClick={() => stateStorage.set("show_img", true)}
+      >
+        {translateThis("CHANGE_IMG")}
+      </Button.Normal>
+    </WritterImg.Change>
+  );
+});
+
+ChangeImg.displayName = "ChangeImg";
 
 const Emoji = memo(
   ({ parentRef }: { parentRef: React.RefObject<HTMLDivElement> }) => {

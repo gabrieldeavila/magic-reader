@@ -111,6 +111,7 @@ export const TodoButton = styled.div`
 const WritterWrapper = styled.div`
   display: flex;
   justify-content: center;
+  padding-bottom: 2rem;
 `;
 
 const WritterContainer = styled.div`
