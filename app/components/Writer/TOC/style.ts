@@ -26,7 +26,7 @@ const Container = styled.div`
 
 const A = styled.a`
   margin-top: 0.1rem;
-  padding: 0.25rem 0.1rem;
+  padding: 0.25rem 0.5rem;
   border-radius: 5px;
 
   display: block;
@@ -36,7 +36,7 @@ const A = styled.a`
   transition: all 0.1s ease-in-out;
 
   &:hover {
-    background: var(--contrast-0_5);
+    background: var(--primary-0_5);
   }
 
   &:active {

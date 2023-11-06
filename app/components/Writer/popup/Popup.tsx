@@ -64,6 +64,7 @@ const PopupComp = (
   });
 
   const [isMultiLine, setIsMultiLine] = useState(false);
+  const [custom, setCustom] = useState({});
 
   const handleColors = useCallback(() => {
     const {
@@ -91,23 +92,34 @@ const PopupComp = (
     const selectedBlocks = (
       areFromDiffLines ? multiLineInfo.selectedBlocks : text
     ).filter(({ id }) => selectedIds.includes(id));
-
     // gets the options that are in all the selected
-    const options = selectedBlocks.reduce((acc, item, index) => {
-      if (index === 0) {
-        acc.push(...item.options);
+    const { options, custom } = selectedBlocks.reduce(
+      (acc, item, index) => {
+        if (item.custom) {
+          acc.custom = { ...acc.custom, ...item.custom };
+        }
+
+        if (index === 0) {
+          acc.options.push(...item.options);
+          return acc;
+        }
+
+        const newOptions = [];
+
+        acc.options.forEach((option) => {
+          if (item.options.includes(option)) {
+            newOptions.push(option);
+          }
+        });
+
+        acc.options = newOptions;
+
         return acc;
-      }
+      },
+      { options: [], custom: {} }
+    );
 
-      const newAcc = [];
-
-      acc.forEach((option) => {
-        if (item.options.includes(option)) newAcc.push(option);
-      });
-
-      return newAcc;
-    }, []);
-
+    setCustom(custom);
     setSelectedOptions(options);
   }, [getFirstAndLastNode, mimic, setSelectedOptions, text]);
 
@@ -120,6 +132,8 @@ const PopupComp = (
 
     let position = focus?.getBoundingClientRect?.();
     let blockInfo = { block: focus, offset: selection.focusOffset };
+
+    if (!anchor || !focus || !position) return;
 
     const anchorComesFirst = !!(
       anchor?.compareDocumentPosition(focus) & Node.DOCUMENT_POSITION_FOLLOWING
@@ -188,7 +202,7 @@ const PopupComp = (
 
       setPositions(newPositions);
     } catch (e) {
-      console.log(e);
+      console.log("remember to fix this error");
     }
   }, [handleColors, updatePositions]);
 
@@ -310,18 +324,20 @@ const PopupComp = (
           </WPopup.Code>
         </WPopup.Item>
 
-        <WPopup.Divider />
-
-        <Link
-          addDecoration={addDecoration}
-          text={text}
-          id={id}
-          popupRef={popupRef}
-          selectedOptions={selectedOptions}
-        />
-
         {!isMultiLine && (
           <>
+            <WPopup.Divider />
+            <WPopup.Item>
+              <Link
+                addDecoration={addDecoration}
+                text={text}
+                id={id}
+                custom={custom}
+                popupRef={popupRef}
+                selectedOptions={selectedOptions}
+              />
+            </WPopup.Item>
+
             <WPopup.Divider />
             <WPopup.Item>
               <Align id={id} align={align} />

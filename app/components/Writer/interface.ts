@@ -11,12 +11,12 @@ export type scribereActions = "p" | "h1" | "h2" | "h3" | "bl" | "nl" | "tl";
 export type TAlign = "left" | "center" | "right" | "justify";
 
 export interface ILink {
-  url: string;
+  link: string;
 }
 
 export interface IText {
   options?: TOptions[];
-  customStyle?: ITodo;
+  custom?: ILink;
   value: string;
   id: string;
 }

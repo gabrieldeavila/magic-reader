@@ -1,11 +1,11 @@
+import { useGTTranslate } from "@geavila/gt-design";
+import clsx from "clsx";
 import { memo, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Code, atomOneLight, dracula } from "react-code-blocks";
 import { useTriggerState } from "react-trigger-state";
 import { useContextName } from "../../context/WriterContext";
 import { IDecoration } from "../../interface";
 import { DCode } from "./style";
-import { useGTTranslate } from "@geavila/gt-design";
-import clsx from "clsx";
 
 const STYLE_MAP = {
   bold: {
@@ -30,10 +30,9 @@ const STYLE_MAP = {
     color: "var(--highlightText)",
   },
   external_link: {
-    borderBottom: "0.1rem solid var(--textBtn)",
     color: "var(--textBtn)",
     cursor: "pointer",
-  }
+  },
 };
 
 const Decoration = memo(
@@ -44,6 +43,7 @@ const Decoration = memo(
     parentText,
     info,
     onlyOneBlockAndIsEmpty,
+    custom,
   }: IDecoration) => {
     const tagRef = useRef<HTMLDivElement>(null);
     const name = useContextName();
@@ -192,9 +192,19 @@ const Decoration = memo(
       [parentText.length, value.length]
     );
 
+    const isLink = useMemo(() => options.includes("external_link"), [options]);
+
     const tagOptions = {
       ref: tagRef,
+      href: isLink ? custom?.link : null,
       "data-block-id": id,
+      onClick: (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+        if (isLink) {
+          e.preventDefault();
+          window.open(custom?.link, "_blank");
+        }
+      },
+      title: isLink ? custom?.link : null,
       placeholder: onlyOneBlockAndIsEmpty && translateThis("SCRIBERE.EMPTY"),
       className: clsx(
         onlyOneBlockAndIsEmpty && "placeholder",
@@ -212,12 +222,14 @@ const Decoration = memo(
           borderBottomLeftRadius: "0px",
           paddingLeft: "0px",
         }),
+        // position: "relative" as const,
       },
     };
 
     if (options.includes("code") && value.length > 0) {
       return (
-        <DCode {...tagOptions}>
+        // @ts-expect-error - uh
+        <DCode {...tagOptions} as={isLink ? "a" : null}>
           <Code
             // @ts-expect-error - uh
             text={value}
@@ -228,7 +240,10 @@ const Decoration = memo(
       );
     }
 
-    return <span {...tagOptions}>{value || ""}</span>;
+    const Component = isLink ? "a" : "span";
+
+    // @ts-expect-error - uh
+    return <Component {...tagOptions}>{value || ""}</Component>;
   }
 );
 

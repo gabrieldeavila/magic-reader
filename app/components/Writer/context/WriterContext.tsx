@@ -21,12 +21,13 @@ import {
   IWritterContent,
 } from "../interface";
 import Component from "../options/Component/Component";
-import { ReadWrite } from "../options/Component/style";
+import { ReadWrite, Selector } from "../options/Component/style";
 import { dcs } from "../../../utils/dcs";
 import { dga } from "../../../utils/dga";
 import TOC from "../TOC/TOC";
 import { StyledWriter } from "../style";
 import useResize from "../hooks/useResize";
+import Image from "../image/image";
 
 export const WriterContext = createContext<IWriterContext>({
   content: [],
@@ -520,6 +521,8 @@ const WriterContextProvider = ({
       const { dataLineId } = getBlockId({});
       const prevSelected = globalState.get("prev-selected");
 
+      if (e.target.tagName === "INPUT") return;
+
       if (prevSelected !== dataLineId) {
         stateStorage.set(`has_focus_ev-${prevSelected}`, false);
       }
@@ -550,6 +553,10 @@ const WriterContextProvider = ({
 
   const handlePaste = useCallback(
     (e) => {
+      if ((e.target as HTMLElement).closest("[data-link]")) {
+        return;
+      }
+
       const { dataLineId } = getBlockId({});
       stateStorage.set(`paste_ev-${dataLineId}`, { e, date: new Date() });
     },
@@ -719,14 +726,26 @@ const WriterContextProvider = ({
         addToCtrlZ,
       }}
     >
+      <Image />
       <StyledWriter.Wrapper>
         <StyledWriter.Container ref={writterRef}>
+          <Selector data-link-selector />
+
           <TOC />
 
           <ReadWrite
             contentEditable
             onKeyDown={handleKeyDown}
             onBlur={(e) => {
+              const relatedTarget = e.relatedTarget as HTMLElement;
+
+              if (
+                relatedTarget?.closest("[data-link]") ||
+                e.target.closest("[data-link]")
+              ) {
+                return;
+              }
+
               globalState.set("clicked-item", false);
               handleBlur(e);
             }}
@@ -736,6 +755,10 @@ const WriterContextProvider = ({
               const hasSomeData = datas.some((data) =>
                 (e.target as Element).hasAttribute(`data-${data}`)
               );
+
+              if ((e.target as HTMLElement).closest("[data-link]")) {
+                return;
+              }
 
               if (hasSomeData) {
                 // removes all the selection

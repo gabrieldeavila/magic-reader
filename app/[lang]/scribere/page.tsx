@@ -84,6 +84,42 @@ const DEFAULT_CONTENT: IWritterContent[] = [
     type: "h2",
     text: [
       {
+        value: "Link",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "p",
+    text: [
+      {
+        value: "Click in me!",
+        custom: {
+          link: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        },
+        options: ["external_link"],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "p",
+    text: [
+      {
+        value: "",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+  {
+    id: uuid(),
+    type: "h2",
+    text: [
+      {
         value: "Code",
         options: [],
         id: uuid(),

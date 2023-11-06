@@ -15,8 +15,10 @@ import {
 } from "react-trigger-state";
 import { dga } from "../../../../utils/dga";
 import { dgb } from "../../../../utils/dgb";
+import { dgs } from "../../../../utils/dgs";
 import uuid from "../../../../utils/uuid";
 import { useWriterContext } from "../../context/WriterContext";
+import useCustomComps from "../../hooks/useCustomComps";
 import useDeleteMultiple from "../../hooks/useDeleteMultiple";
 import useGetCurrBlockId from "../../hooks/useGetCurrBlockId";
 import usePositions from "../../hooks/usePositions";
@@ -26,8 +28,6 @@ import Popup from "../../popup/Popup";
 import { PopupFunctions } from "../../popup/interface";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
-import { dgs } from "../../../../utils/dgs";
-import useCustomComps from "../../hooks/useCustomComps";
 
 function Component({
   type,

@@ -29,7 +29,6 @@ function useReadingTime({
     // if it isn't, create a new entry
     const checkPage = async () => {
       const prev = GET_PREV()?.time;
-      console.log(prev);
       if (!prev) return;
 
       const diff = differenceInSeconds(Date.now(), prev);
