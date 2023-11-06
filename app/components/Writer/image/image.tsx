@@ -114,12 +114,12 @@ const ChangeImg = memo(({ show }: { show: boolean }) => {
 
   return (
     <WritterImg.Change show={show}>
-      <Button.Normal
+      <Button.Contrast
         defaultSize="sm"
         onClick={() => stateStorage.set("show_img", true)}
       >
         {translateThis("CHANGE_IMG")}
-      </Button.Normal>
+      </Button.Contrast>
     </WritterImg.Change>
   );
 });

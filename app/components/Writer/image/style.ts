@@ -35,7 +35,7 @@ const H1 = styled.h1`
   text-align: center;
 
   /* add shadow */
-  text-shadow: 0 0 0.5rem var(--primary);
+  text-shadow: 0 0 0.5rem var(--primary-0_5);
 `;
 
 const Emoji = styled.span`
@@ -101,6 +101,7 @@ const UnsplashContainer = styled.div`
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
+  padding-top: 0.5rem;
   gap: 0.5rem;
 `;
 
@@ -141,6 +142,34 @@ const UnsplashImgWrapper = styled.div`
   }
 `;
 
+const UnsplashTitle = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.75rem;
+`;
+
+const UnsplashStyInput = styled.input`
+  width: -webkit-fill-available;
+  padding: 0.5rem;
+  border-radius: 5px;
+  border: none;
+  outline: none;
+  background: var(--primary-0_5);
+  color: var(--contrast);
+  font-size: 0.8rem;
+  font-weight: 300;
+  margin-bottom: 1rem;
+  transition: 0.2s ease-in-out;
+  
+  ${shadows.simple};
+
+
+  & * svg {
+    cursor: pointer;
+  }
+`;
+
 export const UnsplashSty = {
   Wrapper: UnsplashWrapper,
   Modal: UnplashModal,
@@ -148,4 +177,6 @@ export const UnsplashSty = {
   Author: UnsplashAuthor,
   Container: UnsplashContainer,
   ImgWrapper: UnsplashImgWrapper,
+  Input: UnsplashStyInput,
+  Title: UnsplashTitle,
 };

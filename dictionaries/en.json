@@ -72,6 +72,8 @@
     "TL": "Task List",
     "AC": "Accordion"
   },
+  "SEARCH": "Search",
+  "NO_RESULTS": "No results found",
   "CHANGE_IMG": "Change Image",
   "TOC": "Table of Contents"
 }
