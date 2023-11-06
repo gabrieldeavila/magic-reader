@@ -19,6 +19,7 @@ function Unsplash() {
 
   const handleClick = useCallback((img) => {
     stateStorage.set("img", img.urls.full);
+    stateStorage.set("show_img", false);
   }, []);
 
   return (
@@ -38,7 +39,7 @@ function Unsplash() {
           ))}
         </UnsplashSty.Container>
       </UnsplashSty.Wrapper>
-      <UnsplashSty.Modal />
+      <UnsplashSty.Modal onClick={() => stateStorage.set("show_img", false)} />
     </>
   );
 }

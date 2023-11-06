@@ -81,6 +81,10 @@ function Image() {
       "https://images.unsplash.com/photo-1607970669494-309137683be5?ixlib=rb-1.2.1&q=85&fm=jpg&crop=entropy&cs=srgb&w=3600",
   });
 
+  useEffect(() => {
+    setShowBtn(false);
+  }, [showImg]);
+
   return (
     <>
       <WritterImg.Wrapper
