@@ -28,6 +28,7 @@ import Popup from "../../popup/Popup";
 import { PopupFunctions } from "../../popup/interface";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
+import Image from "../img/Image";
 
 function Component({
   type,
@@ -48,6 +49,7 @@ function Component({
   const {
     contextName,
     handleUpdate,
+    handleAddImg,
     deleteBlock,
     deleteLine,
     addToCtrlZ,
@@ -1699,6 +1701,21 @@ function Component({
       }
 
       const copiedText = e.clipboardData.getData("text/html");
+      const items = e.clipboardData.items;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf("image") !== -1) {
+          const file = items[i].getAsFile();
+          const reader = new FileReader();
+
+          reader.onload = function () {
+            const base64String = reader.result?.toString().split(",")[1];
+            handleAddImg(base64String, lineId);
+          };
+
+          reader.readAsDataURL(file);
+        }
+      }
 
       // transforms the copiedText into html
       const parser = new DOMParser();
@@ -1994,6 +2011,7 @@ function Component({
       findChildOptions,
       getBlockId,
       getOptions,
+      handleAddImg,
       handleUpdate,
       id,
       info,
@@ -2069,6 +2087,10 @@ function Component({
   });
 
   const DisEditable = Editable[type ?? "p"];
+
+  if (customStyle?.src) {
+    return <Image customStyle={customStyle} />;
+  }
 
   return (
     <DisEditable

@@ -7,7 +7,7 @@ type TOptions =
   | "highlight"
   | "external_link";
 
-export type scribereActions = "p" | "h1" | "h2" | "h3" | "bl" | "nl" | "tl";
+export type scribereActions = "p" | "h1" | "h2" | "h3" | "bl" | "nl" | "tl" | "img";
 export type TAlign = "left" | "center" | "right" | "justify";
 
 export interface ILink {
@@ -25,10 +25,14 @@ export interface ITodo {
   checked: boolean;
 }
 
+export interface IImg {
+  src: string;
+}
+
 export interface IWritterContent {
   text: IText[];
   type: scribereActions;
-  customStyle?: ITodo;
+  customStyle?: ITodo & IImg;
   align?: TAlign;
   id: string;
 }
@@ -83,6 +87,7 @@ export interface IWriterContext {
   handleUpdate: (textId: string, value: IText[]) => void;
   deleteBlock: (textId: string, blockId: string) => void;
   deleteLine: (textId: string) => void;
+  handleAddImg: (img: string, lineId: string) => void;
   addToCtrlZ: ({
     lineId,
     blockId,
@@ -133,4 +138,8 @@ export interface IPopup {
 export interface IKeys {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
+}
+
+export interface IImage {
+  customStyle: IImg;
 }

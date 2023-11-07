@@ -44,6 +44,9 @@ export const WriterContext = createContext<IWriterContext>({
   addToCtrlZ: ({ lineId, blockId, value, action }) => {
     console.log(lineId, blockId, value, action);
   },
+  handleAddImg: (img) => {
+    console.log(img);
+  },
   contextName: "writter_context",
   info: {
     current: {
@@ -713,12 +716,41 @@ const WriterContextProvider = ({
 
   useResize(writterRef);
 
+  const handleAddImg = useCallback(
+    (img, lineId) => {
+      setContent((prev) => {
+        const newContent = prev.reduce((acc, item) => {
+          acc.push(item);
+
+          if (item.id === lineId) {
+            const newText: IWritterContent = {
+              id: uuid(),
+              type: "img",
+              customStyle: {
+                src: `data:image/png;base64,${img}`,
+              },
+              text: [],
+            };
+
+            acc.push(newText);
+          }
+
+          return acc;
+        }, []);
+
+        return newContent;
+      });
+    },
+    [setContent]
+  );
+
   return (
     <WriterContext.Provider
       value={{
         content,
         setContent,
         handleUpdate,
+        handleAddImg,
         contextName,
         deleteBlock,
         deleteLine,
