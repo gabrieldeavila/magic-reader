@@ -75,6 +75,8 @@
   "SEARCH": "Search",
   "NO_RESULTS": "No results found",
   "ADD_CAPTION": "Click to add Caption",
+  "CAPTION_LABEL": "Caption",
+  "REMOVE_IMG": "Remove Image",
   "CHANGE_IMG": "Change Image",
   "TOC": "Table of Contents"
 }

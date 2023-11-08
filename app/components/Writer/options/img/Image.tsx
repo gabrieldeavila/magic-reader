@@ -1,16 +1,19 @@
-import { GTTooltip } from "@geavila/gt-design";
+import { GTTooltip, useGTTranslate } from "@geavila/gt-design";
 import React, { useCallback } from "react";
-import { Feather } from "react-feather";
+import { Feather, Trash } from "react-feather";
 import { IImage } from "../../interface";
 import ImageComp from "./style";
 import { useContextName } from "../../context/WriterContext";
-import { globalState } from "react-trigger-state";
+import { globalState, stateStorage } from "react-trigger-state";
 
 function Image({ customStyle, id }: IImage) {
+  const { translateThis } = useGTTranslate();
+
   const imgRef = React.useRef<HTMLImageElement>(null);
   const iconsRef = React.useRef<HTMLDivElement>(null);
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const featherRef = React.useRef<HTMLDivElement>(null);
+  const trashRef = React.useRef<HTMLDivElement>(null);
   const captionRef = React.useRef<HTMLDivElement>(null);
 
   const contextName = useContextName();
@@ -42,6 +45,20 @@ function Image({ customStyle, id }: IImage) {
     [contextName, id]
   );
 
+  const removeImg = useCallback(() => {
+    // gets the value
+    const content = globalState.get(contextName);
+
+    // gets the current index
+    const currentIndex = content.findIndex((item) => item.id === id);
+
+    // removes the item
+    content.splice(currentIndex, 1);
+
+    // sets the value
+    stateStorage.set(contextName, [...content]);
+  }, [contextName, id]);
+
   return (
     <ImageComp.Wrapper
       ref={wrapperRef}
@@ -55,6 +72,11 @@ function Image({ customStyle, id }: IImage) {
           <Feather size={15} />
           <GTTooltip parentRef={featherRef} text="ADD_CAPTION" />
         </ImageComp.IconBtn>
+
+        <ImageComp.IconBtn onClick={removeImg} role="button" ref={trashRef}>
+          <Trash size={15} />
+          <GTTooltip parentRef={trashRef} text="REMOVE_IMG" />
+        </ImageComp.IconBtn>
       </ImageComp.Svg>
 
       <ImageComp.Img ref={imgRef} src={customStyle.src} />
@@ -63,7 +85,7 @@ function Image({ customStyle, id }: IImage) {
         onKeyUp={handleAddCaption}
         contentEditable={true}
         suppressContentEditableWarning={true}
-        placeholder="Add caption"
+        placeholder={translateThis("CAPTION_LABEL")}
       >
         {customStyle.caption}
       </ImageComp.Caption>

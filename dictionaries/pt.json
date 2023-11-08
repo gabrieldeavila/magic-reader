@@ -77,5 +77,7 @@
   "SEARCH": "Pesquisar",
   "NO_RESULTS": "Nenhum resultado encontrado",
   "ADD_CAPTION": "Adicionar legenda",
+  "CAPTION_LABEL": "Legenda",
+  "REMOVE_IMG": "Remover imagem",
   "TOC": "Índice"
 }

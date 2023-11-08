@@ -15,12 +15,15 @@ const Img = styled.img`
 
 const SvgWrapper = styled.div`
   position: absolute;
-  top: 0.75rem;
+  top: 0;
   margin: 0.5rem 0;
   right: 0.5rem;
   z-index: 5;
   opacity: 0;
   transition: 0.2s ease-in-out;
+
+  display: flex;
+  gap: 0.5rem;
 `;
 
 const Wrapper = styled.div`
