@@ -27,6 +27,7 @@ export interface ITodo {
 
 export interface IImg {
   src: string;
+  caption?: string;
 }
 
 export interface IWritterContent {
@@ -142,4 +143,5 @@ export interface IKeys {
 
 export interface IImage {
   customStyle: IImg;
+  id: string;
 }

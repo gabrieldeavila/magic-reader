@@ -1,31 +1,46 @@
-import React, { useEffect } from "react";
+import { GTTooltip } from "@geavila/gt-design";
+import React, { useCallback } from "react";
+import { Feather } from "react-feather";
 import { IImage } from "../../interface";
 import ImageComp from "./style";
-import { Feather } from "react-feather";
+import { useContextName } from "../../context/WriterContext";
+import { globalState } from "react-trigger-state";
 
-function Image({ customStyle }: IImage) {
+function Image({ customStyle, id }: IImage) {
   const imgRef = React.useRef<HTMLImageElement>(null);
   const iconsRef = React.useRef<HTMLDivElement>(null);
   const wrapperRef = React.useRef<HTMLDivElement>(null);
+  const featherRef = React.useRef<HTMLDivElement>(null);
+  const captionRef = React.useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handler = () => {
-      if (wrapperRef.current == null || imgRef.current == null) return;
+  const contextName = useContextName();
 
-      const bounds = imgRef.current.getBoundingClientRect();
-      const wrapperBounds = wrapperRef.current.getBoundingClientRect();
+  const addCaption = useCallback(() => {
+    captionRef.current?.focus();
 
-      const diff = bounds.left - wrapperBounds.left;
-
-      iconsRef.current.style.right = `${diff}px`;
-    };
-
-    handler();
-
-    document.addEventListener("resize", handler);
-
-    return () => document.removeEventListener("resize", handler);
+    // scrolls to the captionRef
+    wrapperRef.current?.scrollTo({
+      top: captionRef.current?.offsetTop,
+      behavior: "smooth",
+    });
   }, []);
+
+  const handleAddCaption = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      // gets the value
+      const content = globalState.get(contextName);
+
+      // gets the current index
+      const currentIndex = content.findIndex((item) => item.id === id);
+
+      // updates the value
+      content[currentIndex].customStyle.caption = e.currentTarget.innerText;
+
+      // sets the value
+      globalState.set(contextName, content);
+    },
+    [contextName, id]
+  );
 
   return (
     <ImageComp.Wrapper
@@ -36,10 +51,22 @@ function Image({ customStyle }: IImage) {
       onDrag={(e) => e.preventDefault()}
     >
       <ImageComp.Svg ref={iconsRef}>
-        <Feather size={15} />
+        <ImageComp.IconBtn onClick={addCaption} role="button" ref={featherRef}>
+          <Feather size={15} />
+          <GTTooltip parentRef={featherRef} text="ADD_CAPTION" />
+        </ImageComp.IconBtn>
       </ImageComp.Svg>
 
       <ImageComp.Img ref={imgRef} src={customStyle.src} />
+      <ImageComp.Caption
+        ref={captionRef}
+        onKeyUp={handleAddCaption}
+        contentEditable={true}
+        suppressContentEditableWarning={true}
+        placeholder="Add caption"
+      >
+        {customStyle.caption}
+      </ImageComp.Caption>
     </ImageComp.Wrapper>
   );
 }

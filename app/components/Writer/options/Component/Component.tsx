@@ -2089,7 +2089,7 @@ function Component({
   const DisEditable = Editable[type ?? "p"];
 
   if (customStyle?.src) {
-    return <Image customStyle={customStyle} />;
+    return <Image id={id} customStyle={customStyle} />;
   }
 
   return (

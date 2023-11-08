@@ -665,7 +665,9 @@ const WriterContextProvider = ({
       // gets the text from the curr line
       const lineText = globalState
         .get(contextName)
-        .find(({ id }) => id === dataLineId).text;
+        .find(({ id }) => id === dataLineId)?.text;
+
+      if (!lineText) return;
 
       const firstTextId = lineText[0].id;
       const lastTextId = lineText[lineText.length - 1].id;
@@ -726,6 +728,7 @@ const WriterContextProvider = ({
             const newText: IWritterContent = {
               id: uuid(),
               type: "img",
+              // @ts-expect-error works
               customStyle: {
                 src: `data:image/png;base64,${img}`,
               },
