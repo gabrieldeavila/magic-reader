@@ -12,8 +12,8 @@ const Image = styled.img`
   height: 150px;
   width: 100%;
   user-select: none;
-
   object-fit: cover;
+  object-position: center 0%;
 `;
 
 const Title = styled.div`
@@ -58,10 +58,25 @@ const Change = styled.div`
   };
   pointer-events: ${show ? "all" : "none"};
 `}
-
+  display: flex;
+  gap: 0.5rem;
   position: absolute;
   top: 100px;
   right: 2rem;
+`;
+
+const Range = styled.div`
+  position: absolute;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  top: 30%;
+
+  p {
+    background: var(--primary-0_2);
+    border-radius: 5px;
+    padding: 0.5rem;
+  }
 `;
 
 const WritterImg = {
@@ -69,6 +84,7 @@ const WritterImg = {
   Image,
   Emoji,
   EmojiPicker,
+  Range,
   Title,
   H1,
   Change,
@@ -161,9 +177,8 @@ const UnsplashStyInput = styled.input`
   font-weight: 300;
   margin-bottom: 1rem;
   transition: 0.2s ease-in-out;
-  
-  ${shadows.simple};
 
+  ${shadows.simple};
 
   & * svg {
     cursor: pointer;

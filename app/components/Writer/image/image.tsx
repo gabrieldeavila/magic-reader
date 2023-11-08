@@ -13,7 +13,7 @@ import {
   useTriggerState,
 } from "react-trigger-state";
 import WritterImg from "./style";
-import { Button, useGTTranslate } from "@geavila/gt-design";
+import { Button, Text, useGTTranslate } from "@geavila/gt-design";
 import Unsplash from "./unsplash";
 
 function Image() {
@@ -29,7 +29,13 @@ function Image() {
     name: "title",
     initial: "Some Title",
   });
-
+  const { translateThis } = useGTTranslate();
+  const [imageRange, setImageRange] = useState(0);
+  const [showChangePosition] = useTriggerState({
+    name: "show_change_position",
+    initial: false,
+  });
+  const imgRef = useRef<HTMLImageElement>(null);
   const ref = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
 
@@ -85,13 +91,23 @@ function Image() {
     setShowBtn(false);
   }, [showImg]);
 
+  const setRange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    // sets the object position
+    imgRef.current?.style.setProperty(
+      "object-position",
+      `center ${e.currentTarget.value}%`
+    );
+
+    setImageRange(Number(e.currentTarget.value));
+  }, []);
+
   return (
     <>
       <WritterImg.Wrapper
         onMouseEnter={() => setShowBtn(true)}
         onMouseLeave={() => setShowBtn(false)}
       >
-        <WritterImg.Image src={img} />
+        <WritterImg.Image ref={imgRef} src={img} />
         <WritterImg.Title>
           <WritterImg.Emoji ref={ref} role="button" onClick={handleClick}>
             {emoji}
@@ -100,17 +116,35 @@ function Image() {
             {title}
           </WritterImg.H1>
         </WritterImg.Title>
+
         <ChangeImg show={showBtn && !showImg} />
+
         {showImg && <Unsplash />}
+
+        {showChangePosition && (
+          <WritterImg.Range>
+            <Text.P>
+              {translateThis("IMG_RANGE_POSITION")} ({imageRange}%)
+            </Text.P>
+            <input type="range" value={imageRange} onChange={setRange} />
+          </WritterImg.Range>
+        )}
       </WritterImg.Wrapper>
       {showEmoji && <Emoji parentRef={ref} />}
-      {/* {show} */}
     </>
   );
 }
 
 const ChangeImg = memo(({ show }: { show: boolean }) => {
   const { translateThis } = useGTTranslate();
+  const [showChangePosition, setShowChangePosition] = useTriggerState({
+    name: "show_change_position",
+    initial: false,
+  });
+
+  const changePosition = useCallback(() => {
+    setShowChangePosition((prev) => !prev);
+  }, [setShowChangePosition]);
 
   return (
     <WritterImg.Change show={show}>
@@ -119,6 +153,13 @@ const ChangeImg = memo(({ show }: { show: boolean }) => {
         onClick={() => stateStorage.set("show_img", true)}
       >
         {translateThis("CHANGE_IMG")}
+      </Button.Contrast>
+      <Button.Contrast
+        defaultSize="sm"
+        fitContent
+        onClick={changePosition}
+      >
+        {translateThis(showChangePosition ? "CHANGING_POSITION" : "CHANGE_POSITION")}
       </Button.Contrast>
     </WritterImg.Change>
   );
