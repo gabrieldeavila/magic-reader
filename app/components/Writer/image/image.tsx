@@ -119,7 +119,12 @@ function Image() {
           <WritterImg.Emoji ref={ref} role="button" onClick={handleClick}>
             {emoji}
           </WritterImg.Emoji>
-          <WritterImg.H1 ref={titleRef} onKeyUp={handleTitle} contentEditable>
+          <WritterImg.H1
+            ref={titleRef}
+            onKeyUp={handleTitle}
+            contentEditable
+            suppressContentEditableWarning
+          >
             {title}
           </WritterImg.H1>
         </WritterImg.Title>

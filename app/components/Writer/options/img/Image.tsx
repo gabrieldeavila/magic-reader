@@ -83,8 +83,8 @@ function Image({ customStyle, id }: IImage) {
       <ImageComp.Caption
         ref={captionRef}
         onKeyUp={handleAddCaption}
-        contentEditable={true}
-        suppressContentEditableWarning={true}
+        contentEditable
+        suppressContentEditableWarning
         placeholder={translateThis("CAPTION_LABEL")}
       >
         {customStyle.caption}
