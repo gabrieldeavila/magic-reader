@@ -180,6 +180,7 @@ function Component({
           stateStorage.set(contextName, newContent);
           return;
         }
+
         const content = globalState.get(contextName);
 
         const currTextIndex = content.findIndex(
@@ -249,9 +250,21 @@ function Component({
           // gets where there is a space in the selected letters
           let spaceIndex = -1;
 
+          const startLetter =
+            selectedLetters?.[
+              firstNodeIndex - (event.key === "Backspace" ? 1 : -1)
+            ];
+
+          // if start with a space, it will delete until the first letter
+          const startWithSpace = startLetter.letter === " ";
+
           if (event.key === "Backspace") {
             selectedLetters.find(({ letter }, index) => {
-              if (letter === " " && index != lastNodeIndex) {
+              const letterToCheck = startWithSpace
+                ? letter !== " "
+                : letter === " ";
+
+              if (letterToCheck && index != lastNodeIndex) {
                 spaceIndex = index;
                 return false;
               }
@@ -260,11 +273,19 @@ function Component({
             });
           } else {
             spaceIndex = selectedLetters.findIndex(({ letter }, index) => {
-              return letter === " " && index > firstNodeIndex;
+              const letterToCheck = startWithSpace
+                ? letter !== " "
+                : letter === " ";
+
+              return letterToCheck && index > firstNodeIndex;
             });
 
             if (spaceIndex === -1) {
               spaceIndex = selectedLetters.length - 1;
+            }
+
+            if (startWithSpace) {
+              spaceIndex = spaceIndex - 1;
             }
           }
 
