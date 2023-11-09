@@ -1,3 +1,4 @@
+import { Button, Text, useGTTranslate } from "@geavila/gt-design";
 import EmojiPicker from "emoji-picker-react";
 import {
   memo,
@@ -13,7 +14,6 @@ import {
   useTriggerState,
 } from "react-trigger-state";
 import WritterImg from "./style";
-import { Button, Text, useGTTranslate } from "@geavila/gt-design";
 import Unsplash from "./unsplash";
 
 function Image() {
@@ -30,7 +30,11 @@ function Image() {
     initial: "Some Title",
   });
   const { translateThis } = useGTTranslate();
-  const [imageRange, setImageRange] = useState(0);
+  const [imageRange, setImageRange] = useTriggerState({
+    name: "image_range",
+    initial: 0,
+  });
+
   const [showChangePosition] = useTriggerState({
     name: "show_change_position",
     initial: false,
@@ -91,15 +95,18 @@ function Image() {
     setShowBtn(false);
   }, [showImg]);
 
-  const setRange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    // sets the object position
-    imgRef.current?.style.setProperty(
-      "object-position",
-      `center ${e.currentTarget.value}%`
-    );
+  const setRange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      // sets the object position
+      imgRef.current?.style.setProperty(
+        "object-position",
+        `center ${e.currentTarget.value}%`
+      );
 
-    setImageRange(Number(e.currentTarget.value));
-  }, []);
+      setImageRange(Number(e.currentTarget.value));
+    },
+    [setImageRange]
+  );
 
   return (
     <>
@@ -143,7 +150,15 @@ const ChangeImg = memo(({ show }: { show: boolean }) => {
   });
 
   const changePosition = useCallback(() => {
-    setShowChangePosition((prev) => !prev);
+    setShowChangePosition((prev) => {
+      const value = !prev;
+
+      if (!value) {
+        console.log("novo valor", value);
+      }
+
+      return value;
+    });
   }, [setShowChangePosition]);
 
   return (
@@ -154,12 +169,10 @@ const ChangeImg = memo(({ show }: { show: boolean }) => {
       >
         {translateThis("CHANGE_IMG")}
       </Button.Contrast>
-      <Button.Contrast
-        defaultSize="sm"
-        fitContent
-        onClick={changePosition}
-      >
-        {translateThis(showChangePosition ? "CHANGING_POSITION" : "CHANGE_POSITION")}
+      <Button.Contrast defaultSize="sm" fitContent onClick={changePosition}>
+        {translateThis(
+          showChangePosition ? "CHANGING_POSITION" : "CHANGE_POSITION"
+        )}
       </Button.Contrast>
     </WritterImg.Change>
   );

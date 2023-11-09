@@ -1295,10 +1295,15 @@ function Component({
       const newChar = verifyForAccents(event);
 
       const avoidAlt = handleAltEvents(event);
+      let customPosition = 0;
 
       if (addCustomChar(event, inputChar)) return;
 
-      if (!isAllowed && newChar !== false) {
+      if (event.key === "Tab") {
+        event.preventDefault();
+        inputChar = "    ";
+        customPosition = 3;
+      } else if (!isAllowed && newChar !== false) {
         inputChar = newChar;
       } else if (!isAllowed) {
         verifySpecialChars(event);
@@ -1381,7 +1386,7 @@ function Component({
         handleUpdate(lineId, newText);
 
         info.current = {
-          selection: cursorPositionValue + 1,
+          selection: cursorPositionValue + 1 + customPosition,
           blockId: changedBlockId,
         };
       });

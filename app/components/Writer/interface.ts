@@ -28,6 +28,7 @@ export interface ITodo {
 export interface IImg {
   src: string;
   caption?: string;
+  range?: number;
 }
 
 export interface IWritterContent {
