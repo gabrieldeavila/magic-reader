@@ -790,12 +790,29 @@ function Component({
         const block = document.querySelector(
           `[data-block-id="${changedBlockId}"]`
         );
+        const parent = block?.parentElement;
 
-        const style = block?.getAttribute("style");
+        const type = block?.tagName === "SPAN" ? parent : block;
 
-        const span = document.createElement("span");
+        const style = type?.getAttribute("style");
+        const tag = type?.tagName;
+
+        const allProps = (type?.getAttributeNames() ?? []).reduce(
+          (acc, item) => {
+            acc[item] = type?.getAttribute(item);
+            return acc;
+          },
+          {}
+        );
+
+        const span = document.createElement(tag);
         span.setAttribute("style", style ?? "");
         span.appendChild(textCopied);
+
+        // adds all the props
+        Object.keys(allProps).forEach((item) => {
+          span.setAttribute(item, allProps[item]);
+        });
 
         // @ts-expect-error - it sure is a text
         textCopied = span;
@@ -804,7 +821,140 @@ function Component({
 
     // Create a Blob for the HTML content and a Blob for the plain text
     const div = document.createElement("div");
-    div.appendChild(textCopied);
+
+    const copiedChildren = Array.from(textCopied.children);
+
+    const setStyle = (items: HTMLElement[], type: string) => {
+      let newHTML;
+
+      if (type === "tl") {
+        // todo list
+        newHTML = document.createElement("ul");
+
+        items.forEach((item) => {
+          const li = document.createElement("li");
+          // add the checked attribute
+          const isChecked =
+            item.querySelector("[data-todo]")?.getAttribute("data-todo") ===
+            "true";
+
+          const childrenFiltered = Array.from(item.children).filter(
+            (item) => !item.getAttribute("data-popup")
+          );
+
+          const newItem = document.createElement("div");
+
+          newItem.append(...childrenFiltered);
+
+          // add [ ] or [x] to the text
+          const text = newItem.innerText;
+          const span = document.createElement("span");
+          span.innerText = isChecked ? "[x] " : "[ ] ";
+
+          li.appendChild(span);
+          li.appendChild(document.createTextNode(text));
+
+          // add style
+          li.style.listStyleType = "decimal";
+
+          if (isChecked) {
+            li.setAttribute("checked", "checked");
+          }
+
+          newHTML.appendChild(li);
+        });
+      } else if (type === "bl") {
+        // bullet list
+        newHTML = document.createElement("ul");
+
+        items.forEach((item) => {
+          const li = document.createElement("li");
+
+          const childrenFiltered = Array.from(item.children).filter(
+            (item) => !item.getAttribute("data-popup")
+          );
+
+          const newItem = document.createElement("div");
+
+          newItem.append(...childrenFiltered);
+
+          const text = newItem.innerText;
+
+          li.appendChild(document.createTextNode(text));
+
+          newHTML.appendChild(li);
+        });
+      } else if (type === "nl") {
+        // number list
+        newHTML = document.createElement("ol");
+
+        items.forEach((item) => {
+          const li = document.createElement("li");
+
+          const childrenFiltered = Array.from(item.children).filter(
+            (item) => !item.getAttribute("data-popup")
+          );
+
+          const newItem = document.createElement("div");
+
+          newItem.append(...childrenFiltered);
+
+          const text = newItem.innerText;
+
+          li.appendChild(document.createTextNode(text));
+
+          newHTML.appendChild(li);
+        });
+      }
+
+      return newHTML;
+    };
+
+    if (copiedChildren.length) {
+      let currType = "";
+      let newChildren = [];
+
+      const typesToAgroup = ["bl", "nl", "tl"];
+
+      const toCopy = copiedChildren.reduce((acc, item) => {
+        const compType = item.getAttribute("data-component");
+
+        if (typesToAgroup.includes(compType) && compType === currType) {
+          newChildren.push(item);
+        } else if (typesToAgroup.includes(compType)) {
+          if (newChildren.length > 0) {
+            const newDiv = setStyle(newChildren, currType);
+
+            acc.push(newDiv);
+          }
+
+          currType = compType;
+          newChildren = [item];
+        } else {
+          if (newChildren.length > 0) {
+            const newDiv = setStyle(newChildren, currType);
+
+            acc.push(newDiv);
+          }
+
+          newChildren = [];
+
+          acc.push(item);
+        }
+
+        return acc;
+      }, []);
+
+      const newDiv = setStyle(newChildren, currType);
+      if (newDiv) {
+        toCopy.push(newDiv);
+      }
+
+      div.innerHTML = "";
+      div.append(...toCopy);
+    } else {
+      div.appendChild(textCopied);
+    }
 
     // removes all children with data-popup
     const popups = div.querySelectorAll("[data-popup]");
@@ -868,6 +1018,7 @@ function Component({
       } else if (["v", "r"].includes(e.key)) {
         return true;
       } else if (["a"].includes(e.key)) {
+        console.log("Uh");
         // selects all the text
         e.preventDefault();
         const shouldSelectAllContent =
@@ -892,13 +1043,13 @@ function Component({
 
         const range = document.createRange();
 
-        if (!firstBlock || !lastBlock) return;
+        if (!firstBlock || !lastBlock) return true;
 
         const first = dgb(firstBlock);
 
         const last = dgb(lastBlock, false);
 
-        if (!first || !last) return;
+        if (!first || !last) return true;
 
         range.setStart(first, 0);
 
@@ -1336,7 +1487,7 @@ function Component({
       const avoidCtrl = handleCtrlEvents(event, ctrlPressed);
 
       if (avoidCtrl || avoidAlt) return;
-
+      console.log(avoidCtrl, "html");
       event.preventDefault();
 
       const selection = window.getSelection();
@@ -1716,7 +1867,6 @@ function Component({
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement>) => {
       e.preventDefault();
-
       const selection = window.getSelection();
 
       const numberOfChars = selection.toString().length;
