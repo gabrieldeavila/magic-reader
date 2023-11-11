@@ -1167,11 +1167,65 @@ function Component({
   const handleAltEvents = useCallback(
     (e) => {
       const isAltPressed = e.altKey;
+      const isShiftPressed = e.shiftKey;
 
       if (!isAltPressed) return false;
       e.preventDefault();
 
-      if (e.key === "ArrowUp") {
+      if (isShiftPressed) {
+        const content = globalState.get(contextName);
+        const currLine = content.find(({ id: textId }) => id === textId);
+
+        // changes the ids and the values
+        const newLine = {
+          ...currLine,
+          id: uuid(),
+          text: currLine.text.map((item) => {
+            const newId = uuid();
+
+            return {
+              ...item,
+              id: newId,
+            };
+          }),
+        };
+
+        const currTextIndex = content.findIndex(
+          ({ id: textId }) => id === textId
+        );
+
+        const newContent = content.reduce((acc, item, index) => {
+          if (e.key === "ArrowUp" && index === currTextIndex) {
+            acc.push(newLine);
+          }
+
+          acc.push(item);
+
+          if (e.key === "ArrowDown" && index === currTextIndex) {
+            acc.push(newLine);
+          }
+
+          return acc;
+        }, []);
+
+        const { currSelection } = getBlockId({ textId: id });
+
+        stateStorage.set(contextName, newContent);
+
+        const newBlockId = newLine.text[0].id;
+
+        info.current = {
+          selection: currSelection,
+          blockId: newBlockId,
+        };
+
+        stateStorage.set(
+          `${contextName}_decoration-${newBlockId}`,
+          new Date()
+        );
+
+        return true;
+      } else if (e.key === "ArrowUp") {
         // gets the content and add the line above the curr position
         e.preventDefault();
 
