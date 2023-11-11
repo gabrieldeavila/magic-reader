@@ -1,5 +1,5 @@
 import { shadows } from "@geavila/gt-design";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
 const Wrapper = styled.div`
   display: flex;
@@ -9,6 +9,14 @@ const Wrapper = styled.div`
 `;
 
 const Image = styled.img`
+  height: 150px;
+  width: 100%;
+  user-select: none;
+  object-fit: cover;
+  object-position: center 0%;
+`;
+
+const Gradient = styled.div`
   height: 150px;
   width: 100%;
   user-select: none;
@@ -88,6 +96,7 @@ const WritterImg = {
   Title,
   H1,
   Change,
+  Gradient
 };
 
 export default WritterImg;
@@ -126,6 +135,16 @@ const UnsplashImg = styled.img`
   height: 150px;
   object-fit: cover;
   border-radius: 5px;
+`;
+
+const UnsplashGradient = styled.div`
+  width: 250px;
+  height: 150px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease-in-out;
 `;
 
 const UnsplashAuthor = styled.a`
@@ -185,13 +204,48 @@ const UnsplashStyInput = styled.input`
   }
 `;
 
+const Tab = styled.h3`
+  color: var(--contrast);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 5px;
+  transition: 0.2s ease-in-out;
+
+  &:hover {
+    background: var(--primary-0_5);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  ${({ active }: { active?: boolean }) =>
+    active &&
+    css`
+      background: var(--primary-0_5);
+      cursor: no-drop;
+
+      &:active {
+        transform: scale(1);
+      }
+    `}
+`;
+
+const TabOptions = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`;
+
 export const UnsplashSty = {
   Wrapper: UnsplashWrapper,
   Modal: UnplashModal,
   Img: UnsplashImg,
+  Gradient: UnsplashGradient,
   Author: UnsplashAuthor,
   Container: UnsplashContainer,
   ImgWrapper: UnsplashImgWrapper,
   Input: UnsplashStyInput,
   Title: UnsplashTitle,
+  Tab,
+  TabOptions,
 };

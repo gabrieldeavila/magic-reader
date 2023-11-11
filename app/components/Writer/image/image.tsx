@@ -13,8 +13,8 @@ import {
   stateStorage,
   useTriggerState,
 } from "react-trigger-state";
+import ImageOptions from "./imageOptions";
 import WritterImg from "./style";
-import Unsplash from "./unsplash";
 
 function Image() {
   const [emoji] = useTriggerState({
@@ -114,7 +114,16 @@ function Image() {
         onMouseEnter={() => setShowBtn(true)}
         onMouseLeave={() => setShowBtn(false)}
       >
-        <WritterImg.Image ref={imgRef} src={img} />
+        {img?.top ? (
+          <WritterImg.Gradient
+            ref={imgRef}
+            style={{
+              background: `linear-gradient(${img.deg}deg, ${img.top} 0%, ${img.bottom} 100%)`,
+            }}
+          />
+        ) : (
+          <WritterImg.Image ref={imgRef} src={img} />
+        )}
         <WritterImg.Title>
           <WritterImg.Emoji ref={ref} role="button" onClick={handleClick}>
             {emoji}
@@ -131,7 +140,7 @@ function Image() {
 
         <ChangeImg show={showBtn && !showImg} />
 
-        {showImg && <Unsplash />}
+        {showImg && <ImageOptions />}
 
         {showChangePosition && (
           <WritterImg.Range>
@@ -152,6 +161,9 @@ const ChangeImg = memo(({ show }: { show: boolean }) => {
   const [showChangePosition, setShowChangePosition] = useTriggerState({
     name: "show_change_position",
     initial: false,
+  });
+  const [img] = useTriggerState({
+    name: "img",
   });
 
   const changePosition = useCallback(() => {
@@ -174,11 +186,14 @@ const ChangeImg = memo(({ show }: { show: boolean }) => {
       >
         {translateThis("CHANGE_IMG")}
       </Button.Contrast>
-      <Button.Contrast defaultSize="sm" fitContent onClick={changePosition}>
-        {translateThis(
-          showChangePosition ? "CHANGING_POSITION" : "CHANGE_POSITION"
-        )}
-      </Button.Contrast>
+
+      {!img?.top && (
+        <Button.Contrast defaultSize="sm" fitContent onClick={changePosition}>
+          {translateThis(
+            showChangePosition ? "CHANGING_POSITION" : "CHANGE_POSITION"
+          )}
+        </Button.Contrast>
+      )}
     </WritterImg.Change>
   );
 });
