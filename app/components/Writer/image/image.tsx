@@ -1,3 +1,4 @@
+import { Button, Text, useGTTranslate } from "@geavila/gt-design";
 import EmojiPicker from "emoji-picker-react";
 import {
   memo,
@@ -12,9 +13,8 @@ import {
   stateStorage,
   useTriggerState,
 } from "react-trigger-state";
+import ImageOptions from "./imageOptions";
 import WritterImg from "./style";
-import { Button, useGTTranslate } from "@geavila/gt-design";
-import Unsplash from "./unsplash";
 
 function Image() {
   const [emoji] = useTriggerState({
@@ -29,7 +29,17 @@ function Image() {
     name: "title",
     initial: "Some Title",
   });
+  const { translateThis } = useGTTranslate();
+  const [imageRange, setImageRange] = useTriggerState({
+    name: "image_range",
+    initial: 0,
+  });
 
+  const [showChangePosition] = useTriggerState({
+    name: "show_change_position",
+    initial: false,
+  });
+  const imgRef = useRef<HTMLImageElement>(null);
   const ref = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
 
@@ -85,32 +95,88 @@ function Image() {
     setShowBtn(false);
   }, [showImg]);
 
+  const setRange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      // sets the object position
+      imgRef.current?.style.setProperty(
+        "object-position",
+        `center ${e.currentTarget.value}%`
+      );
+
+      setImageRange(Number(e.currentTarget.value));
+    },
+    [setImageRange]
+  );
+
   return (
     <>
       <WritterImg.Wrapper
         onMouseEnter={() => setShowBtn(true)}
         onMouseLeave={() => setShowBtn(false)}
       >
-        <WritterImg.Image src={img} />
+        {img?.top ? (
+          <WritterImg.Gradient
+            ref={imgRef}
+            style={{
+              background: `linear-gradient(${img.deg}deg, ${img.top} 0%, ${img.bottom} 100%)`,
+            }}
+          />
+        ) : (
+          <WritterImg.Image ref={imgRef} src={img} />
+        )}
         <WritterImg.Title>
           <WritterImg.Emoji ref={ref} role="button" onClick={handleClick}>
             {emoji}
           </WritterImg.Emoji>
-          <WritterImg.H1 ref={titleRef} onKeyUp={handleTitle} contentEditable>
+          <WritterImg.H1
+            ref={titleRef}
+            onKeyUp={handleTitle}
+            contentEditable
+            suppressContentEditableWarning
+          >
             {title}
           </WritterImg.H1>
         </WritterImg.Title>
+
         <ChangeImg show={showBtn && !showImg} />
-        {showImg && <Unsplash />}
+
+        {showImg && <ImageOptions />}
+
+        {showChangePosition && (
+          <WritterImg.Range>
+            <Text.P>
+              {translateThis("IMG_RANGE_POSITION")} ({imageRange}%)
+            </Text.P>
+            <input type="range" value={imageRange} onChange={setRange} />
+          </WritterImg.Range>
+        )}
       </WritterImg.Wrapper>
       {showEmoji && <Emoji parentRef={ref} />}
-      {/* {show} */}
     </>
   );
 }
 
 const ChangeImg = memo(({ show }: { show: boolean }) => {
   const { translateThis } = useGTTranslate();
+  const [showChangePosition, setShowChangePosition] = useTriggerState({
+    name: "show_change_position",
+    initial: false,
+  });
+  const [img] = useTriggerState({
+    name: "img",
+  });
+
+  const changePosition = useCallback(() => {
+    setShowChangePosition((prev) => {
+      const value = !prev;
+
+      if (!value) {
+        console.log("novo valor", value);
+      }
+
+      return value;
+    });
+  }, [setShowChangePosition]);
 
   return (
     <WritterImg.Change show={show}>
@@ -120,6 +186,14 @@ const ChangeImg = memo(({ show }: { show: boolean }) => {
       >
         {translateThis("CHANGE_IMG")}
       </Button.Contrast>
+
+      {!img?.top && (
+        <Button.Contrast defaultSize="sm" fitContent onClick={changePosition}>
+          {translateThis(
+            showChangePosition ? "CHANGING_POSITION" : "CHANGE_POSITION"
+          )}
+        </Button.Contrast>
+      )}
     </WritterImg.Change>
   );
 });

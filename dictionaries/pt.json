@@ -76,5 +76,12 @@
   "CHANGE_IMG": "Alterar imagem",
   "SEARCH": "Pesquisar",
   "NO_RESULTS": "Nenhum resultado encontrado",
-  "TOC": "Índice"
+  "ADD_CAPTION": "Adicionar legenda",
+  "CAPTION_LABEL": "Legenda",
+  "REMOVE_IMG": "Remover imagem",
+  "IMG_RANGE_POSITION": "Clique e arraste para ajustar a posição da imagem",
+  "CHANGE_POSITION": "Alterar posição",
+  "CHANGING_POSITION": "Pronto",
+  "TOC": "Índice",
+  "GRADIENT": "Gradiente"
 }

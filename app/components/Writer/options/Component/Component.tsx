@@ -28,6 +28,7 @@ import Popup from "../../popup/Popup";
 import { PopupFunctions } from "../../popup/interface";
 import { Editable } from "../../style";
 import Decoration from "./Decoration";
+import Image from "../img/Image";
 
 function Component({
   type,
@@ -48,6 +49,7 @@ function Component({
   const {
     contextName,
     handleUpdate,
+    handleAddImg,
     deleteBlock,
     deleteLine,
     addToCtrlZ,
@@ -178,6 +180,7 @@ function Component({
           stateStorage.set(contextName, newContent);
           return;
         }
+
         const content = globalState.get(contextName);
 
         const currTextIndex = content.findIndex(
@@ -247,9 +250,21 @@ function Component({
           // gets where there is a space in the selected letters
           let spaceIndex = -1;
 
+          const startLetter =
+            selectedLetters?.[
+              firstNodeIndex - (event.key === "Backspace" ? 1 : -1)
+            ];
+
+          // if start with a space, it will delete until the first letter
+          const startWithSpace = startLetter.letter === " ";
+
           if (event.key === "Backspace") {
             selectedLetters.find(({ letter }, index) => {
-              if (letter === " " && index != lastNodeIndex) {
+              const letterToCheck = startWithSpace
+                ? letter !== " "
+                : letter === " ";
+
+              if (letterToCheck && index != lastNodeIndex) {
                 spaceIndex = index;
                 return false;
               }
@@ -258,11 +273,19 @@ function Component({
             });
           } else {
             spaceIndex = selectedLetters.findIndex(({ letter }, index) => {
-              return letter === " " && index > firstNodeIndex;
+              const letterToCheck = startWithSpace
+                ? letter !== " "
+                : letter === " ";
+
+              return letterToCheck && index > firstNodeIndex;
             });
 
             if (spaceIndex === -1) {
               spaceIndex = selectedLetters.length - 1;
+            }
+
+            if (startWithSpace) {
+              spaceIndex = spaceIndex - 1;
             }
           }
 
@@ -767,12 +790,29 @@ function Component({
         const block = document.querySelector(
           `[data-block-id="${changedBlockId}"]`
         );
+        const parent = block?.parentElement;
 
-        const style = block?.getAttribute("style");
+        const type = block?.tagName === "SPAN" ? parent : block;
 
-        const span = document.createElement("span");
+        const style = type?.getAttribute("style");
+        const tag = type?.tagName;
+
+        const allProps = (type?.getAttributeNames() ?? []).reduce(
+          (acc, item) => {
+            acc[item] = type?.getAttribute(item);
+            return acc;
+          },
+          {}
+        );
+
+        const span = document.createElement(tag);
         span.setAttribute("style", style ?? "");
         span.appendChild(textCopied);
+
+        // adds all the props
+        Object.keys(allProps).forEach((item) => {
+          span.setAttribute(item, allProps[item]);
+        });
 
         // @ts-expect-error - it sure is a text
         textCopied = span;
@@ -781,7 +821,140 @@ function Component({
 
     // Create a Blob for the HTML content and a Blob for the plain text
     const div = document.createElement("div");
-    div.appendChild(textCopied);
+
+    const copiedChildren = Array.from(textCopied.children);
+
+    const setStyle = (items: HTMLElement[], type: string) => {
+      let newHTML;
+
+      if (type === "tl") {
+        // todo list
+        newHTML = document.createElement("ul");
+
+        items.forEach((item) => {
+          const li = document.createElement("li");
+          // add the checked attribute
+          const isChecked =
+            item.querySelector("[data-todo]")?.getAttribute("data-todo") ===
+            "true";
+
+          const childrenFiltered = Array.from(item.children).filter(
+            (item) => !item.getAttribute("data-popup")
+          );
+
+          const newItem = document.createElement("div");
+
+          newItem.append(...childrenFiltered);
+
+          // add [ ] or [x] to the text
+          const text = newItem.innerText;
+          const span = document.createElement("span");
+          span.innerText = isChecked ? "[x] " : "[ ] ";
+
+          li.appendChild(span);
+          li.appendChild(document.createTextNode(text));
+
+          // add style
+          li.style.listStyleType = "decimal";
+
+          if (isChecked) {
+            li.setAttribute("checked", "checked");
+          }
+
+          newHTML.appendChild(li);
+        });
+      } else if (type === "bl") {
+        // bullet list
+        newHTML = document.createElement("ul");
+
+        items.forEach((item) => {
+          const li = document.createElement("li");
+
+          const childrenFiltered = Array.from(item.children).filter(
+            (item) => !item.getAttribute("data-popup")
+          );
+
+          const newItem = document.createElement("div");
+
+          newItem.append(...childrenFiltered);
+
+          const text = newItem.innerText;
+
+          li.appendChild(document.createTextNode(text));
+
+          newHTML.appendChild(li);
+        });
+      } else if (type === "nl") {
+        // number list
+        newHTML = document.createElement("ol");
+
+        items.forEach((item) => {
+          const li = document.createElement("li");
+
+          const childrenFiltered = Array.from(item.children).filter(
+            (item) => !item.getAttribute("data-popup")
+          );
+
+          const newItem = document.createElement("div");
+
+          newItem.append(...childrenFiltered);
+
+          const text = newItem.innerText;
+
+          li.appendChild(document.createTextNode(text));
+
+          newHTML.appendChild(li);
+        });
+      }
+
+      return newHTML;
+    };
+
+    if (copiedChildren.length) {
+      let currType = "";
+      let newChildren = [];
+
+      const typesToAgroup = ["bl", "nl", "tl"];
+
+      const toCopy = copiedChildren.reduce((acc, item) => {
+        const compType = item.getAttribute("data-component");
+
+        if (typesToAgroup.includes(compType) && compType === currType) {
+          newChildren.push(item);
+        } else if (typesToAgroup.includes(compType)) {
+          if (newChildren.length > 0) {
+            const newDiv = setStyle(newChildren, currType);
+
+            acc.push(newDiv);
+          }
+
+          currType = compType;
+          newChildren = [item];
+        } else {
+          if (newChildren.length > 0) {
+            const newDiv = setStyle(newChildren, currType);
+
+            acc.push(newDiv);
+          }
+
+          newChildren = [];
+
+          acc.push(item);
+        }
+
+        return acc;
+      }, []);
+
+      const newDiv = setStyle(newChildren, currType);
+      if (newDiv) {
+        toCopy.push(newDiv);
+      }
+
+      div.innerHTML = "";
+      div.append(...toCopy);
+    } else {
+      div.appendChild(textCopied);
+    }
 
     // removes all children with data-popup
     const popups = div.querySelectorAll("[data-popup]");
@@ -869,13 +1042,13 @@ function Component({
 
         const range = document.createRange();
 
-        if (!firstBlock || !lastBlock) return;
+        if (!firstBlock || !lastBlock) return true;
 
         const first = dgb(firstBlock);
 
         const last = dgb(lastBlock, false);
 
-        if (!first || !last) return;
+        if (!first || !last) return true;
 
         range.setStart(first, 0);
 
@@ -993,11 +1166,66 @@ function Component({
   const handleAltEvents = useCallback(
     (e) => {
       const isAltPressed = e.altKey;
+      const isShiftPressed = e.shiftKey;
 
       if (!isAltPressed) return false;
       e.preventDefault();
 
-      if (e.key === "ArrowUp") {
+      if (isShiftPressed) {
+        const content = globalState.get(contextName);
+        const currLine = content.find(({ id: textId }) => id === textId);
+
+        // changes the ids and the values
+        const newLine = {
+          ...currLine,
+          id: uuid(),
+          text: currLine.text.map((item) => {
+            const newId = uuid();
+
+            return {
+              ...item,
+              id: newId,
+            };
+          }),
+        };
+
+        const currTextIndex = content.findIndex(
+          ({ id: textId }) => id === textId
+        );
+
+        const newContent = content.reduce((acc, item, index) => {
+          if (e.key === "ArrowUp" && index === currTextIndex) {
+            acc.push(newLine);
+          }
+
+          acc.push(item);
+
+          if (e.key === "ArrowDown" && index === currTextIndex) {
+            acc.push(newLine);
+          }
+
+          return acc;
+        }, []);
+
+        const { changedBlockId, currSelection } = getBlockId({ textId: id });
+
+        const blockIndex = currLine.text.findIndex(
+          ({ id: blockId }) => blockId === changedBlockId
+        );
+
+        stateStorage.set(contextName, newContent);
+
+        const newBlockId = newLine.text[blockIndex].id;
+
+        info.current = {
+          selection: currSelection,
+          blockId: newBlockId,
+        };
+
+        stateStorage.set(`${contextName}_decoration-${newBlockId}`, new Date());
+
+        return true;
+      } else if (e.key === "ArrowUp") {
         // gets the content and add the line above the curr position
         e.preventDefault();
 
@@ -1293,10 +1521,15 @@ function Component({
       const newChar = verifyForAccents(event);
 
       const avoidAlt = handleAltEvents(event);
+      let customPosition = 0;
 
       if (addCustomChar(event, inputChar)) return;
 
-      if (!isAllowed && newChar !== false) {
+      if (event.key === "Tab") {
+        event.preventDefault();
+        inputChar = "    ";
+        customPosition = 3;
+      } else if (!isAllowed && newChar !== false) {
         inputChar = newChar;
       } else if (!isAllowed) {
         verifySpecialChars(event);
@@ -1308,7 +1541,6 @@ function Component({
       const avoidCtrl = handleCtrlEvents(event, ctrlPressed);
 
       if (avoidCtrl || avoidAlt) return;
-
       event.preventDefault();
 
       const selection = window.getSelection();
@@ -1379,7 +1611,7 @@ function Component({
         handleUpdate(lineId, newText);
 
         info.current = {
-          selection: cursorPositionValue + 1,
+          selection: cursorPositionValue + 1 + customPosition,
           blockId: changedBlockId,
         };
       });
@@ -1688,7 +1920,6 @@ function Component({
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement>) => {
       e.preventDefault();
-
       const selection = window.getSelection();
 
       const numberOfChars = selection.toString().length;
@@ -1699,6 +1930,21 @@ function Component({
       }
 
       const copiedText = e.clipboardData.getData("text/html");
+      const items = e.clipboardData.items;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf("image") !== -1) {
+          const file = items[i].getAsFile();
+          const reader = new FileReader();
+
+          reader.onload = function () {
+            const base64String = reader.result?.toString().split(",")[1];
+            handleAddImg(base64String, lineId);
+          };
+
+          reader.readAsDataURL(file);
+        }
+      }
 
       // transforms the copiedText into html
       const parser = new DOMParser();
@@ -1706,7 +1952,6 @@ function Component({
 
       // if the copied text is not html, it will be plain text
       const isPlainText = doc.body.innerHTML === "";
-
       if (isPlainText) {
         // if has numberOfChars, it already deleted the letters
         if (!numberOfChars) {
@@ -1994,6 +2239,7 @@ function Component({
       findChildOptions,
       getBlockId,
       getOptions,
+      handleAddImg,
       handleUpdate,
       id,
       info,
@@ -2069,6 +2315,10 @@ function Component({
   });
 
   const DisEditable = Editable[type ?? "p"];
+
+  if (customStyle?.src) {
+    return <Image id={id} customStyle={customStyle} />;
+  }
 
   return (
     <DisEditable

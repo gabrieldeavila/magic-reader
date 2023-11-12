@@ -68,6 +68,19 @@ const Decoration = memo(
 
     useLayoutEffect(() => {
       if (info.current.blockId !== id) return;
+      const currentAnchorNode = window.getSelection().anchorNode;
+      const thisAnchorNode = tagRef.current.firstChild;
+      const isSameNode = currentAnchorNode === thisAnchorNode;
+      const selectedLength = window.getSelection().toString().length;
+
+      if (
+        !isSameNode &&
+        selectedLength === 0 &&
+        (currentAnchorNode.textContent.length === 0 ||
+          thisAnchorNode == null)
+      ) {
+        return;
+      }
 
       const selection = window.getSelection();
 
@@ -201,7 +214,10 @@ const Decoration = memo(
       onClick: (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
         if (isLink) {
           e.preventDefault();
-          window.open(custom?.link, "_blank");
+          // if the link doesn't have http or https, add it
+          const http = custom?.link?.includes("http") ? "" : "https://";
+
+          window.open(`${http}${custom?.link}`, "_blank");
         }
       },
       title: isLink ? custom?.link : null,

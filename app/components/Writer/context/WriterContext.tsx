@@ -44,6 +44,9 @@ export const WriterContext = createContext<IWriterContext>({
   addToCtrlZ: ({ lineId, blockId, value, action }) => {
     console.log(lineId, blockId, value, action);
   },
+  handleAddImg: (img) => {
+    console.log(img);
+  },
   contextName: "writter_context",
   info: {
     current: {
@@ -503,6 +506,14 @@ const WriterContextProvider = ({
         stateStorage.set(`has_focus_ev-${prevSelected}`, false);
       }
 
+      const alreadyHasPopup = document
+        .querySelector("[data-popup]")
+        ?.getAttribute("data-popup");
+
+      if (alreadyHasPopup && alreadyHasPopup !== dataLineId) {
+        return;
+      }
+
       stateStorage.set(`blur_ev-${dataLineId}`, { e, date: new Date() });
     },
     [getBlockId]
@@ -600,8 +611,8 @@ const WriterContextProvider = ({
         lastItem?.blockId === block.blockId &&
         typeof block.value !== "string"
       ) {
-        const currWords = block.value
-          .find(({ id }) => id === block.blockId)
+        const currWords = block?.value
+          ?.find(({ id }) => id === block.blockId)
           ?.value?.split(" ");
 
         const prevWords = lastItem.value
@@ -662,7 +673,9 @@ const WriterContextProvider = ({
       // gets the text from the curr line
       const lineText = globalState
         .get(contextName)
-        .find(({ id }) => id === dataLineId).text;
+        .find(({ id }) => id === dataLineId)?.text;
+
+      if (!lineText) return;
 
       const firstTextId = lineText[0].id;
       const lastTextId = lineText[lineText.length - 1].id;
@@ -713,12 +726,42 @@ const WriterContextProvider = ({
 
   useResize(writterRef);
 
+  const handleAddImg = useCallback(
+    (img, lineId) => {
+      setContent((prev) => {
+        const newContent = prev.reduce((acc, item) => {
+          acc.push(item);
+
+          if (item.id === lineId) {
+            const newText: IWritterContent = {
+              id: uuid(),
+              type: "img",
+              // @ts-expect-error works
+              customStyle: {
+                src: `data:image/png;base64,${img}`,
+              },
+              text: [],
+            };
+
+            acc.push(newText);
+          }
+
+          return acc;
+        }, []);
+
+        return newContent;
+      });
+    },
+    [setContent]
+  );
+
   return (
     <WriterContext.Provider
       value={{
         content,
         setContent,
         handleUpdate,
+        handleAddImg,
         contextName,
         deleteBlock,
         deleteLine,
@@ -751,6 +794,10 @@ const WriterContextProvider = ({
             }}
             onClick={(e) => {
               const datas = ["todo"];
+              // info.current = {
+              //   selection: 0,
+              //   blockId: "",
+              // };
 
               const hasSomeData = datas.some((data) =>
                 (e.target as Element).hasAttribute(`data-${data}`)

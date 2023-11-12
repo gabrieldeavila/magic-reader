@@ -71,7 +71,8 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
         });
       }
 
-      const allAlreadyHaveOption = !custom && selectedOptions.includes(decoration);
+      const allAlreadyHaveOption =
+        !custom && selectedOptions.includes(decoration);
 
       // removes the first and last selected
       const selectedWithoutFirstAndLast = wordsSelected
@@ -455,7 +456,7 @@ function useDecoration({ id, text }: { id: string; text: IText[] }) {
                   ? firstNodeIndex + fromToLastIndex
                   : fromToLastIndex,
               letters: line.text,
-              areTheSame: line.text.length === 1 || key === array.length - 1,
+              areTheSame: line.text.length === 1,
               firstNodeOffset: decSelected[0].index,
               lastNodeOffset: decSelected[decSelected.length - 1].index,
               id: line.id,

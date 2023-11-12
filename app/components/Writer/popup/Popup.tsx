@@ -165,11 +165,30 @@ const PopupComp = (
     try {
       // create a new range
       const rangeOffset = document.createRange();
-      // select the block
-      rangeOffset.selectNode(blockInfo.block.firstChild);
-      // set the start offset
-      rangeOffset.setStart(blockInfo.block.firstChild, blockInfo.offset);
-      rangeOffset.setEnd(blockInfo.block.firstChild, blockInfo.offset);
+
+      // if tries to select an empty block, select the previous block
+      if (blockInfo.block.firstChild.textContent === "") {
+        const prevSibling = blockInfo.block.previousSibling;
+        // gets the last child with the "data-block-id" attribute
+        const children = (prevSibling as HTMLDivElement).querySelectorAll("[data-block-id]");
+        const lastChild = children[children.length - 1];
+
+        rangeOffset.selectNode(lastChild);
+        rangeOffset.setStart(
+          lastChild.firstChild,
+          lastChild.textContent.length - 1
+        );
+        rangeOffset.setEnd(
+          lastChild.firstChild,
+          lastChild.textContent.length - 1
+        );
+      } else {
+        // select the block
+        rangeOffset.selectNode(blockInfo.block.firstChild);
+        // set the start offset
+        rangeOffset.setStart(blockInfo.block.firstChild, blockInfo.offset);
+        rangeOffset.setEnd(blockInfo.block.firstChild, blockInfo.offset);
+      }
 
       // get the position of the start offset
       const infoRange = rangeOffset.getBoundingClientRect();
@@ -202,7 +221,7 @@ const PopupComp = (
 
       setPositions(newPositions);
     } catch (e) {
-      console.log("remember to fix this error");
+      console.log(e?.message, "remember to fix this error");
     }
   }, [handleColors, updatePositions]);
 

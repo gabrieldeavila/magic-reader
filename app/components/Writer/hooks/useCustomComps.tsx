@@ -25,6 +25,7 @@ function useCustomComps({
 
   const customProps = useMemo(() => {
     let props: IKeys = {
+      "data-component": type,
       style: {
         textAlign: align ?? "left",
       },
