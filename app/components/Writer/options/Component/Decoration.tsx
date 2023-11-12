@@ -69,11 +69,22 @@ const Decoration = memo(
     useLayoutEffect(() => {
       if (info.current.blockId !== id) return;
       const currentAnchorNode = window.getSelection().anchorNode;
-      const thisAnchorNode = tagRef.current;
+      const thisAnchorNode = tagRef.current.firstChild;
       const isSameNode = currentAnchorNode === thisAnchorNode;
-      const length = window.getSelection().toString().length;
+      const selectedLength = window.getSelection().toString().length;
 
-      if (!isSameNode && length === 0) return;
+      if (
+        !isSameNode &&
+        // only if is not selecting
+        selectedLength === 0 &&
+        // (if deletes whole block) prevents from keeping a selection
+        (currentAnchorNode.textContent.length > 1 ||
+          // here gets when the user is in an empty block
+          currentAnchorNode.textContent.length === 0)
+      ) {
+        console.log(currentAnchorNode.textContent.length, "OI?");
+        return;
+      }
 
       const selection = window.getSelection();
 
