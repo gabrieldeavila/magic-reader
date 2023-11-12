@@ -179,6 +179,7 @@ const DEFAULT_CONTENT: IWritterContent[] = [
   {
     id: uuid(),
     type: "tl",
+    // @ts-expect-error - customStyle is not a valid property
     customStyle: {
       checked: true,
     },
