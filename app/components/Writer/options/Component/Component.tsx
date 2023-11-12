@@ -1954,7 +1954,7 @@ function Component({
 
       // if the copied text is not html, it will be plain text
       const isPlainText = doc.body.innerHTML === "";
-
+      console.log(isPlainText, doc.body);
       if (isPlainText) {
         // if has numberOfChars, it already deleted the letters
         if (!numberOfChars) {

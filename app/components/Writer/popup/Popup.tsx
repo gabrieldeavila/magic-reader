@@ -165,11 +165,26 @@ const PopupComp = (
     try {
       // create a new range
       const rangeOffset = document.createRange();
-      // select the block
-      rangeOffset.selectNode(blockInfo.block.firstChild);
-      // set the start offset
-      rangeOffset.setStart(blockInfo.block.firstChild, blockInfo.offset);
-      rangeOffset.setEnd(blockInfo.block.firstChild, blockInfo.offset);
+
+      // if tries to select an empty block, select the previous block
+      if (blockInfo.block.firstChild.textContent === "") {
+        const prevSibling = blockInfo.block.previousSibling;
+        rangeOffset.selectNode(prevSibling.lastChild);
+        rangeOffset.setStart(
+          prevSibling.lastChild.firstChild,
+          prevSibling.lastChild.textContent.length - 1
+        );
+        rangeOffset.setEnd(
+          prevSibling.lastChild.firstChild,
+          prevSibling.lastChild.textContent.length - 1
+        );
+      } else {
+        // select the block
+        rangeOffset.selectNode(blockInfo.block.firstChild);
+        // set the start offset
+        rangeOffset.setStart(blockInfo.block.firstChild, blockInfo.offset);
+        rangeOffset.setEnd(blockInfo.block.firstChild, blockInfo.offset);
+      }
 
       // get the position of the start offset
       const infoRange = rangeOffset.getBoundingClientRect();
@@ -194,6 +209,8 @@ const PopupComp = (
       }
 
       if (newLeft < 0) newLeft = infoRange.x;
+
+      console.log(newTop, newLeft, rangeOffset);
 
       newPositions = {
         left: `${newLeft}px`,

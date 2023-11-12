@@ -603,8 +603,8 @@ const WriterContextProvider = ({
         lastItem?.blockId === block.blockId &&
         typeof block.value !== "string"
       ) {
-        const currWords = block.value
-          .find(({ id }) => id === block.blockId)
+        const currWords = block?.value
+          ?.find(({ id }) => id === block.blockId)
           ?.value?.split(" ");
 
         const prevWords = lastItem.value

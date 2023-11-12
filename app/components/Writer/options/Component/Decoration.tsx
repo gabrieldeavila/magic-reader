@@ -75,14 +75,10 @@ const Decoration = memo(
 
       if (
         !isSameNode &&
-        // only if is not selecting
         selectedLength === 0 &&
-        // (if deletes whole block) prevents from keeping a selection
-        (currentAnchorNode.textContent.length > 1 ||
-          // here gets when the user is in an empty block
-          currentAnchorNode.textContent.length === 0)
+        (currentAnchorNode.textContent.length === 0 ||
+          thisAnchorNode == null)
       ) {
-        console.log(currentAnchorNode.textContent.length, "OI?");
         return;
       }
 
