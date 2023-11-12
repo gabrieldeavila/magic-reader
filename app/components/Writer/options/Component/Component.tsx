@@ -1208,21 +1208,22 @@ function Component({
           return acc;
         }, []);
 
-        const { currSelection } = getBlockId({ textId: id });
+        const { changedBlockId, currSelection } = getBlockId({ textId: id });
+
+        const blockIndex = currLine.text.findIndex(
+          ({ id: blockId }) => blockId === changedBlockId
+        );
 
         stateStorage.set(contextName, newContent);
 
-        const newBlockId = newLine.text[0].id;
+        const newBlockId = newLine.text[blockIndex].id;
 
         info.current = {
           selection: currSelection,
           blockId: newBlockId,
         };
 
-        stateStorage.set(
-          `${contextName}_decoration-${newBlockId}`,
-          new Date()
-        );
+        stateStorage.set(`${contextName}_decoration-${newBlockId}`, new Date());
 
         return true;
       } else if (e.key === "ArrowUp") {
