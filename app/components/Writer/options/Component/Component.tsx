@@ -1018,7 +1018,6 @@ function Component({
       } else if (["v", "r"].includes(e.key)) {
         return true;
       } else if (["a"].includes(e.key)) {
-        console.log("Uh");
         // selects all the text
         e.preventDefault();
         const shouldSelectAllContent =
@@ -1542,7 +1541,6 @@ function Component({
       const avoidCtrl = handleCtrlEvents(event, ctrlPressed);
 
       if (avoidCtrl || avoidAlt) return;
-      console.log(avoidCtrl, "html");
       event.preventDefault();
 
       const selection = window.getSelection();
@@ -1954,7 +1952,6 @@ function Component({
 
       // if the copied text is not html, it will be plain text
       const isPlainText = doc.body.innerHTML === "";
-      console.log(isPlainText, doc.body);
       if (isPlainText) {
         // if has numberOfChars, it already deleted the letters
         if (!numberOfChars) {

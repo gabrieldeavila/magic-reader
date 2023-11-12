@@ -506,6 +506,14 @@ const WriterContextProvider = ({
         stateStorage.set(`has_focus_ev-${prevSelected}`, false);
       }
 
+      const alreadyHasPopup = document
+        .querySelector("[data-popup]")
+        ?.getAttribute("data-popup");
+
+      if (alreadyHasPopup && alreadyHasPopup !== dataLineId) {
+        return;
+      }
+
       stateStorage.set(`blur_ev-${dataLineId}`, { e, date: new Date() });
     },
     [getBlockId]

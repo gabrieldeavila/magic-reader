@@ -169,14 +169,18 @@ const PopupComp = (
       // if tries to select an empty block, select the previous block
       if (blockInfo.block.firstChild.textContent === "") {
         const prevSibling = blockInfo.block.previousSibling;
-        rangeOffset.selectNode(prevSibling.lastChild);
+        // gets the last child with the "data-block-id" attribute
+        const children = (prevSibling as HTMLDivElement).querySelectorAll("[data-block-id]");
+        const lastChild = children[children.length - 1];
+
+        rangeOffset.selectNode(lastChild);
         rangeOffset.setStart(
-          prevSibling.lastChild.firstChild,
-          prevSibling.lastChild.textContent.length - 1
+          lastChild.firstChild,
+          lastChild.textContent.length - 1
         );
         rangeOffset.setEnd(
-          prevSibling.lastChild.firstChild,
-          prevSibling.lastChild.textContent.length - 1
+          lastChild.firstChild,
+          lastChild.textContent.length - 1
         );
       } else {
         // select the block
@@ -210,8 +214,6 @@ const PopupComp = (
 
       if (newLeft < 0) newLeft = infoRange.x;
 
-      console.log(newTop, newLeft, rangeOffset);
-
       newPositions = {
         left: `${newLeft}px`,
         top: `${newTop}px`,
@@ -219,7 +221,7 @@ const PopupComp = (
 
       setPositions(newPositions);
     } catch (e) {
-      console.log("remember to fix this error");
+      console.log(e?.message, "remember to fix this error");
     }
   }, [handleColors, updatePositions]);
 
