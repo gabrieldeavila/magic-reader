@@ -68,6 +68,12 @@ const Decoration = memo(
 
     useLayoutEffect(() => {
       if (info.current.blockId !== id) return;
+      const currentAnchorNode = window.getSelection().anchorNode;
+      const thisAnchorNode = tagRef.current;
+      const isSameNode = currentAnchorNode === thisAnchorNode;
+      const length = window.getSelection().toString().length;
+
+      if (!isSameNode && length === 0) return;
 
       const selection = window.getSelection();
 

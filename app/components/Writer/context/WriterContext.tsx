@@ -786,6 +786,10 @@ const WriterContextProvider = ({
             }}
             onClick={(e) => {
               const datas = ["todo"];
+              // info.current = {
+              //   selection: 0,
+              //   blockId: "",
+              // };
 
               const hasSomeData = datas.some((data) =>
                 (e.target as Element).hasAttribute(`data-${data}`)
