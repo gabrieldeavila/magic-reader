@@ -6,8 +6,27 @@ type TOptions =
   | "code"
   | "highlight"
   | "external_link";
+  
+export const SCRIBERE_ACTIONS = [
+  "p",
+  "h1",
+  "h2",
+  "h3",
+  "bl",
+  "nl",
+  "tl",
+  "img",
+] as const;
 
-export type scribereActions = "p" | "h1" | "h2" | "h3" | "bl" | "nl" | "tl" | "img";
+export type scribereActions =
+  | "p"
+  | "h1"
+  | "h2"
+  | "h3"
+  | "bl"
+  | "nl"
+  | "tl"
+  | "img";
 export type TAlign = "left" | "center" | "right" | "justify";
 
 export interface ILink {
@@ -76,7 +95,7 @@ interface prevLineInfo {
 
 export interface ILinesBetween {
   id: string;
-  type: "p" | "h1" | "h2";
+  type: scribereActions;
   text: IText[];
 }
 [];

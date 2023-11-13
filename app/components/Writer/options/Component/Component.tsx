@@ -23,7 +23,13 @@ import useDeleteMultiple from "../../hooks/useDeleteMultiple";
 import useGetCurrBlockId from "../../hooks/useGetCurrBlockId";
 import usePositions from "../../hooks/usePositions";
 import useSingleDecoration from "../../hooks/useSingleDecoration";
-import { IEditable, ILinesBetween, IText, LineOrText } from "../../interface";
+import {
+  IEditable,
+  ILinesBetween,
+  IText,
+  LineOrText,
+  scribereActions,
+} from "../../interface";
 import Popup from "../../popup/Popup";
 import { PopupFunctions } from "../../popup/interface";
 import { Editable } from "../../style";
@@ -2025,7 +2031,7 @@ function Component({
         children.length === 1 && getOptions(children[0]).includes("code");
 
       // it's only one line if none of the children is a P or DIV tag
-      const isOnlyOneLine = doc.body.querySelector("p, div, h1, h2") === null;
+      const isOnlyOneLine = doc.body.querySelector("p, div, h1, h2, h3, ul, ol") === null;
 
       if (isOnlyOneLine) {
         children = Array.from(doc.body.childNodes);
@@ -2038,7 +2044,9 @@ function Component({
             action: "delete_letters",
           });
         }
-      }
+      } 
+
+      console.log(children);
 
       const newText = children.reduce<LineOrText[]>((acc, child) => {
         // if the child is a comment, do nothing
@@ -2074,6 +2082,7 @@ function Component({
         }
 
         const multiWords = findChildOptions(child, [], []);
+        console.log(multiWords);
 
         if (multiWords.length === 0) return acc;
 
@@ -2095,9 +2104,15 @@ function Component({
               });
             });
           } else {
+            let type = child.nodeName?.toLowerCase?.() ?? "p";
+            if (!["p", "h1", "h2", "h3"].includes(type)) {
+              type = "p";
+            }
+
+            console.log(child.nodeName.toLowerCase());
             acc.push({
               id: uuid(),
-              type: "p",
+              type: type as scribereActions,
               text: multiWords,
             });
           }

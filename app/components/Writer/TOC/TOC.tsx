@@ -24,7 +24,7 @@ function TOC() {
       if (temps[item.type] !== null && item.type !== "h3") {
         temps[item.type] = item;
 
-        const level = item.type.replace("h", "");
+        const level = item.type.replace?.("h", "");
 
         // clear the lower levels
         if (level === "1") {
