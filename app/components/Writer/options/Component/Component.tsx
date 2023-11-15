@@ -854,10 +854,8 @@ function Component({
 
           // add [ ] or [x] to the text
           const text = newItem.innerText;
-          const span = document.createElement("span");
-          span.innerText = isChecked ? "[x] " : "[ ] ";
 
-          li.appendChild(span);
+          li.appendChild(document.createTextNode(isChecked ? "[x] " : "[ ] "));
           li.appendChild(document.createTextNode(text));
 
           // add style
@@ -2031,7 +2029,10 @@ function Component({
         children.length === 1 && getOptions(children[0]).includes("code");
 
       // it's only one line if none of the children is a P or DIV tag
-      const isOnlyOneLine = doc.body.querySelector("p, div, h1, h2, h3, ul, ol") === null;
+      const isOnlyOneLine =
+        doc.body.querySelector("p, div, h1, h2, h3, ul, ol") === null;
+
+      const isUl = doc.body.querySelector("ul") !== null;
 
       if (isOnlyOneLine) {
         children = Array.from(doc.body.childNodes);
@@ -2044,9 +2045,54 @@ function Component({
             action: "delete_letters",
           });
         }
-      } 
+      }
 
-      console.log(children);
+      if (isUl) {
+        const ul = doc.body.querySelector("ul");
+        children = Array.from(ul?.childNodes ?? []);
+
+        const isTodo = ["[ ]", "[x]"].some(
+          (opt) => ul?.firstChild.textContent.includes(opt)
+        );
+        if (isTodo) {
+          const contentToAdd = children.reduce<LineOrText[]>((acc, child) => {
+            const isChecked = child.textContent?.includes("[x]");
+
+            const newLine = findChildOptions(child, [], []);
+            // removes the first 4 chars
+            newLine[0].value = newLine[0].value.slice(4);
+
+            acc.push({
+              type: "tl",
+              text: newLine as IText[],
+              id: uuid(),
+              customStyle: {
+                checked: isChecked,
+              },
+            });
+
+            return acc;
+          }, []);
+
+          // paste the new content after the current line
+          const content = globalState.get(contextName) as ILinesBetween[];
+          const newContent = content.reduce<LineOrText[]>((acc, item) => {
+            if (item.id === lineId) {
+              acc.push(item);
+              acc.push(...contentToAdd);
+            } else {
+              acc.push(item);
+            }
+
+            return acc;
+          }, []);
+
+          stateStorage.set(contextName, newContent);
+        }
+
+        console.log(isTodo, ul);
+        return;
+      }
 
       const newText = children.reduce<LineOrText[]>((acc, child) => {
         // if the child is a comment, do nothing
@@ -2082,7 +2128,6 @@ function Component({
         }
 
         const multiWords = findChildOptions(child, [], []);
-        console.log(multiWords);
 
         if (multiWords.length === 0) return acc;
 
@@ -2109,7 +2154,6 @@ function Component({
               type = "p";
             }
 
-            console.log(child.nodeName.toLowerCase());
             acc.push({
               id: uuid(),
               type: type as scribereActions,

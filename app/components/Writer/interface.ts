@@ -97,6 +97,7 @@ export interface ILinesBetween {
   id: string;
   type: scribereActions;
   text: IText[];
+  customStyle?: ITodo | IImg;
 }
 [];
 
