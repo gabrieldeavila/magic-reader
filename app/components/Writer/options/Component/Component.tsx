@@ -827,11 +827,13 @@ function Component({
 
     // Create a Blob for the HTML content and a Blob for the plain text
     const div = document.createElement("div");
+    let textBaseCopy = null;
 
     const copiedChildren = Array.from(textCopied.children);
 
     const setStyle = (items: HTMLElement[], type: string) => {
-      let newHTML;
+      let newHTML,
+        newText = "";
 
       if (type === "tl") {
         // todo list
@@ -848,15 +850,12 @@ function Component({
             (item) => !item.getAttribute("data-popup")
           );
 
-          const newItem = document.createElement("div");
-
-          newItem.append(...childrenFiltered);
-
           // add [ ] or [x] to the text
-          const text = newItem.innerText;
-
           li.appendChild(document.createTextNode(isChecked ? "[x] " : "[ ] "));
-          li.appendChild(document.createTextNode(text));
+          li.append(...childrenFiltered);
+
+          // add in a similar way of a markdown
+          newText += `- ${li.innerText}\n`;
 
           // add style
           li.style.listStyleType = "decimal";
@@ -878,13 +877,9 @@ function Component({
             (item) => !item.getAttribute("data-popup")
           );
 
-          const newItem = document.createElement("div");
+          li.append(...childrenFiltered);
 
-          newItem.append(...childrenFiltered);
-
-          const text = newItem.innerText;
-
-          li.appendChild(document.createTextNode(text));
+          newText += `- ${li.innerText}\n`;
 
           newHTML.appendChild(li);
         });
@@ -892,26 +887,22 @@ function Component({
         // number list
         newHTML = document.createElement("ol");
 
-        items.forEach((item) => {
+        items.forEach((item, index) => {
           const li = document.createElement("li");
 
           const childrenFiltered = Array.from(item.children).filter(
             (item) => !item.getAttribute("data-popup")
           );
 
-          const newItem = document.createElement("div");
+          li.append(...childrenFiltered);
 
-          newItem.append(...childrenFiltered);
-
-          const text = newItem.innerText;
-
-          li.appendChild(document.createTextNode(text));
+          newText += `${++index}. ${li.innerText}\n`;
 
           newHTML.appendChild(li);
         });
       }
 
-      return newHTML;
+      return [newHTML, newText];
     };
 
     if (copiedChildren.length) {
@@ -920,42 +911,55 @@ function Component({
 
       const typesToAgroup = ["bl", "nl", "tl"];
 
-      const toCopy = copiedChildren.reduce((acc, item) => {
-        const compType = item.getAttribute("data-component");
+      const { html: htmlToCopy, text: textToCopy } = copiedChildren.reduce(
+        (acc, item: HTMLDivElement) => {
+          const compType = item.getAttribute("data-component");
 
-        if (typesToAgroup.includes(compType) && compType === currType) {
-          newChildren.push(item);
-        } else if (typesToAgroup.includes(compType)) {
-          if (newChildren.length > 0) {
-            const newDiv = setStyle(newChildren, currType);
+          if (typesToAgroup.includes(compType) && compType === currType) {
+            newChildren.push(item);
+          } else if (typesToAgroup.includes(compType)) {
+            if (newChildren.length > 0) {
+              const [newDiv, newText] = setStyle(newChildren, currType);
 
-            acc.push(newDiv);
+              acc.html.push(newDiv);
+              acc.text.push(newText);
+            }
+
+            currType = compType;
+            newChildren = [item];
+          } else {
+            if (newChildren.length > 0) {
+              const [newDiv, newText] = setStyle(newChildren, currType);
+
+              acc.html.push(newDiv);
+              acc.text.push(newText);
+            }
+
+            newChildren = [];
+
+            acc.html.push(item);
+            acc.text.push(item.innerText);
           }
 
-          currType = compType;
-          newChildren = [item];
-        } else {
-          if (newChildren.length > 0) {
-            const newDiv = setStyle(newChildren, currType);
+          return acc;
+        },
+        { html: [], text: [] }
+      );
 
-            acc.push(newDiv);
-          }
+      const [newDiv, newText] = setStyle(newChildren, currType);
 
-          newChildren = [];
-
-          acc.push(item);
-        }
-
-        return acc;
-      }, []);
-
-      const newDiv = setStyle(newChildren, currType);
       if (newDiv) {
-        toCopy.push(newDiv);
+        htmlToCopy.push(newDiv);
+      }
+
+      if (newText) {
+        textToCopy.push(newText);
       }
 
       div.innerHTML = "";
-      div.append(...toCopy);
+      div.append(...htmlToCopy);
+
+      textBaseCopy = textToCopy.join("\n");
     } else {
       div.appendChild(textCopied);
     }
@@ -967,7 +971,9 @@ function Component({
     });
 
     const htmlBlob = new Blob([div.innerHTML], { type: "text/html" });
-    const textBlob = new Blob([div.innerText], { type: "text/plain" });
+    const textBlob = new Blob([textBaseCopy ?? div.innerText], {
+      type: "text/plain",
+    });
 
     // Create a ClipboardItem with both HTML and text representations
     const clipboardItem = new ClipboardItem({
@@ -2088,9 +2094,69 @@ function Component({
           }, []);
 
           stateStorage.set(contextName, newContent);
-        }
+        } else {
+          const contentToAdd = children.reduce<LineOrText[]>((acc, child) => {
+            const newLine = findChildOptions(child, [], []);
 
-        console.log(isTodo, ul);
+            acc.push({
+              type: "bl",
+              text: newLine as IText[],
+              id: uuid(),
+            });
+
+            return acc;
+          }, []);
+
+          // paste the new content after the current line
+          const content = globalState.get(contextName) as ILinesBetween[];
+          const newContent = content.reduce<LineOrText[]>((acc, item) => {
+            if (item.id === lineId) {
+              acc.push(item);
+              acc.push(...contentToAdd);
+            } else {
+              acc.push(item);
+            }
+
+            return acc;
+          }, []);
+
+          stateStorage.set(contextName, newContent);
+        }
+        return;
+      }
+
+      const isOl = doc.body.querySelector("ol") !== null;
+
+      if (isOl) {
+        const ol = doc.body.querySelector("ol");
+        children = Array.from(ol?.childNodes ?? []);
+
+        const contentToAdd = children.reduce<LineOrText[]>((acc, child) => {
+          const newLine = findChildOptions(child, [], []);
+
+          acc.push({
+            type: "nl",
+            text: newLine as IText[],
+            id: uuid(),
+          });
+
+          return acc;
+        }, []);
+
+        // paste the new content after the current line
+        const content = globalState.get(contextName) as ILinesBetween[];
+        const newContent = content.reduce<LineOrText[]>((acc, item) => {
+          if (item.id === lineId) {
+            acc.push(item);
+            acc.push(...contentToAdd);
+          } else {
+            acc.push(item);
+          }
+
+          return acc;
+        }, []);
+
+        stateStorage.set(contextName, newContent);
         return;
       }
 
