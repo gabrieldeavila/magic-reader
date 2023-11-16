@@ -63,7 +63,10 @@ function useCustomComps({
         ...props,
         style: {
           ...props.style,
-          textDecoration: customStyle?.checked ? "line-through" : "none",
+          textDecoration:
+            customStyle && "checked" in customStyle && customStyle.checked
+              ? "line-through"
+              : "none",
         },
       };
     }
@@ -97,15 +100,15 @@ function useCustomComps({
             stateStorage.set(contextName, newContent);
           }}
         >
-          {customStyle?.checked && (
-            <Check data-todo size={12} stroke="var(--info)" />
+          {customStyle && "checked" in customStyle && customStyle.checked && (
+            <Check data-todo-checked data-todo size={12} stroke="var(--info)" />
           )}
         </TodoButton>
       );
     }
 
     return null;
-  }, [contextName, customStyle?.checked, id, type]);
+  }, [contextName, customStyle, id, type]);
 
   return { customProps, customComp };
 }

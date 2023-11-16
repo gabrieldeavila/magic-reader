@@ -50,10 +50,12 @@ export interface IImg {
   range?: number;
 }
 
+export type TCustomStyle = ITodo | IImg;
+
 export interface IWritterContent {
   text: IText[];
   type: scribereActions;
-  customStyle?: ITodo & IImg;
+  customStyle?: ITodo | IImg;
   align?: TAlign;
   id: string;
 }

@@ -21,20 +21,15 @@ import { useWriterContext } from "../../context/WriterContext";
 import useCustomComps from "../../hooks/useCustomComps";
 import useDeleteMultiple from "../../hooks/useDeleteMultiple";
 import useGetCurrBlockId from "../../hooks/useGetCurrBlockId";
+import usePasteBlocks from "../../hooks/usePasteBlocks";
 import usePositions from "../../hooks/usePositions";
 import useSingleDecoration from "../../hooks/useSingleDecoration";
-import {
-  IEditable,
-  ILinesBetween,
-  IText,
-  LineOrText,
-  scribereActions,
-} from "../../interface";
+import { IEditable, ILinesBetween, IText } from "../../interface";
 import Popup from "../../popup/Popup";
 import { PopupFunctions } from "../../popup/interface";
 import { Editable } from "../../style";
-import Decoration from "./Decoration";
 import Image from "../img/Image";
+import Decoration from "./Decoration";
 
 function Component({
   type,
@@ -843,8 +838,9 @@ function Component({
           const li = document.createElement("li");
           // add the checked attribute
           const isChecked =
-            item.querySelector("[data-todo]")?.getAttribute("data-todo") ===
-            "true";
+            item
+              .querySelector("[data-todo-checked]")
+              ?.getAttribute("data-todo-checked") === "true";
 
           const childrenFiltered = Array.from(item.children).filter(
             (item) => !item.getAttribute("data-popup")
@@ -1927,6 +1923,8 @@ function Component({
     [getOptions]
   );
 
+  const { pasteBlocks } = usePasteBlocks();
+
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement>) => {
       e.preventDefault();
@@ -2016,18 +2014,23 @@ function Component({
       // avoids selecting multiple families, that is do not copies son and father
       let children: ChildNode[] = Array.from(
         doc.body.querySelectorAll(
-          "p, div, h1, h2, p~span, div~span, h1~span, h2~span, p~a, div~a, h1~a, h2~a"
+          "p, div, h1, h2, p~span, div~span, h1~span, h2~span, p~a, div~a, h1~a, h2~a, ul, ol"
         )
       );
 
-      children = children.filter((item) => {
+      children = children.filter((item: HTMLElement) => {
         const parent = item.parentElement;
 
+        // if doesn't have a parent, it's a valid child
         if (!parent) return true;
 
-        const parentIsNotInList = !children.includes(parent);
+        // is a list if is close to a ul or ol tag
+        const isList = !!item.closest("li");
 
-        return parentIsNotInList;
+        const parentIsNotAlreadyAChildren =
+          !children.includes(parent) && !isList;
+
+        return parentIsNotAlreadyAChildren;
       });
 
       // if all the children are only one div and has some class with monospace, it's a code block
@@ -2037,8 +2040,6 @@ function Component({
       // it's only one line if none of the children is a P or DIV tag
       const isOnlyOneLine =
         doc.body.querySelector("p, div, h1, h2, h3, ul, ol") === null;
-
-      const isUl = doc.body.querySelector("ul") !== null;
 
       if (isOnlyOneLine) {
         children = Array.from(doc.body.childNodes);
@@ -2053,183 +2054,11 @@ function Component({
         }
       }
 
-      if (isUl) {
-        const ul = doc.body.querySelector("ul");
-        children = Array.from(ul?.childNodes ?? []);
-
-        const isTodo = ["[ ]", "[x]"].some(
-          (opt) => ul?.firstChild.textContent.includes(opt)
-        );
-        if (isTodo) {
-          const contentToAdd = children.reduce<LineOrText[]>((acc, child) => {
-            const isChecked = child.textContent?.includes("[x]");
-
-            const newLine = findChildOptions(child, [], []);
-            // removes the first 4 chars
-            newLine[0].value = newLine[0].value.slice(4);
-
-            acc.push({
-              type: "tl",
-              text: newLine as IText[],
-              id: uuid(),
-              customStyle: {
-                checked: isChecked,
-              },
-            });
-
-            return acc;
-          }, []);
-
-          // paste the new content after the current line
-          const content = globalState.get(contextName) as ILinesBetween[];
-          const newContent = content.reduce<LineOrText[]>((acc, item) => {
-            if (item.id === lineId) {
-              acc.push(item);
-              acc.push(...contentToAdd);
-            } else {
-              acc.push(item);
-            }
-
-            return acc;
-          }, []);
-
-          stateStorage.set(contextName, newContent);
-        } else {
-          const contentToAdd = children.reduce<LineOrText[]>((acc, child) => {
-            const newLine = findChildOptions(child, [], []);
-
-            acc.push({
-              type: "bl",
-              text: newLine as IText[],
-              id: uuid(),
-            });
-
-            return acc;
-          }, []);
-
-          // paste the new content after the current line
-          const content = globalState.get(contextName) as ILinesBetween[];
-          const newContent = content.reduce<LineOrText[]>((acc, item) => {
-            if (item.id === lineId) {
-              acc.push(item);
-              acc.push(...contentToAdd);
-            } else {
-              acc.push(item);
-            }
-
-            return acc;
-          }, []);
-
-          stateStorage.set(contextName, newContent);
-        }
-        return;
-      }
-
-      const isOl = doc.body.querySelector("ol") !== null;
-
-      if (isOl) {
-        const ol = doc.body.querySelector("ol");
-        children = Array.from(ol?.childNodes ?? []);
-
-        const contentToAdd = children.reduce<LineOrText[]>((acc, child) => {
-          const newLine = findChildOptions(child, [], []);
-
-          acc.push({
-            type: "nl",
-            text: newLine as IText[],
-            id: uuid(),
-          });
-
-          return acc;
-        }, []);
-
-        // paste the new content after the current line
-        const content = globalState.get(contextName) as ILinesBetween[];
-        const newContent = content.reduce<LineOrText[]>((acc, item) => {
-          if (item.id === lineId) {
-            acc.push(item);
-            acc.push(...contentToAdd);
-          } else {
-            acc.push(item);
-          }
-
-          return acc;
-        }, []);
-
-        stateStorage.set(contextName, newContent);
-        return;
-      }
-
-      const newText = children.reduce<LineOrText[]>((acc, child) => {
-        // if the child is a comment, do nothing
-        if (child.nodeName === "#comment") return acc;
-
-        // if is an \n, do nothing
-        if (child.nodeName === "#text" && child.textContent?.includes("\n")) {
-          return acc;
-        }
-
-        if (child.nodeName === "#text") {
-          if (isOnlyOneLine) {
-            acc.push({
-              value: child.textContent ?? "",
-              id: uuid(),
-              options: [],
-            });
-          } else {
-            acc.push({
-              id: uuid(),
-              type: "p",
-              text: [
-                {
-                  value: child.textContent ?? "",
-                  id: uuid(),
-                  options: [],
-                },
-              ],
-            });
-          }
-
-          return acc;
-        }
-
-        const multiWords = findChildOptions(child, [], []);
-
-        if (multiWords.length === 0) return acc;
-
-        if (isOnlyOneLine) {
-          acc.push(...multiWords);
-        } else {
-          if (oneChildrenAndIsCode) {
-            multiWords.forEach((item) => {
-              acc.push({
-                type: "p",
-                id: uuid(),
-                text: [
-                  {
-                    value: item.value,
-                    id: item.id,
-                    options: item.options,
-                  },
-                ],
-              });
-            });
-          } else {
-            let type = child.nodeName?.toLowerCase?.() ?? "p";
-            if (!["p", "h1", "h2", "h3"].includes(type)) {
-              type = "p";
-            }
-
-            acc.push({
-              id: uuid(),
-              type: type as scribereActions,
-              text: multiWords,
-            });
-          }
-        }
-
-        return acc;
-      }, []);
+      const newText = pasteBlocks({
+        isOnlyOneLine,
+        oneChildrenAndIsCode,
+        children,
+      });
 
       const { changedBlockId, currSelection } = getBlockId({ textId: lineId });
 
@@ -2361,13 +2190,13 @@ function Component({
       addToCtrlZ,
       contextName,
       deleteMultipleLetters,
-      findChildOptions,
       getBlockId,
       getOptions,
       handleAddImg,
       handleUpdate,
       id,
       info,
+      pasteBlocks,
       text,
     ]
   );
@@ -2441,7 +2270,7 @@ function Component({
 
   const DisEditable = Editable[type ?? "p"];
 
-  if (customStyle?.src) {
+  if (customStyle && "src" in customStyle) {
     return <Image id={id} customStyle={customStyle} />;
   }
 
