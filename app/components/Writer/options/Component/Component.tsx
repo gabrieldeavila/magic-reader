@@ -688,6 +688,26 @@ function Component({
 
         const newId = uuid();
 
+        // only changes the type to "p"
+        if (
+          newLineText.length === 0 &&
+          prevText.length === 1 &&
+          prevText[0]?.value === "" &&
+          ["bl", "tl", "nl"].includes(type)
+        ) {
+          const newContent = content.map((item) => {
+            if (item.id === id) {
+              item.type = "p";
+            }
+
+            return item;
+          });
+
+          stateStorage.set(`update_${type}`, new Date());
+          stateStorage.set(contextName, newContent);
+          return;
+        }
+
         if (newLineText.length === 0) {
           newLineText.push({
             id: uuid(),
