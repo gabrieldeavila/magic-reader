@@ -2132,6 +2132,8 @@ function Component({
           newContent = newText;
         }
 
+        globalState.set("arrow_move", true);
+
         handleUpdate(lineId, newContent);
 
         const lastNewBlock = newText[newText.length - 1];
