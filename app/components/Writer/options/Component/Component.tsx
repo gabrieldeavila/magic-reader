@@ -24,7 +24,7 @@ import useGetCurrBlockId from "../../hooks/useGetCurrBlockId";
 import usePasteBlocks from "../../hooks/usePasteBlocks";
 import usePositions from "../../hooks/usePositions";
 import useSingleDecoration from "../../hooks/useSingleDecoration";
-import { IEditable, ILinesBetween, IText } from "../../interface";
+import { IEditable, ILinesBetween, IText, prevLineInfo } from "../../interface";
 import Popup from "../../popup/Popup";
 import { PopupFunctions } from "../../popup/interface";
 import { Editable } from "../../style";
@@ -2150,6 +2150,7 @@ function Component({
         const content = globalState.get(contextName);
         let foundTheLine = false;
         let positionThatWasAdded = 0;
+        let lineWasEmpty = null as prevLineInfo;
 
         let newContent = content.reduce((acc, item, index) => {
           if (item.id === id) {
@@ -2160,6 +2161,8 @@ function Component({
             // so we avoid keeping the line empty
             if (!(item.text.length === 1 && item.text[0].value.length === 0)) {
               acc.push(item);
+            } else {
+              lineWasEmpty = item;
             }
 
             newText.forEach((item) => {
@@ -2183,13 +2186,25 @@ function Component({
 
         stateStorage.set(contextName, newContent);
 
-        addToCtrlZ({
-          lineId: id,
-          // @ts-expect-error - only ILinesBetween falls here
-          linesBetween: structuredClone(newText),
-          action: "add_multi_lines",
-          position: positionThatWasAdded,
-        });
+        // if a line was empty, it's better to add the text in the same line
+        if (lineWasEmpty) {
+          addToCtrlZ({
+            lineId: id,
+            // @ts-expect-error - only ILinesBetween falls here
+            linesBetween: structuredClone(newText),
+            action: "add_multi_lines",
+            position: positionThatWasAdded,
+            prevLineInfo: lineWasEmpty
+          });
+        } else {
+          addToCtrlZ({
+            lineId: id,
+            // @ts-expect-error - only ILinesBetween falls here
+            linesBetween: structuredClone(newText),
+            action: "add_multi_lines",
+            position: positionThatWasAdded,
+          });
+        }
 
         const lastLine = newText[newText.length - 1];
         // @ts-expect-error - only ILinesBetween falls here

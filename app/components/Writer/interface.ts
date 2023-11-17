@@ -88,7 +88,7 @@ type undoActions =
   | "delete_multi_lines"
   | "add_multi_lines";
 
-interface prevLineInfo {
+export interface prevLineInfo {
   id: string;
   text: IText[];
   type: scribereActions;

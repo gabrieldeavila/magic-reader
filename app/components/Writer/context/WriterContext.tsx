@@ -286,6 +286,10 @@ const WriterContextProvider = ({
           acc.push(item);
         }
 
+        if (index === lastItem.position && lastItem.prevLineInfo) {
+          acc.push(lastItem.prevLineInfo);
+        }
+
         return acc;
       }, []);
 
@@ -438,7 +442,11 @@ const WriterContextProvider = ({
     } else if (lastItem.action === "add_multi_lines") {
       updateContent = updateContent.reduce((acc, item, position) => {
         const isInPosition = position === lastItem.position;
-        acc.push(item);
+
+        // if has the prevLineInfo, it will add it to the undo
+        if (!(isInPosition && lastItem.prevLineInfo)) {
+          acc.push(item);
+        }
 
         if (isInPosition) {
           acc.push(...lastItem.linesBetween);
@@ -736,7 +744,6 @@ const WriterContextProvider = ({
             const newText: IWritterContent = {
               id: uuid(),
               type: "img",
-              // @ts-expect-error works
               customStyle: {
                 src: `data:image/png;base64,${img}`,
               },
