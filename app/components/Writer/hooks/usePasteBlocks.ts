@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import uuid from "../../../utils/uuid";
 import {
+  ILink,
   IText,
   IWritterContent,
   LineOrText,
@@ -31,6 +32,7 @@ function usePasteBlocks() {
       U: "underline",
       S: "strikethrough",
       CODE: "code",
+      A: "external_link",
     };
 
     Object.entries(possibleOptions).forEach(([key, value]) => {
@@ -72,8 +74,17 @@ function usePasteBlocks() {
           const options = [...prevOptions, ...getOptions(item)];
           // without duplicates
           if (item.nodeName === "#text") {
+            let custom = {} as ILink;
+            if (options.includes("external_link")) {
+              const link = item.parentElement?.getAttribute("href") ?? "";
+              custom = {
+                link,
+              };
+            }
+
             prevChild.push({
               options: [...new Set(options)],
+              custom,
               value: item.textContent ?? "",
               id: uuid(),
             });
