@@ -1281,24 +1281,25 @@ function Component({
         }, []);
 
         const { changedBlockId, currSelection } = getBlockId({ textId: id });
+        console.log(prevLine, currSelection, changedBlockId);
+
+        stateStorage.set(contextName, newContent);
 
         info.current = {
           selection: currSelection,
           blockId: changedBlockId,
         };
 
-        setTimeout(() => {
-          stateStorage.set(
-            `${contextName}_decoration-${changedBlockId}`,
-            new Date()
-          );
-        });
+        globalState.set("arrow_move", true);
 
-        stateStorage.set(contextName, newContent);
-
+        stateStorage.set(
+          `${contextName}_decoration-${changedBlockId}`,
+          new Date()
+        );
         return true;
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
+        globalState.set("arrow_move", true);
 
         const content = globalState.get(contextName);
 
@@ -2194,7 +2195,7 @@ function Component({
             linesBetween: structuredClone(newText),
             action: "add_multi_lines",
             position: positionThatWasAdded,
-            prevLineInfo: lineWasEmpty
+            prevLineInfo: lineWasEmpty,
           });
         } else {
           addToCtrlZ({
