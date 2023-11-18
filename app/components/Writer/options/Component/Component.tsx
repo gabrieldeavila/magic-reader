@@ -1281,7 +1281,6 @@ function Component({
         }, []);
 
         const { changedBlockId, currSelection } = getBlockId({ textId: id });
-        console.log(prevLine, currSelection, changedBlockId);
 
         stateStorage.set(contextName, newContent);
 
@@ -1291,6 +1290,11 @@ function Component({
         };
 
         globalState.set("arrow_move", true);
+
+        addToCtrlZ({
+          lineId: id,
+          action: "up",
+        });
 
         stateStorage.set(
           `${contextName}_decoration-${changedBlockId}`,
@@ -1337,6 +1341,11 @@ function Component({
           blockId: changedBlockId,
         };
 
+        addToCtrlZ({
+          lineId: id,
+          action: "down",
+        });
+
         setTimeout(() => {
           stateStorage.set(
             `${contextName}_decoration-${changedBlockId}`,
@@ -1348,7 +1357,7 @@ function Component({
 
       return false;
     },
-    [contextName, getBlockId, id, info]
+    [addToCtrlZ, contextName, getBlockId, id, info]
   );
 
   // if  ", ' and ( are pressed, it will add the closing char
