@@ -1221,12 +1221,24 @@ function Component({
 
         const newContent = content.reduce((acc, item, index) => {
           if (e.key === "ArrowUp" && index === currTextIndex) {
+            addToCtrlZ({
+              lineId: id,
+              prevLineInfo: newLine,
+              action: "up_copy",
+            });
+
             acc.push(newLine);
           }
 
           acc.push(item);
 
           if (e.key === "ArrowDown" && index === currTextIndex) {
+            addToCtrlZ({
+              lineId: id,
+              prevLineInfo: newLine,
+              action: "down_copy",
+            });
+
             acc.push(newLine);
           }
 

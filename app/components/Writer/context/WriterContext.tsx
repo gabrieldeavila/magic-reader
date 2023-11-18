@@ -174,6 +174,8 @@ const WriterContextProvider = ({
       "add_multi_lines",
       "up",
       "down",
+      "up_copy",
+      "down_copy",
     ].includes(lastItem.action);
 
     // now find the lineId and blockId of the content
@@ -276,7 +278,21 @@ const WriterContextProvider = ({
       stateStorage.set("redo", newRedo);
     }
 
-    if (["up", "down"].includes(lastItem.action)) {
+    if (["up_copy", "down_copy"].includes(lastItem.action)) {
+      updateContent = updateContent.reduce((acc, item) => {
+        const isTheCopy = lastItem.prevLineInfo.id === item.id;
+        if (!isTheCopy) {
+          acc.push(item);
+        }
+
+        return acc;
+      }, []);
+
+      const newRedo = [...(globalState.get("redo") || []), { ...lastItem }];
+      stateStorage.set("redo", newRedo);
+
+      setContent([...updateContent]);
+    } else if (["up", "down"].includes(lastItem.action)) {
       updateContent = updateContent.reduce((acc, item, index) => {
         const nextWasTheDown =
           lastItem.action === "down" &&
@@ -364,14 +380,21 @@ const WriterContextProvider = ({
 
     if (!lastItem) return;
 
-    const preventMap = ["add_line", "down", "up"].includes(lastItem.action);
+    const preventMap = [
+      "add_line",
+      "down",
+      "up",
+      "down_copy",
+      "up_copy",
+    ].includes(lastItem.action);
+
     const iterator = ["delete_line", "delete_multi_lines"].includes(
       lastItem.action
     )
       ? "filter"
       : "map";
 
-    if (preventMap && lastItem.prevLineInfo) {
+    if (preventMap && lastItem.action === "add_line") {
       globalState.set("add_line_undo", {
         text: content.find(({ id }) => id === lastItem.prevLineInfo.id).text,
       });
@@ -453,7 +476,28 @@ const WriterContextProvider = ({
       stateStorage.set("undo", newUndo);
     }
 
-    if (["up", "down"].includes(lastItem.action)) {
+    if (["up_copy", "down_copy"].includes(lastItem.action)) {
+      updateContent = updateContent.reduce((acc, item) => {
+        const isTheCopy = lastItem.lineId === item.id;
+
+        if (isTheCopy && lastItem.action === "up_copy") {
+          acc.push(lastItem.prevLineInfo);
+        }
+
+        acc.push(item);
+
+        if (isTheCopy && lastItem.action === "down_copy") {
+          acc.push(lastItem.prevLineInfo);
+        }
+
+        return acc;
+      }, []);
+
+      const newUndo = [...(globalState.get("undo") || []), lastItem];
+      stateStorage.set("undo", newUndo);
+
+      setContent([...updateContent]);
+    } else if (["up", "down"].includes(lastItem.action)) {
       updateContent = updateContent.reduce((acc, item, index) => {
         const nextWasTheDown =
           lastItem.action === "up" &&
@@ -486,7 +530,7 @@ const WriterContextProvider = ({
       const newUndo = [...(globalState.get("undo") || []), lastItem];
 
       stateStorage.set("undo", newUndo);
-    } else if (preventMap) {
+    } else if (lastItem.action === "add_line") {
       updateContent.splice(lastItem.position + 1, 0, {
         id: lastItem.lineId,
         text: lastItem.value,

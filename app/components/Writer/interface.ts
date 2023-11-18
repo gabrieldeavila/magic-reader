@@ -88,6 +88,8 @@ type undoActions =
   | "delete_multi_lines"
   | "up"
   | "down"
+  | "up_copy"
+  | "down_copy"
   | "add_multi_lines";
 
 export interface prevLineInfo {
