@@ -347,10 +347,7 @@ const WriterContextProvider = ({
       stateStorage.set("redo", newRedo);
       setContent([...updateContent]);
     } else if (lastItem.action === "delete_line") {
-      updateContent.splice(lastItem.position - 1, 0, {
-        id: lastItem.lineId,
-        text: lastItem.value,
-      });
+      updateContent.splice(lastItem.position - 1, 0, lastItem.prevLineInfo);
       const newRedo = [...(globalState.get("redo") || []), { ...lastItem }];
       stateStorage.set("redo", newRedo);
       setContent([...updateContent]);

@@ -1014,9 +1014,11 @@ function Component({
           deleteMultipleLetters();
         } else {
           const nextLine = globalState.get(contextName)[position + 1]?.text[0];
+          const currLine = globalState.get(contextName)[position];
+
           addToCtrlZ({
             lineId: id,
-            value: structuredClone(text),
+            prevLineInfo: currLine,
             action: "delete_line",
             position: position + 1,
           });
