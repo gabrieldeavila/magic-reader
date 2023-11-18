@@ -30,8 +30,13 @@ function Align({
   const ref = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDivElement>(null);
   const [show, setShow] = useState(false);
+  const [isOutOfScreen, setIsOutOfScreen] = useState(false);
 
   const handleShow = useCallback(() => {
+    const { top, height } = ref.current?.getBoundingClientRect() || {};
+    const isOutOfScreenTemp = top + height + 250 > window.innerHeight;
+
+    setIsOutOfScreen(isOutOfScreenTemp);
     setShow((prev) => !prev);
   }, []);
 
@@ -63,7 +68,7 @@ function Align({
         <ChevronDown size={13} />
       </AlignWrapper>
 
-      <AlignOptions ref={optionsRef} show={show}>
+      <AlignOptions isOutOfScreen={isOutOfScreen} ref={optionsRef} show={show}>
         {Object.keys(OPTIONS).map((key: keyof typeof OPTIONS) => (
           <AlignItem key={key} option={key} id={id} align={align} />
         ))}
