@@ -1,3 +1,4 @@
+import { scrolls } from "@geavila/gt-design";
 import styled, { css } from "styled-components";
 
 const base = css`
@@ -112,10 +113,19 @@ const WritterWrapper = styled.div`
   display: flex;
   justify-content: center;
   padding-bottom: 2rem;
+  position: absolute;
+  top: 170px;
+  bottom: 0;
+  overflow: auto;
+  left: 0;
+  right: 0;
+
+  ${scrolls.default}
 `;
 
 const WritterContainer = styled.div`
   max-width: 800px;
+  height: fit-content;
 `;
 
 export const StyledWriter = {
@@ -143,6 +153,7 @@ const ScribereWriter = styled.div`
   position: fixed;
   left: 3rem;
   top: 1.75rem;
+  bottom: 0;
 `;
 
 export const Scribere = {
