@@ -116,7 +116,6 @@ const WritterWrapper = styled.div`
 
 const WritterContainer = styled.div`
   max-width: 800px;
-  min-height: 100vh;
 `;
 
 export const StyledWriter = {
@@ -132,4 +131,21 @@ export const Editable = {
   bl,
   nl,
   tl,
+};
+
+const ScribereWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+`;
+
+const ScribereWriter = styled.div`
+  width: -webkit-fill-available;
+  position: fixed;
+  left: 3rem;
+  top: 1.75rem;
+`;
+
+export const Scribere = {
+  Wrapper: ScribereWrapper,
+  Writer: ScribereWriter,
 };
