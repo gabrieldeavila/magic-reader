@@ -45,8 +45,13 @@ function PopupSelect({ type }: { type: scribereActions }) {
 
   const ref = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDivElement>(null);
+  const [isOutOfScreen, setIsOutOfScreen] = useState(false);
 
   const handleShow = useCallback(() => {
+    const { top, height } = ref.current?.getBoundingClientRect() || {};
+    const isOutOfScreenTemp = top + height + 250 > window.innerHeight;
+
+    setIsOutOfScreen(isOutOfScreenTemp);
     setShow((prev) => !prev);
   }, []);
 
@@ -118,7 +123,11 @@ function PopupSelect({ type }: { type: scribereActions }) {
         </Select.Container>
       </Select.Wrapper>
 
-      <Select.Options show={show} ref={optionsRef}>
+      <Select.Options
+        isOutOfScreen={isOutOfScreen}
+        show={show}
+        ref={optionsRef}
+      >
         <Select.Info>{translateThis("SCRIBERE.TURN_INTO")}</Select.Info>
 
         {OPTIONS.map((option) => (

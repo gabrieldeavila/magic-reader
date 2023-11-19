@@ -2,7 +2,7 @@ import { useGTTranslate } from "@geavila/gt-design";
 import clsx from "clsx";
 import { memo, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Code, atomOneLight, dracula } from "react-code-blocks";
-import { useTriggerState } from "react-trigger-state";
+import { globalState, useTriggerState } from "react-trigger-state";
 import { useContextName } from "../../context/WriterContext";
 import { IDecoration } from "../../interface";
 import { DCode } from "./style";
@@ -68,16 +68,23 @@ const Decoration = memo(
 
     useLayoutEffect(() => {
       if (info.current.blockId !== id) return;
+
       const currentAnchorNode = window.getSelection().anchorNode;
       const thisAnchorNode = tagRef.current.firstChild;
       const isSameNode = currentAnchorNode === thisAnchorNode;
       const selectedLength = window.getSelection().toString().length;
 
+      const arrowMove = globalState.get("arrow_move");
+      globalState.set("arrow_move", false);
+
       if (
+        // prevent empty selection on img
         !isSameNode &&
         selectedLength === 0 &&
         (currentAnchorNode.textContent.length === 0 ||
-          thisAnchorNode == null)
+          thisAnchorNode == null) &&
+        // but if the arrow key was pressed, don't prevent the selection
+        !arrowMove
       ) {
         return;
       }

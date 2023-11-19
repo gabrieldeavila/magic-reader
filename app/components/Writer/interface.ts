@@ -6,8 +6,27 @@ type TOptions =
   | "code"
   | "highlight"
   | "external_link";
+  
+export const SCRIBERE_ACTIONS = [
+  "p",
+  "h1",
+  "h2",
+  "h3",
+  "bl",
+  "nl",
+  "tl",
+  "img",
+] as const;
 
-export type scribereActions = "p" | "h1" | "h2" | "h3" | "bl" | "nl" | "tl" | "img";
+export type scribereActions =
+  | "p"
+  | "h1"
+  | "h2"
+  | "h3"
+  | "bl"
+  | "nl"
+  | "tl"
+  | "img";
 export type TAlign = "left" | "center" | "right" | "justify";
 
 export interface ILink {
@@ -31,10 +50,12 @@ export interface IImg {
   range?: number;
 }
 
+export type TCustomStyle = ITodo | IImg;
+
 export interface IWritterContent {
   text: IText[];
   type: scribereActions;
-  customStyle?: ITodo & IImg;
+  customStyle?: ITodo | IImg;
   align?: TAlign;
   id: string;
 }
@@ -65,9 +86,13 @@ type undoActions =
   | "add_line"
   | "delete_line"
   | "delete_multi_lines"
+  | "up"
+  | "down"
+  | "up_copy"
+  | "down_copy"
   | "add_multi_lines";
 
-interface prevLineInfo {
+export interface prevLineInfo {
   id: string;
   text: IText[];
   type: scribereActions;
@@ -76,8 +101,9 @@ interface prevLineInfo {
 
 export interface ILinesBetween {
   id: string;
-  type: "p" | "h1" | "h2";
+  type: scribereActions;
   text: IText[];
+  customStyle?: ITodo | IImg;
 }
 [];
 

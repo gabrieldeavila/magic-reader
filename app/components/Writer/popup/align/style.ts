@@ -10,7 +10,7 @@ export const AlignWrapper = styled.div`
   width: 100%;
 `;
 
-export const AlignOptions = styled.div`
+export const AlignOptions = styled.div<{ isOutOfScreen: boolean; show: boolean }>`
   position: absolute;
   display: flex;
   gap: 0.5rem;
@@ -19,13 +19,14 @@ export const AlignOptions = styled.div`
   padding: 0.5rem;
   background: var(--primary);
 
-  top: 110%;
   flex-direction: column;
   border-radius: 5px;
 
   transition: 0.2s ease-in-out;
 
-  ${({ show }: { show: boolean }) => `
+  ${({ isOutOfScreen }) => (isOutOfScreen ? "bottom: 110%" : "top: 110%")};
+
+  ${({ show }) => `
     opacity: ${show ? 1 : 0};
     transform: ${
       show ? "scale(1) translateY(0)" : "scale(0.95) translateY(-1rem)"

@@ -22,9 +22,8 @@ const Selected = styled.p`
   font-weight: 300;
 `;
 
-const Options = styled.div`
+const Options = styled.div<{ isOutOfScreen: boolean; show: boolean }>`
   position: absolute;
-  top: 110%;
   border-radius: 5px;
   display: flex;
   flex-direction: column;
@@ -34,10 +33,14 @@ const Options = styled.div`
   padding: 0.5rem;
   ${shadows.basic};
 
+  ${({ isOutOfScreen }) => (isOutOfScreen ? "bottom: 110%" : "top: 110%")};
+
   /* hides and shows it */
-  ${({ show }: { show: boolean }) => `
+  ${({ show }) => `
     opacity: ${show ? 1 : 0};
-    transform: ${show ? "scale(1) translateY(0)" : "scale(0.95) translateY(-1rem)"};
+    transform: ${
+      show ? "scale(1) translateY(0)" : "scale(0.95) translateY(-1rem)"
+    };
     pointer-events: ${show ? "all" : "none"};
   `}
 

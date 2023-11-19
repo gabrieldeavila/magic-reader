@@ -62,6 +62,7 @@ function Image({ customStyle, id }: IImage) {
   return (
     <ImageComp.Wrapper
       ref={wrapperRef}
+      data-line-id={id}
       draggable={false}
       contentEditable={false}
       onDragStart={(e) => e.preventDefault()}
