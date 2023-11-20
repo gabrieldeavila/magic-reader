@@ -1,5 +1,5 @@
 import { shadows } from "@geavila/gt-design";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
 const Wrapper = styled.div`
   background: var(--secondary);
@@ -10,13 +10,24 @@ const Wrapper = styled.div`
   bottom: 0;
   z-index: 1;
   ${shadows.simple}
+  display: flex;
+  justify-content: space-between;
 `;
 
 const Content = styled.div`
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   align-items: center;
   width: -webkit-fill-available;
+`;
+
+const notSelectedItem = css`
+  opacity: 0.5;
+
+  &:hover {
+    opacity: 0.7;
+  }
 `;
 
 const Item = styled.div<{ active?: boolean }>`
@@ -29,12 +40,21 @@ const Item = styled.div<{ active?: boolean }>`
   align-items: center;
   justify-content: center;
   transition: 0.2s;
+
+  ${({ active }) => !active && notSelectedItem}
+`;
+
+const Group = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: -webkit-fill-available;
 `;
 
 const SidebarSt = {
   Wrapper,
   Content,
   Item,
+  Group
 };
 
 export default SidebarSt;
