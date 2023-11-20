@@ -2,18 +2,25 @@
 
 import React from "react";
 import SidebarSt from "./style";
-import { File, User } from "react-feather";
+import { File, Settings, User } from "react-feather";
 
 function Sidebar() {
   return (
     <SidebarSt.Wrapper>
       <SidebarSt.Content>
-        <SidebarSt.Item active={true}>
-          <File />
-        </SidebarSt.Item>
-        <SidebarSt.Item>
-          <User />
-        </SidebarSt.Item>
+        <SidebarSt.Group>
+          <SidebarSt.Item>
+            <File />
+          </SidebarSt.Item>
+        </SidebarSt.Group>
+        <SidebarSt.Group>
+          <SidebarSt.Item>
+            <User />
+          </SidebarSt.Item>
+          <SidebarSt.Item>
+            <Settings />
+          </SidebarSt.Item>
+        </SidebarSt.Group>
       </SidebarSt.Content>
     </SidebarSt.Wrapper>
   );
