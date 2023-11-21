@@ -7,6 +7,7 @@ import { IWriter } from "./interface";
 import Sidebar from "./sidebar/Sidebar";
 import { Scribere } from "./style";
 import Navbar from "./navbar/Navbar";
+import Menu from "./menu/Menu";
 
 function Writer({ content }: IWriter) {
   const { isSSR } = useIsSSR();
@@ -21,7 +22,10 @@ function Writer({ content }: IWriter) {
       <Scribere.Wrapper>
         <Sidebar />
         <Scribere.Writer>
-          <WriterContextProvider name="writter" initialContent={content} />
+          <Menu />
+          <Scribere.Content>
+            <WriterContextProvider name="writter" initialContent={content} />
+          </Scribere.Content>
         </Scribere.Writer>
       </Scribere.Wrapper>
     </>

@@ -154,9 +154,17 @@ const ScribereWriter = styled.div`
   left: 3rem;
   top: 1.75rem;
   bottom: 0;
+  display: flex;
+`;
+
+const ScribereContent = styled.div`
+  width: 100%;
+  height: 100%;
+  position: relative;
 `;
 
 export const Scribere = {
   Wrapper: ScribereWrapper,
   Writer: ScribereWriter,
+  Content: ScribereContent,
 };
