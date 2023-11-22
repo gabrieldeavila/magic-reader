@@ -8,7 +8,7 @@ function Menu() {
   return (
     <MenuSt.Wrapper ref={dividerContainerRef}>
       Menu
-      <Divider />
+      {Divider}
     </MenuSt.Wrapper>
   );
 }

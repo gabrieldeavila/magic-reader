@@ -1,10 +1,17 @@
 import React, { useCallback, useEffect, useState } from "react";
 import DividerSt from "./style";
 
-function Divider() {
+function Divider({
+  parentRef,
+}: {
+  parentRef: React.RefObject<HTMLDivElement>;
+}) {
   const [isActive, setIsActive] = useState(false);
 
   const handleMouseDown = useCallback(() => {
+    // gets the body and sets the cursor to col-resize
+    const body = document.querySelector("body");
+    if (body) body.style.cursor = "col-resize";
     setIsActive(true);
   }, []);
 
@@ -12,15 +19,30 @@ function Divider() {
     if (!isActive) return;
 
     const handleMouseUp = () => {
+      // gets the body and sets the cursor to default
+      const body = document.querySelector("body");
+      if (body) body.style.cursor = "default";
+
       setIsActive(false);
     };
 
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!parentRef.current) return;
+
+      const eventX = e.clientX;
+      const dividerLeft = eventX;
+
+      parentRef.current.style.width = `${dividerLeft}px`;
+    };
+
     document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("mousemove", handleMouseMove);
 
     return () => {
       document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
     };
-  }, [isActive]);
+  }, [isActive, parentRef]);
 
   return <DividerSt.Wrapper active={isActive} onMouseDown={handleMouseDown} />;
 }
@@ -30,8 +52,9 @@ const useDivider = () => {
 
   return {
     dividerContainerRef,
-    Divider,
+    Divider: <Divider parentRef={dividerContainerRef} />,
   };
 };
 
 export { useDivider };
+

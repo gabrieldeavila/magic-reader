@@ -8,15 +8,15 @@ const activeCss = css`
 `;
 
 const Wrapper = styled.div<{ active?: boolean }>`
-  width: 1px;
+  width: 0.5px;
   z-index: 999;
   position: absolute;
   top: 0;
   bottom: 0;
   height: 100%;
-  cursor: w-resize;
+  cursor: col-resize;
   right: 0;
-  background: var(--backgroundHover);
+  background: transparent;
   opacity: 0.5;
   transition: 0.2s;
 
