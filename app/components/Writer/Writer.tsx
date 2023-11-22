@@ -8,9 +8,11 @@ import Sidebar from "./sidebar/Sidebar";
 import { Scribere } from "./style";
 import Navbar from "./navbar/Navbar";
 import Menu from "./menu/Menu";
+import { useTriggerState } from "react-trigger-state";
 
 function Writer({ content }: IWriter) {
   const { isSSR } = useIsSSR();
+  const [menu] = useTriggerState({ name: "menu" });
 
   if (isSSR) {
     return <Skeletons.Canary />;
@@ -22,7 +24,7 @@ function Writer({ content }: IWriter) {
       <Scribere.Wrapper>
         <Sidebar />
         <Scribere.Writer>
-          <Menu />
+          {menu && <Menu />}
           <Scribere.Content>
             <WriterContextProvider name="writter" initialContent={content} />
           </Scribere.Content>

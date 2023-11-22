@@ -1,15 +1,25 @@
 "use client";
 
-import React from "react";
-import SidebarSt from "./style";
+import { useCallback } from "react";
 import { File, Settings, User } from "react-feather";
+import { useTriggerState } from "react-trigger-state";
+import SidebarSt from "./style";
 
 function Sidebar() {
+  const [menu, setMenu] = useTriggerState({ name: "menu" });
+
+  const handleClickFile = useCallback(() => {
+    setMenu((prev: string) => {
+      if (prev === "file") return "";
+      return "file";
+    });
+  }, [setMenu]);
+
   return (
     <SidebarSt.Wrapper>
       <SidebarSt.Content>
         <SidebarSt.Group>
-          <SidebarSt.Item>
+          <SidebarSt.Item active={menu === "file"} onClick={handleClickFile}>
             <File />
           </SidebarSt.Item>
         </SidebarSt.Group>

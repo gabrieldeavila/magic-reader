@@ -6,7 +6,7 @@ const Wrapper = styled.div`
   justify-content: center;
   position: relative;
   padding: 0.5rem;
-
+  min-width: 200px;
   background: var(--containerMain);
 
   ${shadows.simple}

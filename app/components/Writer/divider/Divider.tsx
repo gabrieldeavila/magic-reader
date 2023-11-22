@@ -16,6 +16,14 @@ function Divider({
   }, []);
 
   useEffect(() => {
+    const dividerLeft = localStorage.getItem("divider_left");
+    if (!dividerLeft) return;
+
+    if (!parentRef.current) return;
+    parentRef.current.style.width = `${dividerLeft}px`;
+  }, [parentRef]);
+
+  useEffect(() => {
     if (!isActive) return;
 
     const handleMouseUp = () => {
@@ -32,6 +40,8 @@ function Divider({
       const eventX = e.clientX;
       const dividerLeft = eventX;
 
+      if (dividerLeft < 200 || dividerLeft > 1600) return;
+      localStorage.setItem("divider_left", `${dividerLeft}`);
       parentRef.current.style.width = `${dividerLeft}px`;
     };
 
@@ -57,4 +67,3 @@ const useDivider = () => {
 };
 
 export { useDivider };
-
