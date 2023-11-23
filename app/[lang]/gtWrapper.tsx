@@ -32,10 +32,12 @@ function GTWrapper({
           theme: {
             highlight: "#B3E5FC",
             highlightText: "#333333",
+            logoWing: "#ccb183"
           },
           darkTheme: {
             highlight: "#0A192F",
             highlightText: "#D3D3D3",
+            logoWing: "#fdf7eb"
           },
         },
       }}

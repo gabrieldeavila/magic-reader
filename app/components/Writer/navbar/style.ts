@@ -20,7 +20,14 @@ const Content = styled.div`
   height: 100%;
 `;
 
+const Img = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
 export const NavbarSt = {
   Wrapper,
-  Content
+  Content,
+  Img,
 };
