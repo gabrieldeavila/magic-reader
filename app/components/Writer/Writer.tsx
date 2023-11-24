@@ -1,14 +1,14 @@
 "use client";
 
 import { Skeletons } from "@geavila/gt-design";
+import { useTriggerState } from "react-trigger-state";
 import useIsSSR from "../../hooks/useIsSSR";
-import WriterContextProvider from "./context/WriterContext";
+import Empty from "./Empty/Empty";
 import { IWriter } from "./interface";
+import Menu from "./menu/Menu";
+import Navbar from "./navbar/Navbar";
 import Sidebar from "./sidebar/Sidebar";
 import { Scribere } from "./style";
-import Navbar from "./navbar/Navbar";
-import Menu from "./menu/Menu";
-import { useTriggerState } from "react-trigger-state";
 
 function Writer({ content }: IWriter) {
   const { isSSR } = useIsSSR();
@@ -26,7 +26,8 @@ function Writer({ content }: IWriter) {
         <Scribere.Writer>
           {menu && <Menu />}
           <Scribere.Content>
-            <WriterContextProvider name="writter" initialContent={content} />
+            <Empty />
+            {/* <WriterContextProvider name="writter" initialContent={content} /> */}
           </Scribere.Content>
         </Scribere.Writer>
       </Scribere.Wrapper>

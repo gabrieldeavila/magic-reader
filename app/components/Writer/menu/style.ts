@@ -8,6 +8,7 @@ const Wrapper = styled.div`
   padding: 0.5rem;
   min-width: 200px;
   background: var(--containerMain);
+  user-select: none;
 
   ${shadows.simple}
   ${scrolls.default}

@@ -1,8 +1,7 @@
-
-function Logo() {
+function Logo({ width = "25px" }: { width?: string }) {
   return (
     <svg
-      width="25px"
+      width={width}
       viewBox="0 0 66.23053 50.856586"
       version="1.1"
       id="svg1"
