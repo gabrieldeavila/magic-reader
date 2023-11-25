@@ -7,6 +7,7 @@ const Wrapper = styled.div`
   position: relative;
   padding: 0.5rem;
   min-width: 200px;
+  max-width: 90%;
   background: var(--containerMain);
   user-select: none;
 

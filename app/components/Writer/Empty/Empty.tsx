@@ -1,6 +1,5 @@
-import React from "react";
-import { EmptySt } from "./style";
 import Logo from "../navbar/logo";
+import { EmptySt } from "./style";
 
 function Empty() {
   return (

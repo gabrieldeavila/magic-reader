@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import DividerSt from "./style";
+import { globalState } from "react-trigger-state";
 
 function Divider({
   parentRef,
@@ -23,6 +24,30 @@ function Divider({
     parentRef.current.style.width = `${dividerLeft}px`;
   }, [parentRef]);
 
+  const resizeHandler = useCallback(
+    (e: MouseEvent) => {
+      if (!parentRef.current) return;
+
+      const eventX = e.clientX - 48;
+      const dividerLeft = eventX;
+
+      if (dividerLeft < 200 || dividerLeft > window.innerWidth - 200) return;
+
+      parentRef.current.style.width = `${dividerLeft}px`;
+
+      const ref = globalState.get("writter_ref");
+      ref.style.width = `calc(100% - ${dividerLeft}px)`;
+    },
+    [parentRef]
+  );
+
+  useEffect(() => {
+    return () => {
+      const ref = globalState.get("writter_ref");
+      ref.style.width = "100%";
+    };
+  }, []);
+
   useEffect(() => {
     if (!isActive) return;
 
@@ -34,25 +59,22 @@ function Divider({
       setIsActive(false);
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!parentRef.current) return;
-
-      const eventX = e.clientX;
-      const dividerLeft = eventX;
-
-      if (dividerLeft < 200 || dividerLeft > 1600) return;
-      localStorage.setItem("divider_left", `${dividerLeft}`);
-      parentRef.current.style.width = `${dividerLeft}px`;
-    };
-
     document.addEventListener("mouseup", handleMouseUp);
-    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mousemove", resizeHandler);
 
     return () => {
       document.removeEventListener("mouseup", handleMouseUp);
-      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mousemove", resizeHandler);
     };
-  }, [isActive, parentRef]);
+  }, [isActive, resizeHandler]);
+
+  useEffect(() => {
+    window.addEventListener("resize", resizeHandler);
+
+    return () => {
+      window.removeEventListener("resize", resizeHandler);
+    };
+  }, [resizeHandler]);
 
   return <DividerSt.Wrapper active={isActive} onMouseDown={handleMouseDown} />;
 }

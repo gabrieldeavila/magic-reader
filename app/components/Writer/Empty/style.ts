@@ -14,6 +14,11 @@ const EmptyContent = styled.div`
   align-items: center;
   justify-content: center;
   opacity: 0.3;
+  width: 100%;
+
+  svg {
+    max-width: 100%;
+  }
 `;
 
 export const EmptySt = {
