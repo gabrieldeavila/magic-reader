@@ -8,7 +8,7 @@ const Wrapper = styled.div`
   padding: 0.5rem;
   min-width: 200px;
   max-width: 90%;
-  background: var(--containerMain);
+  background: var(--menu);
   user-select: none;
 
   ${shadows.simple}

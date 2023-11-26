@@ -14,15 +14,19 @@ function Empty() {
             <EmptySt.Tip.Title>
               {translateThis("SCRIBERE.EMPTY_SCREEN.TIP.NEW_FILE.TITLE")}
             </EmptySt.Tip.Title>
-            <EmptySt.Tip.Shortcut>Ctrl + N</EmptySt.Tip.Shortcut>
+            <EmptySt.Tip.Shortcut>
+              <EmptySt.Tip.Key>Ctrl</EmptySt.Tip.Key>+
+              <EmptySt.Tip.Key>N</EmptySt.Tip.Key>
+            </EmptySt.Tip.Shortcut>
           </EmptySt.Tip.Content>
 
           <EmptySt.Tip.Content>
             <EmptySt.Tip.Title>
               {translateThis("SCRIBERE.EMPTY_SCREEN.TIP.FULL_SCREEN.TITLE")}
             </EmptySt.Tip.Title>
-
-            <EmptySt.Tip.Shortcut>F11</EmptySt.Tip.Shortcut>
+            <EmptySt.Tip.Shortcut>
+              <EmptySt.Tip.Key>F11</EmptySt.Tip.Key>
+            </EmptySt.Tip.Shortcut>
           </EmptySt.Tip.Content>
         </EmptySt.Tip.Wrapper>
       </EmptySt.Content>

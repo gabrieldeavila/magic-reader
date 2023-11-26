@@ -1,13 +1,12 @@
-import React from "react";
+import Hat from "./hat";
 import { NavbarSt } from "./style";
-import Logo from "./logo";
 
 function Navbar() {
   return (
     <NavbarSt.Wrapper>
       <NavbarSt.Content>
         <NavbarSt.Img>
-          <Logo />
+          <Hat />
         </NavbarSt.Img>
       </NavbarSt.Content>
     </NavbarSt.Wrapper>

@@ -1,3 +1,4 @@
+import { shadows } from "@geavila/gt-design";
 import styled from "styled-components";
 
 const EmptyWrapper = styled.div`
@@ -28,6 +29,7 @@ const EmptyTipWrapper = styled.div`
   align-items: center;
   justify-content: center;
   width: 100%;
+  gap: 0.75rem;
 
   user-select: none;
 `;
@@ -49,7 +51,15 @@ const EmptyTipTitle = styled.p`
 
 const EmptyTipShortcut = styled.div`
   font-size: 1rem;
-  font-weight: 500;
+  display: flex;
+  gap: 0.5rem;
+`;
+
+const EmptyTipKey = styled.span`
+  background: var(--primary-0_1);
+  border-radius: 5px;
+  padding: 0.1rem 0.5rem;
+  ${shadows.simple}
 `;
 
 export const EmptySt = {
@@ -60,5 +70,6 @@ export const EmptySt = {
     Content: EmptyTipContent,
     Title: EmptyTipTitle,
     Shortcut: EmptyTipShortcut,
+    Key: EmptyTipKey,
   },
 };

@@ -193,7 +193,7 @@ function Logo({ width = "25px" }: { width?: string }) {
         />
         <path
           style={{
-            fill: "#faf7ee",
+            fill: "var(--logoWing)",
             fillOpacity: 1,
             strokeWidth: 0.264583,
           }}
