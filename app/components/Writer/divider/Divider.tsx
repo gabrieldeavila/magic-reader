@@ -34,7 +34,7 @@ function Divider({
       const eventX = e.clientX - 48;
       const dividerLeft = eventX;
 
-      if (dividerLeft < 200 || dividerLeft > window.innerWidth - 200) return;
+      if (dividerLeft < 200 || dividerLeft > window.innerWidth - 200 || dividerLeft > window.innerWidth * 0.9 - 50) return;
 
       parentRef.current.style.width = `${dividerLeft}px`;
 

@@ -46,7 +46,7 @@ const EmptyTipTitle = styled.p`
   font-weight: 200;
   padding: 0 0.5rem;
   text-align: right;
-  width: 52%;
+  width: 50%;
 `;
 
 const EmptyTipShortcut = styled.div`

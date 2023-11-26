@@ -10,6 +10,7 @@ const Wrapper = styled.div`
   max-width: 90%;
   background: var(--menu);
   user-select: none;
+  z-index: 2;
 
   ${shadows.simple}
   ${scrolls.default}

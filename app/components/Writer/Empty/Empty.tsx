@@ -15,7 +15,7 @@ function Empty() {
               {translateThis("SCRIBERE.EMPTY_SCREEN.TIP.NEW_FILE.TITLE")}
             </EmptySt.Tip.Title>
             <EmptySt.Tip.Shortcut>
-              <EmptySt.Tip.Key>Ctrl</EmptySt.Tip.Key>+
+              <EmptySt.Tip.Key>Alt</EmptySt.Tip.Key>+
               <EmptySt.Tip.Key>N</EmptySt.Tip.Key>
             </EmptySt.Tip.Shortcut>
           </EmptySt.Tip.Content>
