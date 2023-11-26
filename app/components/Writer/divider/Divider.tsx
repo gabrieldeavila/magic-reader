@@ -22,6 +22,9 @@ function Divider({
 
     if (!parentRef.current) return;
     parentRef.current.style.width = `${dividerLeft}px`;
+
+    const ref = globalState.get("writter_ref");
+    ref.style.width = `calc(100% - ${dividerLeft}px)`;
   }, [parentRef]);
 
   const resizeHandler = useCallback(
@@ -37,6 +40,8 @@ function Divider({
 
       const ref = globalState.get("writter_ref");
       ref.style.width = `calc(100% - ${dividerLeft}px)`;
+
+      localStorage.setItem("divider_left", `${dividerLeft}`);
     },
     [parentRef]
   );

@@ -70,7 +70,18 @@
     "BL": "Bullet List",
     "NL": "Numbered List",
     "TL": "Task List",
-    "AC": "Accordion"
+    "AC": "Accordion",
+
+    "EMPTY_SCREEN": {
+      "TIP": {
+        "NEW_FILE": {
+          "TITLE": "Create a new file"
+        },
+        "FULL_SCREEN": {
+          "TITLE": "Toggle full screen"
+        }
+      }
+    }
   },
   "SEARCH": "Search",
   "NO_RESULTS": "No results found",

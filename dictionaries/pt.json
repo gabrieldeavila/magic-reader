@@ -70,7 +70,18 @@
     "BL": "Lista com marcadores",
     "NL": "Lista numerada",
     "TL": "Lista de tarefas",
-    "AC": "Menu de expansível"
+    "AC": "Menu de expansível",
+
+    "EMPTY_SCREEN": {
+      "TIP": {
+        "NEW_FILE": {
+          "TITLE": "Novo arquivo"
+        },
+        "FULL_SCREEN": {
+          "TITLE": "Tela cheia"
+        }
+      }
+    }
   },
 
   "CHANGE_IMG": "Alterar imagem",
