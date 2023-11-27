@@ -1,9 +1,8 @@
 import { scrolls, shadows } from "@geavila/gt-design";
 import styled from "styled-components";
 
-const Wrapper = styled.div`
+const MenuWrapper = styled.div`
   display: flex;
-  justify-content: center;
   position: relative;
   padding: 0.5rem;
   min-width: 200px;
@@ -16,8 +15,31 @@ const Wrapper = styled.div`
   ${scrolls.default}
 `;
 
+const MenuContainer = styled.div`
+  padding: 0.5rem;
+  padding-top: 0;
+  width: 100%;
+`;
+
+const MenuTitleContent = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const MenuTitleName = styled.h3`
+  font-size: 0.75rem;
+  font-weight: 100;
+  text-transform: uppercase;
+`;
+
 const MenuSt = {
-  Wrapper,
+  Wrapper: MenuWrapper,
+  Container: MenuContainer,
+  Title: {
+    Content: MenuTitleContent,
+    Name: MenuTitleName,
+  },
 };
 
 export default MenuSt;

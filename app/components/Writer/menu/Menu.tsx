@@ -7,7 +7,11 @@ function Menu() {
 
   return (
     <MenuSt.Wrapper ref={dividerContainerRef}>
-      Menu
+      <MenuSt.Container>
+        <MenuSt.Title.Content>
+          <MenuSt.Title.Name>Explorer</MenuSt.Title.Name>
+        </MenuSt.Title.Content>
+      </MenuSt.Container>
       {Divider}
     </MenuSt.Wrapper>
   );

@@ -8,6 +8,17 @@ function Navbar() {
         <NavbarSt.Img>
           <Hat />
         </NavbarSt.Img>
+        <NavbarSt.Options>
+          <NavbarSt.Option>
+            <NavbarSt.OptionText>File</NavbarSt.OptionText>
+          </NavbarSt.Option>
+          <NavbarSt.Option>
+            <NavbarSt.OptionText>Edit</NavbarSt.OptionText>
+          </NavbarSt.Option>
+          <NavbarSt.Option>
+            <NavbarSt.OptionText>Selection</NavbarSt.OptionText>
+          </NavbarSt.Option>
+        </NavbarSt.Options>
       </NavbarSt.Content>
     </NavbarSt.Wrapper>
   );

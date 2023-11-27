@@ -30,8 +30,8 @@ function Writer({ content }: IWriter) {
   // when ctrl + n is pressed, it will trigger this function
   useEffect(() => {
     const handleNewFile = (e: KeyboardEvent) => {
-      e.preventDefault();
       if (e.altKey && e.key === "n") {
+        e.preventDefault();
         setIsEmpty((prev: boolean) => !prev);
       }
     };
