@@ -24,7 +24,7 @@ import Component from "../options/Component/Component";
 import { ReadWrite, Selector } from "../options/Component/style";
 import { dcs } from "../../../utils/dcs";
 import { dga } from "../../../utils/dga";
-import TOC from "../toc/TOC";
+import Toc from "../toc/TableOfContents";
 import { StyledWriter } from "../style";
 import useResize from "../hooks/useResize";
 import Image from "../image/image";
@@ -898,7 +898,7 @@ const WriterContextProvider = ({
         <StyledWriter.Container ref={writterRef}>
           <Selector data-link-selector />
 
-          <TOC />
+          <Toc />
 
           <ReadWrite
             contentEditable
