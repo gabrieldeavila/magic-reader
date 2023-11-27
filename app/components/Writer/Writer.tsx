@@ -10,7 +10,7 @@ import Menu from "./menu/Menu";
 import Navbar from "./navbar/Navbar";
 import Sidebar from "./sidebar/Sidebar";
 import { Scribere } from "./style";
-import Empty from "./empty/Empty";
+import Empty from "./emptyw/Empty";
 
 function Writer({ content }: IWriter) {
   const { isSSR } = useIsSSR();
