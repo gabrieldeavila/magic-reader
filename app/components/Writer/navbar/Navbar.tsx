@@ -1,17 +1,24 @@
-import React from "react";
+import Hat from "./hat";
 import { NavbarSt } from "./style";
-import Image from "next/image";
 
 function Navbar() {
   return (
     <NavbarSt.Wrapper>
       <NavbarSt.Content>
-        <Image
-          src="https://raw.githubusercontent.com/gabrieldeavila/magic-reader/9f4e0920dc71f978ee8b9ddf839228f7c184834d/public/logo.svg"
-          alt="Dissolutus"
-          width={24}
-          height={24}
-        />
+        <NavbarSt.Img>
+          <Hat />
+        </NavbarSt.Img>
+        <NavbarSt.Options>
+          <NavbarSt.Option>
+            <NavbarSt.OptionText>File</NavbarSt.OptionText>
+          </NavbarSt.Option>
+          <NavbarSt.Option>
+            <NavbarSt.OptionText>Edit</NavbarSt.OptionText>
+          </NavbarSt.Option>
+          <NavbarSt.Option>
+            <NavbarSt.OptionText>Selection</NavbarSt.OptionText>
+          </NavbarSt.Option>
+        </NavbarSt.Options>
       </NavbarSt.Content>
     </NavbarSt.Wrapper>
   );

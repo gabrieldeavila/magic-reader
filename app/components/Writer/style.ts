@@ -114,7 +114,7 @@ const WritterWrapper = styled.div`
   justify-content: center;
   padding-bottom: 2rem;
   position: absolute;
-  top: 170px;
+  top: 215px;
   bottom: 0;
   overflow: auto;
   left: 0;
@@ -154,9 +154,18 @@ const ScribereWriter = styled.div`
   left: 3rem;
   top: 1.75rem;
   bottom: 0;
+  display: flex;
+`;
+
+const ScribereContent = styled.div`
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
 `;
 
 export const Scribere = {
   Wrapper: ScribereWrapper,
   Writer: ScribereWriter,
+  Content: ScribereContent,
 };

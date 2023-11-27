@@ -2,7 +2,7 @@ import { shadows } from "@geavila/gt-design";
 import styled, { css } from "styled-components";
 
 const Wrapper = styled.div`
-  background: var(--secondary);
+  background: var(--containerSecondary);
   width: 3rem;
   position: fixed;
   left: 0;

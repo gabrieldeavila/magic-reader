@@ -32,10 +32,16 @@ function GTWrapper({
           theme: {
             highlight: "#B3E5FC",
             highlightText: "#333333",
+            logoWing: "#ffd997",
+            menu: "#f7fff678",
+            tabBorder: "#d0d0d0",
           },
           darkTheme: {
             highlight: "#0A192F",
             highlightText: "#D3D3D3",
+            logoWing: "#fdf7eb",
+            menu: "#141414",
+            tabBorder: "#454545",
           },
         },
       }}
