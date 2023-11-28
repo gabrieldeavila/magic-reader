@@ -11,6 +11,23 @@ import Navbar from "./navbar/Navbar";
 import Sidebar from "./sidebar/Sidebar";
 import { Scribere } from "./style";
 import Empty from "./emptyw/Empty";
+import uuid from "../../utils/uuid";
+import { IWritterContent } from "../../components/Writer/interface";
+
+const initialContent: IWritterContent[] = [
+  {
+    id: uuid(),
+    type: "p",
+    align: "left",
+    text: [
+      {
+        value: "",
+        options: [],
+        id: uuid(),
+      },
+    ],
+  },
+];
 
 function Writer({ content }: IWriter) {
   const { isSSR } = useIsSSR();
@@ -55,7 +72,7 @@ function Writer({ content }: IWriter) {
         <Scribere.Writer>
           {menu && <Menu />}
           <Scribere.Content ref={onRef}>
-            {isEmpty ? <Empty /> : <Editor content={content} />}
+            {isEmpty ? <Empty /> : <Editor content={initialContent} />}
           </Scribere.Content>
         </Scribere.Writer>
       </Scribere.Wrapper>

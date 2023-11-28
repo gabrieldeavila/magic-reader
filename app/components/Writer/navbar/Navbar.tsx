@@ -18,6 +18,9 @@ function Navbar() {
           <NavbarSt.Option>
             <NavbarSt.OptionText>Selection</NavbarSt.OptionText>
           </NavbarSt.Option>
+          <NavbarSt.Option>
+            <NavbarSt.OptionText>Templates</NavbarSt.OptionText>
+          </NavbarSt.Option>
         </NavbarSt.Options>
       </NavbarSt.Content>
     </NavbarSt.Wrapper>

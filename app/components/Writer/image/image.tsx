@@ -17,9 +17,10 @@ import ImageOptions from "./imageOptions";
 import WritterImg from "./style";
 
 function Image() {
+  const { translateThis } = useGTTranslate();
   const [emoji] = useTriggerState({
     name: "emoji",
-    initial: "🤡",
+    initial: "📷",
   });
   const [showEmoji, setShowEmoji] = useTriggerState({
     name: "show_emoji",
@@ -27,9 +28,8 @@ function Image() {
   });
   const [title, setTitle] = useTriggerState({
     name: "title",
-    initial: "Some Title",
+    initial: translateThis("LEGERE.UNTITLED"),
   });
-  const { translateThis } = useGTTranslate();
   const [imageRange, setImageRange] = useTriggerState({
     name: "image_range",
     initial: 0,
