@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
-import Empty from "./emptyw/Empty";
-import CREATE_SCRIBERE from "./_commands/CREATE";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import CREATE_SCRIBERE from "./_commands/CREATE";
+import Empty from "./emptyw/Empty";
 
 function Writer() {
   const router = useRouter();
@@ -16,7 +16,6 @@ function Writer() {
 
         const newId = await CREATE_SCRIBERE();
         router.push(`scribere/${newId}`);
-        console.log(newId);
       }
     };
 
