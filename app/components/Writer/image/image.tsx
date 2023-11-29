@@ -28,7 +28,7 @@ function Image() {
   });
   const [title, setTitle] = useTriggerState({
     name: "title",
-    initial: translateThis("LEGERE.UNTITLED"),
+    initial: "",
   });
   const [imageRange, setImageRange] = useTriggerState({
     name: "image_range",
@@ -129,6 +129,7 @@ function Image() {
             {emoji}
           </WritterImg.Emoji>
           <WritterImg.H1
+            aria-placeholder={translateThis("LEGERE.UNTITLED")}
             ref={titleRef}
             onKeyUp={handleTitle}
             contentEditable

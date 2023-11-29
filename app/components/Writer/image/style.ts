@@ -45,6 +45,18 @@ const H1 = styled.h1`
 
   /* add shadow */
   text-shadow: 0 0 0.5rem var(--primary-0_5);
+
+  &:empty {
+    min-height: 2rem;
+    min-width: 100%;
+  }
+
+  &:empty::before {
+    content: attr(aria-placeholder);
+    color: var(--contrast);
+    opacity: 0.5;
+    font-weight: 300;
+  }
 `;
 
 const Emoji = styled.span`
