@@ -43,6 +43,11 @@ function Image() {
   const ref = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
 
+  const onTitleRef = useCallback((e: HTMLHeadingElement) => {
+    globalState.set("title_ref", e);
+    titleRef.current = e;
+  }, []);
+
   const handleClick = useCallback(() => {
     setShowEmoji((prev) => !prev);
   }, [setShowEmoji]);
@@ -130,7 +135,7 @@ function Image() {
           </WritterImg.Emoji>
           <WritterImg.H1
             aria-placeholder={translateThis("LEGERE.UNTITLED")}
-            ref={titleRef}
+            ref={onTitleRef}
             onKeyUp={handleTitle}
             contentEditable
             suppressContentEditableWarning
