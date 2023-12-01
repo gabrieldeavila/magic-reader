@@ -62,6 +62,7 @@ export interface IWritterContent {
 
 export interface IWriter {
   content?: IWritterContent[];
+  name: string;
 }
 
 export interface IEditable extends IWritterContent {
