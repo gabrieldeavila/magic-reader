@@ -8,6 +8,7 @@ import Navbar from "../../components/Writer/navbar/Navbar";
 import Sidebar from "../../components/Writer/sidebar/Sidebar";
 import { Scribere } from "../../components/Writer/style";
 import useIsSSR from "../../hooks/useIsSSR";
+import Tabs from "../../components/Writer/editor/tabs/Tabs";
 
 function Layout({ children }: { children: React.ReactNode }) {
   const { isSSR } = useIsSSR();
@@ -30,7 +31,12 @@ function Layout({ children }: { children: React.ReactNode }) {
         <Sidebar />
         <Scribere.Writer>
           {menu && <Menu />}
-          <Scribere.Content ref={onRef}>{children}</Scribere.Content>
+          <Scribere.Content ref={onRef}>
+            <div>
+              <Tabs />
+              {children}
+            </div>
+          </Scribere.Content>
         </Scribere.Writer>
       </Scribere.Wrapper>
     </>

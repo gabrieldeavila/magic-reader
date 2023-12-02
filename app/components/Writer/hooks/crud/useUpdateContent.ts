@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { db } from "../../../Dexie/Dexie";
 import { IWritterContent } from "../../interface";
-import { useTriggerState } from "react-trigger-state";
+import { globalState, stateStorage, useTriggerState } from "react-trigger-state";
 
 function useUpdateContent({ id }: { id: string }) {
   const contextName = useMemo(() => `${id}_writter_context`, [id]);
@@ -24,6 +24,19 @@ function useUpdateContent({ id }: { id: string }) {
     if (title == null) return;
 
     db.scribere.update(parseInt(id), { name: title });
+
+    // finds the tab and updates the title
+    const allTabs = globalState.get("tabs");
+    const updatedTabs = allTabs.map((tab) => {
+      if (tab.id == id) {
+        return { ...tab, name: title };
+      }
+      return tab;
+    });
+
+    console.log("updatedTabs", updatedTabs, id);
+
+    stateStorage.set("tabs", updatedTabs);
   }, [id, title]);
 
   useEffect(() => {

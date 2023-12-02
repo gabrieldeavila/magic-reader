@@ -35,6 +35,20 @@ function Page({ params: { id } }: { params: { id: string } }) {
         stateStorage.set(`${contextName}_img`, data.img);
         stateStorage.set(`${contextName}_image_range`, data.position);
         setContent(data.content);
+
+        const currTabs = stateStorage.get("tabs");
+        const newTabs = [...currTabs, { id: data.id, name: data.name }];
+        // filters tabs
+        const tabs = newTabs.filter(
+          (tab, index, self) =>
+            index === self.findIndex((t) => t.id === tab.id)
+        );
+
+        // add new tab
+        stateStorage.set("tabs", tabs);
+
+        // set active tab
+        stateStorage.set("active_tab", data.id);
       });
     })();
   }, [addFocus, contextName, id]);
