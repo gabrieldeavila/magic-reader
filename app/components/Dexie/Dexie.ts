@@ -30,6 +30,9 @@ export interface Scribere {
   id?: number;
   name: string;
   content: IWritterContent[];
+  emoji: string;
+  url: string;
+  position: { x: number; y: number}
   createdAt: Date;
   updatedAt: Date;
 }
@@ -46,7 +49,7 @@ export class DissolutusDexie extends Dexie {
     this.version(CURRENT_VERSION).stores({
       pdfs: "++id, name, numOfPages, pages, currPage, createdAt, updatedAt",
       pages_read: "++id, pdfId, words, page, start, end, createdAt, updatedAt",
-      scribere: "++id, name, content, createdAt, updatedAt",
+      scribere: "++id, name, content, emoji, url, position, createdAt, updatedAt",
     });
   }
 }

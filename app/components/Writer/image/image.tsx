@@ -15,11 +15,13 @@ import {
 } from "react-trigger-state";
 import ImageOptions from "./imageOptions";
 import WritterImg from "./style";
+import { useContextName } from "../context/WriterContext";
 
 function Image() {
   const { translateThis } = useGTTranslate();
+  const contextName = useContextName();
   const [emoji] = useTriggerState({
-    name: "emoji",
+    name: `${contextName}_emoji`,
     initial: "📷",
   });
   const [showEmoji, setShowEmoji] = useTriggerState({
@@ -27,9 +29,10 @@ function Image() {
     initial: false,
   });
   const [title, setTitle] = useTriggerState({
-    name: "title",
+    name: `${contextName}_title`,
     initial: "",
   });
+
   const [imageRange, setImageRange] = useTriggerState({
     name: "image_range",
     initial: 0,
@@ -62,7 +65,7 @@ function Image() {
       const currPos = window.getSelection()?.anchorOffset || 0;
       globalState.set("curr_pos", currPos);
 
-      setTitle(e.currentTarget.textContent || " ");
+      setTitle(e.currentTarget.textContent || "");
     },
     [setTitle]
   );
@@ -210,6 +213,7 @@ const Emoji = memo(
   ({ parentRef }: { parentRef: React.RefObject<HTMLDivElement> }) => {
     const [currTheme] = useTriggerState({ name: "curr_theme" });
     const ref = useRef<HTMLDivElement>(null);
+    const contextName = useContextName();
 
     useEffect(() => {
       const parentBounding = parentRef.current?.getBoundingClientRect();
@@ -249,7 +253,7 @@ const Emoji = memo(
       <WritterImg.EmojiPicker ref={ref}>
         <EmojiPicker
           onEmojiClick={(e) => {
-            stateStorage.set("emoji", e.emoji);
+            stateStorage.set(`${contextName}_emoji`, e.emoji);
           }}
           // @ts-expect-error - emoji-picker-react types are not up to date
           theme={currTheme === "theme" ? "light" : "dark"}

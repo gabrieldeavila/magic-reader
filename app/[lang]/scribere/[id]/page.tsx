@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useTriggerState } from "react-trigger-state";
+import { useEffect, useMemo, useState } from "react";
+import { stateStorage, useTriggerState } from "react-trigger-state";
 import { db } from "../../../components/Dexie/Dexie";
 import Editor from "../../../components/Writer/editor/Editor";
 import useUpdateContent from "../../../components/Writer/hooks/crud/useUpdateContent";
@@ -11,6 +11,7 @@ function Page({ params: { id } }: { params: { id: string } }) {
   const [content, setContent] = useState([]);
   const { addFocus } = useFocusOnStart();
   const { updateContent } = useUpdateContent({ id });
+  const contextName = useMemo(() => `${id}_writter_context`, [id]);
 
   const [newContent] = useTriggerState({
     name: `${id}_writter_context`,
@@ -29,10 +30,12 @@ function Page({ params: { id } }: { params: { id: string } }) {
 
         addFocus({ content: data.content });
 
+        stateStorage.set(`${contextName}_title`, data.name);
+        stateStorage.set(`${contextName}_emoji`, data.emoji);
         setContent(data.content);
       });
     })();
-  }, [addFocus, id]);
+  }, [addFocus, contextName, id]);
 
   return <Editor name={id} content={content} />;
 }
