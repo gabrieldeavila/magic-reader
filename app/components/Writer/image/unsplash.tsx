@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useRef } from "react";
 import { stateStorage, useTriggerState } from "react-trigger-state";
 import apiUnsplash from "../../../Axios/apiUnsplash";
 import { UnsplashSty } from "./style";
+import { useContextName } from "../context/WriterContext";
 
 function Unsplash() {
   const controller = useRef<AbortController & { signal: AbortSignal | null }>();
@@ -28,10 +29,15 @@ function Unsplash() {
       .finally(() => setLoading(false));
   }, [loading, setImages, setLoading]);
 
-  const handleClick = useCallback((img) => {
-    stateStorage.set("img", img.urls.full);
-    stateStorage.set("show_img", false);
-  }, []);
+  const contextName = useContextName();
+
+  const handleClick = useCallback(
+    (img) => {
+      stateStorage.set(`${contextName}_img`, img.urls.full);
+      stateStorage.set("show_img", false);
+    },
+    [contextName]
+  );
 
   const callApi = useCallback(
     async (value: string) => {

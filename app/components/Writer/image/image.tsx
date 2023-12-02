@@ -34,7 +34,7 @@ function Image() {
   });
 
   const [imageRange, setImageRange] = useTriggerState({
-    name: "image_range",
+    name: `${contextName}_image_range`,
     initial: 0,
   });
 
@@ -94,7 +94,7 @@ function Image() {
   });
 
   const [img] = useTriggerState({
-    name: "img",
+    name: `${contextName}_img`,
     initial:
       "https://images.unsplash.com/photo-1607970669494-309137683be5?ixlib=rb-1.2.1&q=85&fm=jpg&crop=entropy&cs=srgb&w=3600",
   });
@@ -105,16 +105,18 @@ function Image() {
 
   const setRange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      // sets the object position
-      imgRef.current?.style.setProperty(
-        "object-position",
-        `center ${e.currentTarget.value}%`
-      );
-
       setImageRange(Number(e.currentTarget.value));
     },
     [setImageRange]
   );
+
+  useEffect(() => {
+    // sets the object position
+    imgRef.current?.style.setProperty(
+      "object-position",
+      `center ${imageRange}%`
+    );
+  }, [imageRange]);
 
   return (
     <>
@@ -167,12 +169,14 @@ function Image() {
 
 const ChangeImg = memo(({ show }: { show: boolean }) => {
   const { translateThis } = useGTTranslate();
+  const contextName = useContextName();
+
   const [showChangePosition, setShowChangePosition] = useTriggerState({
     name: "show_change_position",
     initial: false,
   });
   const [img] = useTriggerState({
-    name: "img",
+    name: `${contextName}_img`,
   });
 
   const changePosition = useCallback(() => {

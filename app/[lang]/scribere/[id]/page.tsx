@@ -32,6 +32,8 @@ function Page({ params: { id } }: { params: { id: string } }) {
 
         stateStorage.set(`${contextName}_title`, data.name);
         stateStorage.set(`${contextName}_emoji`, data.emoji);
+        stateStorage.set(`${contextName}_img`, data.img);
+        stateStorage.set(`${contextName}_image_range`, data.position);
         setContent(data.content);
       });
     })();

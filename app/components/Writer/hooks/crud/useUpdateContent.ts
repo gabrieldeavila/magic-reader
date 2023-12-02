@@ -8,6 +8,10 @@ function useUpdateContent({ id }: { id: string }) {
 
   const [title] = useTriggerState({ name: `${contextName}_title` });
   const [emoji] = useTriggerState({ name: `${contextName}_emoji` });
+  const [img] = useTriggerState({ name: `${contextName}_img` });
+  const [imgPosition] = useTriggerState({
+    name: `${contextName}_image_range`,
+  });
 
   const updateContent = useCallback(
     (content: IWritterContent[]) => {
@@ -27,6 +31,18 @@ function useUpdateContent({ id }: { id: string }) {
 
     db.scribere.update(parseInt(id), { emoji });
   }, [id, emoji]);
+
+  useEffect(() => {
+    if (img == null) return;
+
+    db.scribere.update(parseInt(id), { img });
+  }, [id, img]);
+
+  useEffect(() => {
+    if (imgPosition == null) return;
+
+    db.scribere.update(parseInt(id), { position: imgPosition });
+  }, [id, imgPosition]);
 
   return {
     updateContent,
