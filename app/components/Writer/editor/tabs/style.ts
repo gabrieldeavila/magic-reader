@@ -33,6 +33,7 @@ const TabOptionName = styled.p`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 300;
 `;
 
 const TabOptionClose = styled.div`

@@ -33,6 +33,15 @@ export interface Scribere {
   emoji: string;
   img: string | { top: string; bottom: string; deg: number };
   position: { x: number; y: number };
+  folderId?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Folders {
+  id?: number;
+  name: string;
+  folderParentId: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -50,7 +59,8 @@ export class DissolutusDexie extends Dexie {
       pdfs: "++id, name, numOfPages, pages, currPage, createdAt, updatedAt",
       pages_read: "++id, pdfId, words, page, start, end, createdAt, updatedAt",
       scribere:
-        "++id, name, content, emoji, img, position, createdAt, updatedAt",
+        "++id, name, content, emoji, img, position, createdAt, folderId, updatedAt",
+      folders: "++id, name, folderParentId, createdAt, updatedAt",
     });
   }
 }

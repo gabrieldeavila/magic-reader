@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { db } from "../../../Dexie/Dexie";
 import { IWritterContent } from "../../interface";
-import { globalState, stateStorage, useTriggerState } from "react-trigger-state";
+import {
+  globalState,
+  stateStorage,
+  useTriggerState,
+} from "react-trigger-state";
 
 function useUpdateContent({ id }: { id: string }) {
   const contextName = useMemo(() => `${id}_writter_context`, [id]);
@@ -21,7 +25,7 @@ function useUpdateContent({ id }: { id: string }) {
   );
 
   useEffect(() => {
-    if (title == null) return;
+    if (title == null || title === "") return;
 
     db.scribere.update(parseInt(id), { name: title });
 
@@ -34,25 +38,23 @@ function useUpdateContent({ id }: { id: string }) {
       return tab;
     });
 
-    console.log("updatedTabs", updatedTabs, id);
-
     stateStorage.set("tabs", updatedTabs);
   }, [id, title]);
 
   useEffect(() => {
-    if (emoji == null) return;
+    if (emoji == null || emoji === "") return;
 
     db.scribere.update(parseInt(id), { emoji });
   }, [id, emoji]);
 
   useEffect(() => {
-    if (img == null) return;
+    if (img == null || img === "") return;
 
     db.scribere.update(parseInt(id), { img });
   }, [id, img]);
 
   useEffect(() => {
-    if (imgPosition == null) return;
+    if (imgPosition == null || imgPosition === 0) return;
 
     db.scribere.update(parseInt(id), { position: imgPosition });
   }, [id, imgPosition]);

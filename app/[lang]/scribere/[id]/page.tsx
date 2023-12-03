@@ -6,6 +6,7 @@ import { db } from "../../../components/Dexie/Dexie";
 import Editor from "../../../components/Writer/editor/Editor";
 import useUpdateContent from "../../../components/Writer/hooks/crud/useUpdateContent";
 import useFocusOnStart from "../../../components/Writer/hooks/focus/useFocusOnStart";
+import { initialContent } from "../../../components/Writer/_commands/CREATE";
 
 function Page({ params: { id } }: { params: { id: string } }) {
   const [content, setContent] = useState([]);
@@ -34,14 +35,13 @@ function Page({ params: { id } }: { params: { id: string } }) {
         stateStorage.set(`${contextName}_emoji`, data.emoji);
         stateStorage.set(`${contextName}_img`, data.img);
         stateStorage.set(`${contextName}_image_range`, data.position);
-        setContent(data.content);
+        setContent(data.content.length === 0 ? initialContent : data.content);
 
         const currTabs = stateStorage.get("tabs");
         const newTabs = [...currTabs, { id: data.id, name: data.name }];
         // filters tabs
         const tabs = newTabs.filter(
-          (tab, index, self) =>
-            index === self.findIndex((t) => t.id === tab.id)
+          (tab, index, self) => index === self.findIndex((t) => t.id === tab.id)
         );
 
         // add new tab

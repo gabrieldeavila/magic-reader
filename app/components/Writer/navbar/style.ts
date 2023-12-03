@@ -49,7 +49,8 @@ const Option = styled.div`
 
 const OptionText = styled.p`
   font-size: 0.8rem;
-  font-weight: 100;
+  font-weight: 200;
+  user-select: none;
 `;
 
 export const NavbarSt = {

@@ -18,7 +18,6 @@ function useFocusOnStart() {
         const range = document.createRange();
         range.selectNodeContents(titleRef);
         selection?.removeAllRanges();
-        console.log(range);
         selection?.addRange(range);
       }
     },

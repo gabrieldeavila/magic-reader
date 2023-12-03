@@ -2,7 +2,7 @@ import uuid from "../../../utils/uuid";
 import { db } from "../../Dexie/Dexie";
 import { IWritterContent } from "../interface";
 
-const initialContent: IWritterContent[] = [
+export const initialContent: IWritterContent[] = [
   {
     id: uuid(),
     type: "p",
@@ -19,8 +19,12 @@ const initialContent: IWritterContent[] = [
 
 const CREATE_SCRIBERE = async () => {
   const id = await db.scribere.add({
-    name: "Untitled",
+    name: "",
     content: initialContent,
+    folderId: -1,
+    img: "https://images.unsplash.com/photo-1607970669494-309137683be5",
+    position: { x: 0, y: 0},
+    emoji: "📝",
     createdAt: new Date(),
     updatedAt: new Date(),
   });

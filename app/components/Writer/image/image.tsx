@@ -22,7 +22,7 @@ function Image() {
   const contextName = useContextName();
   const [emoji] = useTriggerState({
     name: `${contextName}_emoji`,
-    initial: "📷",
+    initial: "",
   });
   const [showEmoji, setShowEmoji] = useTriggerState({
     name: "show_emoji",
@@ -57,8 +57,8 @@ function Image() {
 
   useEffect(() => {
     // sets the title of the page
-    document.title = `${emoji} ${title}`;
-  }, [title, emoji]);
+    document.title = `${emoji} ${title || translateThis("LEGERE.UNTITLED")}`;
+  }, [title, emoji, translateThis]);
 
   const handleTitle = useCallback(
     (e: React.KeyboardEvent<HTMLHeadingElement>) => {
@@ -95,8 +95,7 @@ function Image() {
 
   const [img] = useTriggerState({
     name: `${contextName}_img`,
-    initial:
-      "https://images.unsplash.com/photo-1607970669494-309137683be5?ixlib=rb-1.2.1&q=85&fm=jpg&crop=entropy&cs=srgb&w=3600",
+    initial: "",
   });
 
   useEffect(() => {

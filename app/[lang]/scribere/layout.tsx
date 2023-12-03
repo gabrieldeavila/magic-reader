@@ -3,12 +3,12 @@
 import { Skeletons } from "@geavila/gt-design";
 import React, { useCallback } from "react";
 import { globalState, useTriggerState } from "react-trigger-state";
+import Tabs from "../../components/Writer/editor/tabs/Tabs";
 import Menu from "../../components/Writer/menu/Menu";
 import Navbar from "../../components/Writer/navbar/Navbar";
 import Sidebar from "../../components/Writer/sidebar/Sidebar";
 import { Scribere } from "../../components/Writer/style";
 import useIsSSR from "../../hooks/useIsSSR";
-import Tabs from "../../components/Writer/editor/tabs/Tabs";
 
 function Layout({ children }: { children: React.ReactNode }) {
   const { isSSR } = useIsSSR();
@@ -34,8 +34,8 @@ function Layout({ children }: { children: React.ReactNode }) {
           <Scribere.Content ref={onRef}>
             <div>
               <Tabs />
-              {children}
             </div>
+            {children}
           </Scribere.Content>
         </Scribere.Writer>
       </Scribere.Wrapper>
