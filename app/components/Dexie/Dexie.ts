@@ -50,6 +50,7 @@ export class DissolutusDexie extends Dexie {
   pdfs!: Table<Pdfs>;
   pages_read!: Table<PagesRead>;
   scribere!: Table<Scribere>;
+  folders!: Table<Folders>;
 
   constructor() {
     super("DISSOLUTUS_READER");
