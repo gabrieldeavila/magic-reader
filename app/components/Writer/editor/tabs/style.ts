@@ -29,6 +29,11 @@ const TabContent = styled.div`
 const TabOptionName = styled.p`
   user-select: none;
   font-size: 0.8rem;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 300;
 `;
 
 const TabOptionClose = styled.div`

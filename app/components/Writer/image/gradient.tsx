@@ -1,6 +1,7 @@
-import React, { useCallback } from "react";
-import { UnsplashSty } from "./style";
+import { useCallback } from "react";
 import { stateStorage } from "react-trigger-state";
+import { useContextName } from "../context/WriterContext";
+import { UnsplashSty } from "./style";
 
 const gradients = [
   {
@@ -36,10 +37,12 @@ const gradients = [
 ];
 
 function Gradient() {
+  const contextName = useContextName();
+
   const handleClick = useCallback((gradient) => {
-    stateStorage.set("img", gradient);
+    stateStorage.set(`${contextName}_img`, gradient);
     stateStorage.set("show_img", false);
-  }, []);
+  }, [contextName]);
 
   return (
     <UnsplashSty.Container style={{ gap: "1rem 0.5rem" }}>

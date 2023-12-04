@@ -71,6 +71,10 @@ const WriterContextProvider = ({
     initial: initialContent,
   });
 
+  useEffect(() => {
+    setContent(initialContent);
+  }, [initialContent, setContent]);
+
   const contextName = useMemo(() => `${name}_writter_context`, [name]);
 
   const info = useRef<IWriterInfo>({

@@ -15,23 +15,26 @@ import {
 } from "react-trigger-state";
 import ImageOptions from "./imageOptions";
 import WritterImg from "./style";
+import { useContextName } from "../context/WriterContext";
 
 function Image() {
+  const { translateThis } = useGTTranslate();
+  const contextName = useContextName();
   const [emoji] = useTriggerState({
-    name: "emoji",
-    initial: "🤡",
+    name: `${contextName}_emoji`,
+    initial: "",
   });
   const [showEmoji, setShowEmoji] = useTriggerState({
     name: "show_emoji",
     initial: false,
   });
   const [title, setTitle] = useTriggerState({
-    name: "title",
-    initial: "Some Title",
+    name: `${contextName}_title`,
+    initial: "",
   });
-  const { translateThis } = useGTTranslate();
+
   const [imageRange, setImageRange] = useTriggerState({
-    name: "image_range",
+    name: `${contextName}_image_range`,
     initial: 0,
   });
 
@@ -43,21 +46,26 @@ function Image() {
   const ref = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
 
+  const onTitleRef = useCallback((e: HTMLHeadingElement) => {
+    globalState.set("title_ref", e);
+    titleRef.current = e;
+  }, []);
+
   const handleClick = useCallback(() => {
     setShowEmoji((prev) => !prev);
   }, [setShowEmoji]);
 
   useEffect(() => {
     // sets the title of the page
-    document.title = `${emoji} ${title}`;
-  }, [title, emoji]);
+    document.title = `${emoji} ${title || translateThis("LEGERE.UNTITLED")}`;
+  }, [title, emoji, translateThis]);
 
   const handleTitle = useCallback(
     (e: React.KeyboardEvent<HTMLHeadingElement>) => {
       const currPos = window.getSelection()?.anchorOffset || 0;
       globalState.set("curr_pos", currPos);
 
-      setTitle(e.currentTarget.textContent || " ");
+      setTitle(e.currentTarget.textContent || "");
     },
     [setTitle]
   );
@@ -86,9 +94,8 @@ function Image() {
   });
 
   const [img] = useTriggerState({
-    name: "img",
-    initial:
-      "https://images.unsplash.com/photo-1607970669494-309137683be5?ixlib=rb-1.2.1&q=85&fm=jpg&crop=entropy&cs=srgb&w=3600",
+    name: `${contextName}_img`,
+    initial: "",
   });
 
   useEffect(() => {
@@ -97,16 +104,18 @@ function Image() {
 
   const setRange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      // sets the object position
-      imgRef.current?.style.setProperty(
-        "object-position",
-        `center ${e.currentTarget.value}%`
-      );
-
       setImageRange(Number(e.currentTarget.value));
     },
     [setImageRange]
   );
+
+  useEffect(() => {
+    // sets the object position
+    imgRef.current?.style.setProperty(
+      "object-position",
+      `center ${imageRange}%`
+    );
+  }, [imageRange]);
 
   return (
     <>
@@ -129,7 +138,8 @@ function Image() {
             {emoji}
           </WritterImg.Emoji>
           <WritterImg.H1
-            ref={titleRef}
+            aria-placeholder={translateThis("LEGERE.UNTITLED")}
+            ref={onTitleRef}
             onKeyUp={handleTitle}
             contentEditable
             suppressContentEditableWarning
@@ -158,12 +168,14 @@ function Image() {
 
 const ChangeImg = memo(({ show }: { show: boolean }) => {
   const { translateThis } = useGTTranslate();
+  const contextName = useContextName();
+
   const [showChangePosition, setShowChangePosition] = useTriggerState({
     name: "show_change_position",
     initial: false,
   });
   const [img] = useTriggerState({
-    name: "img",
+    name: `${contextName}_img`,
   });
 
   const changePosition = useCallback(() => {
@@ -204,6 +216,7 @@ const Emoji = memo(
   ({ parentRef }: { parentRef: React.RefObject<HTMLDivElement> }) => {
     const [currTheme] = useTriggerState({ name: "curr_theme" });
     const ref = useRef<HTMLDivElement>(null);
+    const contextName = useContextName();
 
     useEffect(() => {
       const parentBounding = parentRef.current?.getBoundingClientRect();
@@ -243,7 +256,7 @@ const Emoji = memo(
       <WritterImg.EmojiPicker ref={ref}>
         <EmojiPicker
           onEmojiClick={(e) => {
-            stateStorage.set("emoji", e.emoji);
+            stateStorage.set(`${contextName}_emoji`, e.emoji);
           }}
           // @ts-expect-error - emoji-picker-react types are not up to date
           theme={currTheme === "theme" ? "light" : "dark"}
