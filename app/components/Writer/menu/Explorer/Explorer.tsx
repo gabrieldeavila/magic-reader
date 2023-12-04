@@ -1,15 +1,15 @@
+import { Space, useGTTranslate } from "@geavila/gt-design";
 import { memo, useCallback, useEffect, useState } from "react";
 import { ChevronRight, FilePlus, FolderPlus } from "react-feather";
+import { stateStorage, useTriggerState } from "react-trigger-state";
 import { Scribere, db } from "../../../Dexie/Dexie";
 import MenuSt from "../style";
-import { Space, useGTTranslate } from "@geavila/gt-design";
-import { stateStorage, useTriggerState } from "react-trigger-state";
-import FolderOpened from "./FolderOpened";
 import FolderClosed from "./FolderClosed";
 import ExplorerSt from "./style";
 
 function Explorer() {
   const { translateThis } = useGTTranslate();
+  
 
   const handleAddNewFolder = useCallback(() => {
     stateStorage.set("add_new_filter", new Date());
