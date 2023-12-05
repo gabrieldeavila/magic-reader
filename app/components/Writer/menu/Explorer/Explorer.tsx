@@ -1,4 +1,4 @@
-import { Space, useGTTranslate } from "@geavila/gt-design";
+import { useGTTranslate } from "@geavila/gt-design";
 import { memo, useCallback, useEffect, useState } from "react";
 import { ChevronRight, FilePlus, FolderPlus } from "react-feather";
 import { stateStorage, useTriggerState } from "react-trigger-state";
@@ -9,7 +9,6 @@ import ExplorerSt from "./style";
 
 function Explorer() {
   const { translateThis } = useGTTranslate();
-  
 
   const handleAddNewFolder = useCallback(() => {
     stateStorage.set("add_new_filter", new Date());
@@ -67,13 +66,15 @@ const ExplorerContent = memo(() => {
   }, []);
 
   return (
-    <div>
-      {scribere.map((scribere, index) => {
-        return <div key={index}>{scribere.name}</div>;
-      })}
+    <ExplorerSt.Visualization.Wrapper>
+      <ExplorerSt.Visualization.Container>
+        {scribere.map((scribere, index) => {
+          return <ExplorerSt.Visualization.File key={index}>{scribere.name}</ExplorerSt.Visualization.File>;
+        })}
 
-      {showAddNewFolder && <NewFolder />}
-    </div>
+        {showAddNewFolder && <NewFolder />}
+      </ExplorerSt.Visualization.Container>
+    </ExplorerSt.Visualization.Wrapper>
   );
 });
 
@@ -83,13 +84,13 @@ const NewFolder = memo(() => {
   return (
     <ExplorerSt.Folder.Wrapper>
       <ExplorerSt.Folder.Container>
-        <Space.Modifiers dir="row">
-          <ChevronRight size={12} />
+        <ExplorerSt.Folder.Icon dir="row">
+          <ChevronRight size={13} />
           <FolderClosed />
-        </Space.Modifiers>
+        </ExplorerSt.Folder.Icon>
 
         <ExplorerSt.Folder.Input.Content>
-          <ExplorerSt.Folder.Input.Input />
+          <ExplorerSt.Folder.Input.Namer contentEditable />
         </ExplorerSt.Folder.Input.Content>
       </ExplorerSt.Folder.Container>
     </ExplorerSt.Folder.Wrapper>
