@@ -1,5 +1,5 @@
 import { useGTTranslate } from "@geavila/gt-design";
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { ChevronRight, FilePlus, FolderPlus } from "react-feather";
 import { stateStorage, useTriggerState } from "react-trigger-state";
 import { Scribere, db } from "../../../Dexie/Dexie";
@@ -48,14 +48,17 @@ const ExplorerContent = memo(() => {
     initial: null,
   });
 
-  const [showAddNewFolder, setShowAddNewFolder] = useState(false);
+  const [showAddNewFolder, setShowAddNewFolder] = useTriggerState({
+    name: "show_add_new_folder",
+    initial: false,
+  });
 
   useEffect(() => {
     if (addNewFilter == null) return;
 
     setAddNewFilter(null);
     setShowAddNewFolder(true);
-  }, [addNewFilter, setAddNewFilter]);
+  }, [addNewFilter, setAddNewFilter, setShowAddNewFolder]);
 
   useEffect(() => {
     (async () => {
@@ -65,11 +68,19 @@ const ExplorerContent = memo(() => {
     })();
   }, []);
 
+  const handleRef = useCallback((node) => {
+    stateStorage.set("explorer_content", node);
+  }, []);
+
   return (
-    <ExplorerSt.Visualization.Wrapper>
+    <ExplorerSt.Visualization.Wrapper ref={handleRef}>
       <ExplorerSt.Visualization.Container>
         {scribere.map((scribere, index) => {
-          return <ExplorerSt.Visualization.File key={index}>{scribere.name}</ExplorerSt.Visualization.File>;
+          return (
+            <ExplorerSt.Visualization.File key={index}>
+              {scribere.name}
+            </ExplorerSt.Visualization.File>
+          );
         })}
 
         {showAddNewFolder && <NewFolder />}
@@ -81,16 +92,68 @@ const ExplorerContent = memo(() => {
 ExplorerContent.displayName = "ExplorerContent";
 
 const NewFolder = memo(() => {
+  const inputRef = useRef(null);
+  const iconRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current.focus();
+  }, []);
+
+  useEffect(() => {
+    const handler = () => {
+      const bounds = stateStorage
+        .get("explorer_content")
+        .getBoundingClientRect();
+
+      if (bounds.width == null) return;
+
+      const iconWidth = iconRef.current.getBoundingClientRect().width;
+
+      const width = bounds.width - iconWidth - 20;
+
+      inputRef.current.style.width = `${width}px`;
+    };
+
+    handler();
+
+    // gets when the explorer content is resized
+    const resizeObserver = new ResizeObserver(handler);
+    resizeObserver.observe(stateStorage.get("explorer_content"));
+
+    // cleanup
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  const handleBlur = useCallback(() => {
+    stateStorage.set("show_add_new_folder", false);
+  }, []);
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === "Enter") {
+        handleBlur();
+      }
+    },
+    [handleBlur]
+  );
+
   return (
     <ExplorerSt.Folder.Wrapper>
       <ExplorerSt.Folder.Container>
-        <ExplorerSt.Folder.Icon dir="row">
+        <ExplorerSt.Folder.Icon ref={iconRef}>
           <ChevronRight size={13} />
           <FolderClosed />
         </ExplorerSt.Folder.Icon>
 
         <ExplorerSt.Folder.Input.Content>
-          <ExplorerSt.Folder.Input.Namer contentEditable />
+          <ExplorerSt.Folder.Input.Namer
+            onKeyDown={handleKeyDown}
+            onBlur={handleBlur}
+            ref={inputRef}
+            contentEditable
+          />
         </ExplorerSt.Folder.Input.Content>
       </ExplorerSt.Folder.Container>
     </ExplorerSt.Folder.Wrapper>
