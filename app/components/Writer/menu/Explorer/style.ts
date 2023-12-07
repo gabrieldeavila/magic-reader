@@ -34,10 +34,28 @@ const FolderIcon = styled.div`
 `;
 
 const VisualizationWrapper = styled.div``;
-const VisualizationContainer = styled.div``;
-const VisualizationFile = styled.div`
+
+const VisualizationContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+const VisualizationFile = styled.div<{active?: boolean}>`
   font-size: 0.75rem;
   font-weight: 300;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+
+  background-color: ${({active}) => active ? "var(--preSelectColor)" : "none"};
+
+  &:hover {
+    background-color: var(--primary-0_5);
+  }
 `;
 
 const ExplorerSt = {
