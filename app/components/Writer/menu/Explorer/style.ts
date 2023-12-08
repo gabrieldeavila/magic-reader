@@ -1,17 +1,19 @@
 import styled from "styled-components";
 
-const FolderWrapper = styled.div``;
+const FolderWrapper = styled.div`
+  padding-left: 0.5rem;
+`;
 
 const FolderContainer = styled.div`
   display: flex;
   gap: 0.5rem;
 `;
 
-const FolderInputContent = styled.div`
+const FolderInputContent = styled.div<{ isFile?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  width: 75%;
+  width: ${({ isFile }) => (isFile ? "100%" : "calc(75% - 0.5rem)")};
 `;
 
 const FolderNamer = styled.div`
@@ -41,7 +43,7 @@ const VisualizationContainer = styled.div`
   gap: 0.25rem;
 `;
 
-const VisualizationFile = styled.div<{active?: boolean}>`
+const VisualizationFile = styled.div<{ active?: boolean }>`
   font-size: 0.75rem;
   font-weight: 300;
   display: flex;
@@ -51,7 +53,8 @@ const VisualizationFile = styled.div<{active?: boolean}>`
   border-radius: 0.25rem;
   cursor: pointer;
 
-  background-color: ${({active}) => active ? "var(--preSelectColor)" : "none"};
+  background-color: ${({ active }) =>
+    active ? "var(--preSelectColor)" : "none"};
 
   &:hover {
     background-color: var(--primary-0_5);
@@ -62,7 +65,7 @@ const ExplorerSt = {
   Visualization: {
     Wrapper: VisualizationWrapper,
     Container: VisualizationContainer,
-    File: VisualizationFile
+    File: VisualizationFile,
   },
   Folder: {
     Wrapper: FolderWrapper,

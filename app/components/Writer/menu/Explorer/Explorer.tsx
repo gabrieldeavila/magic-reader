@@ -1,6 +1,6 @@
 import { useGTTranslate } from "@geavila/gt-design";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { ChevronRight, FilePlus, FolderPlus } from "react-feather";
+import { ChevronDown, ChevronRight, FilePlus, FolderPlus } from "react-feather";
 import { stateStorage, useTriggerState } from "react-trigger-state";
 import { Folders, Scribere, db } from "../../../Dexie/Dexie";
 import MenuSt from "../style";
@@ -23,7 +23,11 @@ function Explorer() {
           {translateThis("SCRIBERE.EXPLORER")}
         </MenuSt.Title.Name>
         <MenuSt.Title.Options>
-          <MenuSt.Title.Option title={translateThis("SCRIBERE.NEW_FILE")}>
+          <MenuSt.Title.Option
+            role="button"
+            onClick={() => stateStorage.set("show_add_new_file", true)}
+            title={translateThis("SCRIBERE.NEW_FILE")}
+          >
             <FilePlus size={16} />
           </MenuSt.Title.Option>
           <MenuSt.Title.Option
@@ -54,6 +58,11 @@ const ExplorerContent = memo(({ id = -1 }: { id?: number }) => {
 
   const [showAddNewFolder, setShowAddNewFolder] = useTriggerState({
     name: "show_add_new_folder",
+    initial: false,
+  });
+
+  const [showAddNewFile] = useTriggerState({
+    name: "show_add_new_file",
     initial: false,
   });
 
@@ -98,6 +107,8 @@ const ExplorerContent = memo(({ id = -1 }: { id?: number }) => {
         })}
 
         {showAddNewFolder && <NewFolder />}
+
+        {showAddNewFile && <NewFolder isFile />}
       </ExplorerSt.Visualization.Container>
     </ExplorerSt.Visualization.Wrapper>
   );
@@ -132,7 +143,10 @@ const Folder = memo(({ folder }: { folder: Folders }) => {
         active={selectedFolder === folder.id}
         onClick={handleFolderClick}
       >
-        {isOpen ? <FolderOpened /> : <FolderClosed />}
+        <ExplorerSt.Folder.Icon>
+          {isOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+          {isOpen ? <FolderOpened /> : <FolderClosed />}
+        </ExplorerSt.Folder.Icon>
         {folder.name}
       </ExplorerSt.Visualization.File>
       {isOpen && <ExplorerContent id={folder.id} />}
@@ -142,7 +156,7 @@ const Folder = memo(({ folder }: { folder: Folders }) => {
 
 Folder.displayName = "Folder";
 
-const NewFolder = memo(() => {
+const NewFolder = memo(({ isFile }: { isFile?: boolean }) => {
   const inputRef = useRef(null);
   const iconRef = useRef(null);
 
@@ -151,6 +165,7 @@ const NewFolder = memo(() => {
   }, []);
 
   useEffect(() => {
+    if (isFile) return;
     const handler = () => {
       const bounds = stateStorage
         .get("explorer_content")
@@ -160,7 +175,7 @@ const NewFolder = memo(() => {
 
       const iconWidth = iconRef.current.getBoundingClientRect().width;
 
-      const width = bounds.width - iconWidth - 20;
+      const width = bounds.width - iconWidth - 30;
 
       inputRef.current.style.width = `${width}px`;
     };
@@ -175,16 +190,23 @@ const NewFolder = memo(() => {
     return () => {
       resizeObserver.disconnect();
     };
-  }, []);
+  }, [isFile]);
 
   const handleBlur = useCallback(() => {
     stateStorage.set("show_add_new_folder", false);
+    stateStorage.set("show_add_new_file", false);
+
     const name = inputRef.current.innerText as string;
 
     if (name.trim() === "") return;
 
+    if (isFile) {
+      console.log("safe");
+      return;
+    }
+
     CREATE_FOLDER({ name });
-  }, []);
+  }, [isFile]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -198,12 +220,14 @@ const NewFolder = memo(() => {
   return (
     <ExplorerSt.Folder.Wrapper>
       <ExplorerSt.Folder.Container>
-        <ExplorerSt.Folder.Icon ref={iconRef}>
-          <ChevronRight size={13} />
-          <FolderClosed />
-        </ExplorerSt.Folder.Icon>
+        {!isFile && (
+          <ExplorerSt.Folder.Icon ref={iconRef}>
+            <ChevronRight size={13} />
+            <FolderClosed />
+          </ExplorerSt.Folder.Icon>
+        )}
 
-        <ExplorerSt.Folder.Input.Content>
+        <ExplorerSt.Folder.Input.Content isFile={isFile}>
           <ExplorerSt.Folder.Input.Namer
             onKeyDown={handleKeyDown}
             onBlur={handleBlur}
