@@ -1,19 +1,28 @@
 import { useGTTranslate } from "@geavila/gt-design";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronRight, FilePlus, FolderPlus } from "react-feather";
-import { stateStorage, useTriggerState } from "react-trigger-state";
+import {
+  globalState,
+  stateStorage,
+  useTriggerState,
+} from "react-trigger-state";
 import { Folders, Scribere, db } from "../../../Dexie/Dexie";
+import CREATE_SCRIBERE from "../../_commands/CREATE";
+import CREATE_FOLDER from "../../_commands/folder/CREATE";
 import MenuSt from "../style";
 import FolderClosed from "./FolderClosed";
-import ExplorerSt from "./style";
-import CREATE_FOLDER from "../../_commands/folder/CREATE";
 import FolderOpened from "./FolderOpened";
+import ExplorerSt from "./style";
 
 function Explorer() {
   const { translateThis } = useGTTranslate();
 
   const handleAddNewFolder = useCallback(() => {
     stateStorage.set("add_new_filter", new Date());
+  }, []);
+
+  const handleAddNewFile = useCallback(() => {
+    stateStorage.set("show_add_new_file", true);
   }, []);
 
   return (
@@ -25,7 +34,7 @@ function Explorer() {
         <MenuSt.Title.Options>
           <MenuSt.Title.Option
             role="button"
-            onClick={() => stateStorage.set("show_add_new_file", true)}
+            onClick={handleAddNewFile}
             title={translateThis("SCRIBERE.NEW_FILE")}
           >
             <FilePlus size={16} />
@@ -66,6 +75,11 @@ const ExplorerContent = memo(({ id = -1 }: { id?: number }) => {
     initial: false,
   });
 
+  const [selectedFolder] = useTriggerState({
+    name: "selected_folder",
+    initial: -1,
+  });
+
   useEffect(() => {
     if (addNewFilter == null) return;
 
@@ -94,6 +108,12 @@ const ExplorerContent = memo(({ id = -1 }: { id?: number }) => {
   return (
     <ExplorerSt.Visualization.Wrapper ref={handleRef}>
       <ExplorerSt.Visualization.Container>
+        {folders.map((folder, index) => {
+          return <Folder folder={folder} key={index} />;
+        })}
+
+        {showAddNewFolder && selectedFolder === id && <NewFolder />}
+
         {scribere.map((scribere, index) => {
           return (
             <ExplorerSt.Visualization.File key={index}>
@@ -102,13 +122,7 @@ const ExplorerContent = memo(({ id = -1 }: { id?: number }) => {
           );
         })}
 
-        {folders.map((folder, index) => {
-          return <Folder folder={folder} key={index} />;
-        })}
-
-        {showAddNewFolder && <NewFolder />}
-
-        {showAddNewFile && <NewFolder isFile />}
+        {showAddNewFile && selectedFolder === id && <NewFolder isFile />}
       </ExplorerSt.Visualization.Container>
     </ExplorerSt.Visualization.Wrapper>
   );
@@ -201,11 +215,11 @@ const NewFolder = memo(({ isFile }: { isFile?: boolean }) => {
     if (name.trim() === "") return;
 
     if (isFile) {
-      console.log("safe");
+      CREATE_SCRIBERE(name, globalState.get("selected_folder"));
       return;
     }
 
-    CREATE_FOLDER({ name });
+    CREATE_FOLDER({ name, folderParentId: globalState.get("selected_folder") });
   }, [isFile]);
 
   const handleKeyDown = useCallback(
