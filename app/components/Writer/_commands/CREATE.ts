@@ -31,10 +31,12 @@ const CREATE_SCRIBERE = async (name?: string, folderId?: number) => {
 
   const id = await db.scribere.add(scribere);
 
-  // @ts-expect-error id is not defined
-  scribere.id = id;
+  const newScribere = {
+    ...scribere,
+    id,
+  };
 
-  return scribere;
+  return newScribere;
 };
 
 export default CREATE_SCRIBERE;

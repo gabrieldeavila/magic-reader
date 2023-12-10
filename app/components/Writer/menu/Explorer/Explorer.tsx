@@ -88,10 +88,6 @@ const ExplorerContent = memo(
     });
 
     useEffect(() => {
-      console.log(scribere);
-    }, [scribere]);
-
-    useEffect(() => {
       if (addNewFilter == null) return;
 
       setAddNewFilter(null);
@@ -251,6 +247,13 @@ const NewFolder = memo(({ isFile, id }: { isFile?: boolean; id: number }) => {
         globalState.get("selected_folder")
       );
 
+      const currTabs = stateStorage.get("tabs");
+      const newTabs = [
+        ...currTabs,
+        { id: newScribere.id, name: newScribere.name },
+      ];
+      stateStorage.set("tabs", newTabs);
+
       const scriberes = globalState.get(`explorer_scribere_${id}`);
 
       scriberes.push(newScribere);
@@ -259,7 +262,10 @@ const NewFolder = memo(({ isFile, id }: { isFile?: boolean; id: number }) => {
       return;
     }
 
-    const newFolder = await CREATE_FOLDER({ name, folderParentId: globalState.get("selected_folder") });
+    const newFolder = await CREATE_FOLDER({
+      name,
+      folderParentId: globalState.get("selected_folder"),
+    });
 
     const folders = globalState.get(`explorer_folder_${id}`);
     folders.push(newFolder);

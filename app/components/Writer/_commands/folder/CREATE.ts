@@ -7,17 +7,19 @@ const CREATE_FOLDER = async ({
   name: string;
   folderParentId?: number;
 }) => {
-  const newFolder = {
+  const folder = {
     name,
     folderParentId,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
 
-  const id = await db.folders.add(newFolder);
+  const id = await db.folders.add(folder);
 
-  // @ts-expect-error id is not defined
-  newFolder.id = id;
+  const newFolder = {
+    ...folder,
+    id,
+  };
 
   return newFolder;
 };
