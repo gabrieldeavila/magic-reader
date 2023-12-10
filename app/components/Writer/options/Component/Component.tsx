@@ -257,7 +257,7 @@ function Component({
             ];
 
           // if start with a space, it will delete until the first letter
-          const startWithSpace = startLetter.letter === " ";
+          const startWithSpace = startLetter?.letter === " ";
 
           if (event.key === "Backspace") {
             selectedLetters.find(({ letter }, index) => {

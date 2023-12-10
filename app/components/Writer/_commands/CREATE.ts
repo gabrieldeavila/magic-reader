@@ -18,7 +18,7 @@ export const initialContent: IWritterContent[] = [
 ];
 
 const CREATE_SCRIBERE = async (name?: string, folderId?: number) => {
-  const id = await db.scribere.add({
+  const scribere = {
     name: name || "",
     content: initialContent,
     folderId: folderId || -1,
@@ -27,9 +27,14 @@ const CREATE_SCRIBERE = async (name?: string, folderId?: number) => {
     emoji: "📝",
     createdAt: new Date(),
     updatedAt: new Date(),
-  });
+  };
 
-  return id;
+  const id = await db.scribere.add(scribere);
+
+  // @ts-expect-error id is not defined
+  scribere.id = id;
+
+  return scribere;
 };
 
 export default CREATE_SCRIBERE;

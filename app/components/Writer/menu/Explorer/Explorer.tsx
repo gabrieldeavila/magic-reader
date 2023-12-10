@@ -6,7 +6,7 @@ import {
   stateStorage,
   useTriggerState,
 } from "react-trigger-state";
-import { Folders, Scribere, db } from "../../../Dexie/Dexie";
+import { Folders, db } from "../../../Dexie/Dexie";
 import CREATE_SCRIBERE from "../../_commands/CREATE";
 import CREATE_FOLDER from "../../_commands/folder/CREATE";
 import MenuSt from "../style";
@@ -56,88 +56,110 @@ function Explorer() {
 
 export default Explorer;
 
-const ExplorerContent = memo(({ id = -1 }: { id?: number }) => {
-  const [scribere, setScribere] = useState<Scribere[]>([]);
-  const [folders, setFolders] = useState<Folders[]>([]);
+const ExplorerContent = memo(
+  ({ id = -1, depth = 0 }: { id?: number; depth?: number }) => {
+    const [scribere, setScribere] = useTriggerState({
+      name: `explorer_scribere_${id}`,
+      initial: [],
+    });
+    const [folders, setFolders] = useTriggerState({
+      name: `explorer_folder_${id}`,
+      initial: [],
+    });
 
-  const [addNewFilter, setAddNewFilter] = useTriggerState({
-    name: "add_new_filter",
-    initial: null,
-  });
+    const [addNewFilter, setAddNewFilter] = useTriggerState({
+      name: "add_new_filter",
+      initial: null,
+    });
 
-  const [showAddNewFolder, setShowAddNewFolder] = useTriggerState({
-    name: "show_add_new_folder",
-    initial: false,
-  });
+    const [showAddNewFolder, setShowAddNewFolder] = useTriggerState({
+      name: "show_add_new_folder",
+      initial: false,
+    });
 
-  const [showAddNewFile] = useTriggerState({
-    name: "show_add_new_file",
-    initial: false,
-  });
+    const [showAddNewFile] = useTriggerState({
+      name: "show_add_new_file",
+      initial: false,
+    });
 
-  const [selectedFolder] = useTriggerState({
-    name: "selected_folder",
-    initial: -1,
-  });
+    const [selectedFolder] = useTriggerState({
+      name: "selected_folder",
+      initial: -1,
+    });
 
-  useEffect(() => {
-    if (addNewFilter == null) return;
+    useEffect(() => {
+      console.log(scribere);
+    }, [scribere]);
 
-    setAddNewFilter(null);
-    setShowAddNewFolder(true);
-  }, [addNewFilter, setAddNewFilter, setShowAddNewFolder]);
+    useEffect(() => {
+      if (addNewFilter == null) return;
 
-  useEffect(() => {
-    (async () => {
-      const val = await db.scribere.where("folderId").equals(id).toArray();
+      setAddNewFilter(null);
+      setShowAddNewFolder(true);
+    }, [addNewFilter, setAddNewFilter, setShowAddNewFolder]);
 
-      setScribere(val);
-      const folders = await db.folders
-        .where("folderParentId")
-        .equals(id)
-        .toArray();
+    useEffect(() => {
+      (async () => {
+        const val = await db.scribere.where("folderId").equals(id).toArray();
 
-      setFolders(folders);
-    })();
-  }, [id]);
+        setScribere(val);
+        const folders = await db.folders
+          .where("folderParentId")
+          .equals(id)
+          .toArray();
 
-  const handleRef = useCallback((node) => {
-    stateStorage.set("explorer_content", node);
-  }, []);
+        setFolders(folders);
+      })();
+    }, [id, setFolders, setScribere]);
 
-  return (
-    <ExplorerSt.Visualization.Wrapper ref={handleRef}>
-      <ExplorerSt.Visualization.Container>
-        {folders.map((folder, index) => {
-          return <Folder folder={folder} key={index} />;
-        })}
+    const handleRef = useCallback((node) => {
+      stateStorage.set("explorer_content", node);
+    }, []);
 
-        {showAddNewFolder && selectedFolder === id && <NewFolder />}
+    return (
+      <ExplorerSt.Visualization.Wrapper ref={handleRef}>
+        <ExplorerSt.Visualization.Container
+          style={{
+            paddingLeft: `${depth * 10}px`,
+          }}
+        >
+          {folders.map((folder, index) => {
+            return <Folder depth={depth} folder={folder} key={index} />;
+          })}
 
-        {scribere.map((scribere, index) => {
-          return (
-            <ExplorerSt.Visualization.File key={index}>
-              {scribere.name}
-            </ExplorerSt.Visualization.File>
-          );
-        })}
+          {showAddNewFolder && selectedFolder === id && <NewFolder id={id} />}
 
-        {showAddNewFile && selectedFolder === id && <NewFolder isFile />}
-      </ExplorerSt.Visualization.Container>
-    </ExplorerSt.Visualization.Wrapper>
-  );
-});
+          {scribere.map((scribere, index) => {
+            return (
+              <ExplorerSt.Visualization.File key={index}>
+                {scribere.name}
+              </ExplorerSt.Visualization.File>
+            );
+          })}
+
+          {showAddNewFile && selectedFolder === id && (
+            <NewFolder id={id} isFile />
+          )}
+        </ExplorerSt.Visualization.Container>
+      </ExplorerSt.Visualization.Wrapper>
+    );
+  }
+);
 
 ExplorerContent.displayName = "ExplorerContent";
 
-const Folder = memo(({ folder }: { folder: Folders }) => {
+const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [show, setShow] = useState(false);
+
   const [selectedFolder, setSelectedFolder] = useTriggerState({
     name: "selected_folder",
     initial: null,
   });
 
   const handleFolderClick = useCallback(() => {
+    setShow(true);
+
     setIsOpen((prev) => {
       const value = !prev;
 
@@ -163,14 +185,23 @@ const Folder = memo(({ folder }: { folder: Folders }) => {
         </ExplorerSt.Folder.Icon>
         {folder.name}
       </ExplorerSt.Visualization.File>
-      {isOpen && <ExplorerContent id={folder.id} />}
+
+      {show && (
+        <div
+          style={{
+            display: isOpen ? "block" : "none",
+          }}
+        >
+          <ExplorerContent depth={depth + 1} id={folder.id} />
+        </div>
+      )}
     </>
   );
 });
 
 Folder.displayName = "Folder";
 
-const NewFolder = memo(({ isFile }: { isFile?: boolean }) => {
+const NewFolder = memo(({ isFile, id }: { isFile?: boolean; id: number }) => {
   const inputRef = useRef(null);
   const iconRef = useRef(null);
 
@@ -206,7 +237,7 @@ const NewFolder = memo(({ isFile }: { isFile?: boolean }) => {
     };
   }, [isFile]);
 
-  const handleBlur = useCallback(() => {
+  const handleBlur = useCallback(async () => {
     stateStorage.set("show_add_new_folder", false);
     stateStorage.set("show_add_new_file", false);
 
@@ -215,12 +246,26 @@ const NewFolder = memo(({ isFile }: { isFile?: boolean }) => {
     if (name.trim() === "") return;
 
     if (isFile) {
-      CREATE_SCRIBERE(name, globalState.get("selected_folder"));
+      const newScribere = await CREATE_SCRIBERE(
+        name,
+        globalState.get("selected_folder")
+      );
+
+      const scriberes = globalState.get(`explorer_scribere_${id}`);
+
+      scriberes.push(newScribere);
+      stateStorage.set(`explorer_scribere_${id}`, [...scriberes]);
+
       return;
     }
 
-    CREATE_FOLDER({ name, folderParentId: globalState.get("selected_folder") });
-  }, [isFile]);
+    const newFolder = await CREATE_FOLDER({ name, folderParentId: globalState.get("selected_folder") });
+
+    const folders = globalState.get(`explorer_folder_${id}`);
+    folders.push(newFolder);
+
+    stateStorage.set(`explorer_folder_${id}`, [...folders]);
+  }, [id, isFile]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
