@@ -13,6 +13,7 @@ import MenuSt from "../style";
 import FolderClosed from "./FolderClosed";
 import FolderOpened from "./FolderOpened";
 import ExplorerSt from "./style";
+import ContextMenu from "../../../ContextMenu/ContextMenu";
 
 function Explorer() {
   const { translateThis } = useGTTranslate();
@@ -153,6 +154,8 @@ const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
     initial: null,
   });
 
+  const [showContextMenu, setShowContextMenu] = useState(false);
+
   const handleFolderClick = useCallback(() => {
     setShow(true);
 
@@ -169,10 +172,19 @@ const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
     });
   }, [folder, setSelectedFolder]);
 
+  const handleMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setShowContextMenu(true);
+  }, [setShowContextMenu]);
+
   return (
     <>
       <ExplorerSt.Visualization.File
         active={selectedFolder === folder.id}
+        role="button"
+        onContextMenu={handleMenu}
         onClick={handleFolderClick}
       >
         <ExplorerSt.Folder.Icon>
@@ -191,6 +203,8 @@ const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
           <ExplorerContent depth={depth + 1} id={folder.id} />
         </div>
       )}
+
+      {showContextMenu && <ContextMenu />}
     </>
   );
 });
