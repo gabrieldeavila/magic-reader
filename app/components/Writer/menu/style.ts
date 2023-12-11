@@ -42,7 +42,7 @@ const MenuTitleContent = styled.div`
 
 const MenuTitleName = styled.h3`
   font-size: 0.75rem;
-  font-weight: 100;
+  font-weight: 200;
   text-transform: uppercase;
 `;
 

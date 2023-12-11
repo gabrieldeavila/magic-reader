@@ -17,19 +17,26 @@ export const initialContent: IWritterContent[] = [
   },
 ];
 
-const CREATE_SCRIBERE = async () => {
-  const id = await db.scribere.add({
-    name: "",
+const CREATE_SCRIBERE = async (name?: string, folderId?: number) => {
+  const scribere = {
+    name: name || "",
     content: initialContent,
-    folderId: -1,
+    folderId: folderId || -1,
     img: "https://images.unsplash.com/photo-1607970669494-309137683be5",
-    position: { x: 0, y: 0},
+    position: { x: 0, y: 0 },
     emoji: "📝",
     createdAt: new Date(),
     updatedAt: new Date(),
-  });
+  };
 
-  return id;
+  const id = await db.scribere.add(scribere);
+
+  const newScribere = {
+    ...scribere,
+    id,
+  };
+
+  return newScribere;
 };
 
 export default CREATE_SCRIBERE;

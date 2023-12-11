@@ -1,11 +1,27 @@
-// import { db } from "../../../Dexie/Dexie";
+import { db } from "../../../Dexie/Dexie";
 
-// const CREATE_FOLDER = async () => {
-//   const id = await db.folders.add({
-//     name: "",
-//     createdAt: new Date(),
-//     updatedAt: new Date(),
-//   });
+const CREATE_FOLDER = async ({
+  name,
+  folderParentId = -1,
+}: {
+  name: string;
+  folderParentId?: number;
+}) => {
+  const folder = {
+    name,
+    folderParentId,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
-//   return id;
-// };
+  const id = await db.folders.add(folder);
+
+  const newFolder = {
+    ...folder,
+    id,
+  };
+
+  return newFolder;
+};
+
+export default CREATE_FOLDER;
