@@ -63,6 +63,8 @@
   "SCRIBERE": {
     "NEW_FILE": "Novo arquivo",
     "NEW_FOLDER": "Nova pasta",
+    "RENAME": "Renomear",
+    "DELETE": "Excluir",
     "EXPLORER": "Explorador",
     "EMPTY": "Escreva algo!",
     "TURN_INTO": "Transformar em ...",

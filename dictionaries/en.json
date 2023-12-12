@@ -63,6 +63,8 @@
   "SCRIBERE": {
     "NEW_FILE": "New File",
     "NEW_FOLDER": "New Folder",
+    "DELETE": "Delete",
+    "RENAME": "Rename",
     "EXPLORER": "Explorer",
 
     "EMPTY": "Write something!",

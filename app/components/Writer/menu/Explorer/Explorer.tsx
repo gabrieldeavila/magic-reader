@@ -12,8 +12,9 @@ import CREATE_FOLDER from "../../_commands/folder/CREATE";
 import MenuSt from "../style";
 import FolderClosed from "./FolderClosed";
 import FolderOpened from "./FolderOpened";
+import FolderMenu from "./Menus/Folder";
 import ExplorerSt from "./style";
-import ContextMenu from "../../../ContextMenu/ContextMenu";
+import FileMenu from "./Menus/File";
 
 function Explorer() {
   const { translateThis } = useGTTranslate();
@@ -127,11 +128,7 @@ const ExplorerContent = memo(
           {showAddNewFolder && selectedFolder === id && <NewFolder id={id} />}
 
           {scribere.map((scribere, index) => {
-            return (
-              <ExplorerSt.Visualization.File key={index}>
-                {scribere.name}
-              </ExplorerSt.Visualization.File>
-            );
+            return <File name={scribere.name} key={index} />;
           })}
 
           {showAddNewFile && selectedFolder === id && (
@@ -144,6 +141,44 @@ const ExplorerContent = memo(
 );
 
 ExplorerContent.displayName = "ExplorerContent";
+
+const File = memo(({ name }: { name: string }) => {
+  const contextMenuRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [showContextMenu, setShowContextMenu] = useState(false);
+
+  const handleMenu = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // gets the click position
+      const x = e.clientX;
+      const y = e.clientY;
+
+      contextMenuRef.current = { x, y };
+
+      setShowContextMenu(true);
+    },
+    [setShowContextMenu]
+  );
+
+  return (
+    <>
+      <ExplorerSt.Visualization.File onContextMenu={handleMenu}>
+        {name}aa
+      </ExplorerSt.Visualization.File>
+
+      {showContextMenu && (
+        <FileMenu
+          setShowContextMenu={setShowContextMenu}
+          position={contextMenuRef.current}
+        />
+      )}
+    </>
+  );
+});
+
+File.displayName = "File";
 
 const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -172,12 +207,23 @@ const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
     });
   }, [folder, setSelectedFolder]);
 
-  const handleMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const contextMenuRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
-    setShowContextMenu(true);
-  }, [setShowContextMenu]);
+  const handleMenu = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // gets the click position
+      const x = e.clientX;
+      const y = e.clientY;
+
+      contextMenuRef.current = { x, y };
+
+      setShowContextMenu(true);
+    },
+    [setShowContextMenu]
+  );
 
   return (
     <>
@@ -204,7 +250,12 @@ const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
         </div>
       )}
 
-      {showContextMenu && <ContextMenu />}
+      {showContextMenu && (
+        <FolderMenu
+          setShowContextMenu={setShowContextMenu}
+          position={contextMenuRef.current}
+        />
+      )}
     </>
   );
 });
