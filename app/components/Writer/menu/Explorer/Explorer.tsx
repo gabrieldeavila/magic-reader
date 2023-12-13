@@ -144,6 +144,7 @@ const ExplorerContent = memo(
 ExplorerContent.displayName = "ExplorerContent";
 
 const File = memo(({ name, id, emoji }: Scribere) => {
+  const [lang] = useTriggerState({ name: "lang" });
   const contextMenuRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const [showContextMenu, setShowContextMenu] = useState(false);
 
@@ -165,7 +166,11 @@ const File = memo(({ name, id, emoji }: Scribere) => {
 
   return (
     <>
-      <Link style={{ textDecoration: "none" }} href={`${id}`} passHref>
+      <Link
+        style={{ textDecoration: "none" }}
+        href={`/${lang}/scribere/${id}`}
+        passHref
+      >
         <ExplorerSt.Visualization.File onContextMenu={handleMenu}>
           {emoji}
           {name}
