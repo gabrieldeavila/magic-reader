@@ -3,7 +3,7 @@ import ContextMenu from "../../../../ContextMenu/ContextMenu";
 import { useGTTranslate } from "@geavila/gt-design";
 import ContextMenuSt from "../../../../ContextMenu/style";
 
-function FileMenu({
+function FileMenu ({
   setShowContextMenu,
   position,
 }: {
@@ -46,4 +46,4 @@ function FileMenu({
   );
 }
 
-export default FileMenu;
+export default FileMenu ;

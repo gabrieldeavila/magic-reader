@@ -6,7 +6,7 @@ import {
   stateStorage,
   useTriggerState,
 } from "react-trigger-state";
-import { Folders, db } from "../../../Dexie/Dexie";
+import { Folders, Scribere, db } from "../../../Dexie/Dexie";
 import CREATE_SCRIBERE from "../../_commands/CREATE";
 import CREATE_FOLDER from "../../_commands/folder/CREATE";
 import MenuSt from "../style";
@@ -15,6 +15,7 @@ import FolderOpened from "./FolderOpened";
 import FolderMenu from "./Menus/Folder";
 import ExplorerSt from "./style";
 import FileMenu from "./Menus/File";
+import Link from "next/link";
 
 function Explorer() {
   const { translateThis } = useGTTranslate();
@@ -127,8 +128,8 @@ const ExplorerContent = memo(
 
           {showAddNewFolder && selectedFolder === id && <NewFolder id={id} />}
 
-          {scribere.map((scribere, index) => {
-            return <File name={scribere.name} key={index} />;
+          {scribere.map((scribere: Scribere) => {
+            return <File {...scribere} key={scribere.id} />;
           })}
 
           {showAddNewFile && selectedFolder === id && (
@@ -142,7 +143,7 @@ const ExplorerContent = memo(
 
 ExplorerContent.displayName = "ExplorerContent";
 
-const File = memo(({ name }: { name: string }) => {
+const File = memo(({ name, id, emoji }: Scribere) => {
   const contextMenuRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const [showContextMenu, setShowContextMenu] = useState(false);
 
@@ -164,9 +165,12 @@ const File = memo(({ name }: { name: string }) => {
 
   return (
     <>
-      <ExplorerSt.Visualization.File onContextMenu={handleMenu}>
-        {name}aa
-      </ExplorerSt.Visualization.File>
+      <Link style={{ textDecoration: "none" }} href={`${id}`} passHref>
+        <ExplorerSt.Visualization.File onContextMenu={handleMenu}>
+          {emoji}
+          {name}
+        </ExplorerSt.Visualization.File>
+      </Link>
 
       {showContextMenu && (
         <FileMenu

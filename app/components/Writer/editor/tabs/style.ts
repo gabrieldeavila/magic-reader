@@ -1,4 +1,5 @@
 import { scrolls } from "@geavila/gt-design";
+import Link from "next/link";
 import styled, { css } from "styled-components";
 
 const TabWrapper = styled.div`
@@ -59,7 +60,9 @@ const activeTab = css`
   }
 `;
 
-const TabOption = styled.div<{ active?: boolean }>`
+const TabOption = styled(Link)<{ active?: boolean }>`
+  text-decoration: none;
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -75,13 +78,13 @@ const TabOption = styled.div<{ active?: boolean }>`
     opacity: 1;
   }
 
-  &:first-child {
-    border-left: none;
+  /* to odd */
+  &:nth-child(odd):not(:last-child) {
+    border-right: none;
   }
 
-  /* to odd */
   &:nth-child(odd) {
-    border-right: none;
+    border-left: none;
   }
 
   &:hover {
