@@ -1,5 +1,5 @@
 import { useGTTranslate } from "@geavila/gt-design";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronRight, FilePlus, FolderPlus } from "react-feather";
 import {
   globalState,
@@ -147,6 +147,26 @@ const File = memo(({ name, id, emoji }: Scribere) => {
   const [lang] = useTriggerState({ name: "lang" });
   const contextMenuRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const [showContextMenu, setShowContextMenu] = useState(false);
+  const [customName] = useTriggerState({
+    name: `scribere_custom_name_${id}`,
+    initial: null,
+  });
+  const [customEmoji] = useTriggerState({
+    name: `scribere_custom_emoji_${id}`,
+    initial: null,
+  });
+
+  const fileName = useMemo(() => {
+    if (customName) return customName;
+
+    return name;
+  }, [customName, name]);
+
+  const fileEmoji = useMemo(() => {
+    if (customEmoji) return customEmoji;
+
+    return emoji;
+  }, [customEmoji, emoji]);
 
   const handleMenu = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -172,8 +192,8 @@ const File = memo(({ name, id, emoji }: Scribere) => {
         passHref
       >
         <ExplorerSt.Visualization.File onContextMenu={handleMenu}>
-          {emoji}
-          {name}
+          <span>{fileEmoji}</span>
+          <span>{fileName}</span>
         </ExplorerSt.Visualization.File>
       </Link>
 
