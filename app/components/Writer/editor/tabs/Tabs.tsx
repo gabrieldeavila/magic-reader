@@ -2,11 +2,20 @@ import { X } from "react-feather";
 import { stateStorage, useTriggerState } from "react-trigger-state";
 import { TabsSt } from "./style";
 import { useGTTranslate } from "@geavila/gt-design";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 
 function Tabs() {
-  const [currTabs] = useTriggerState({ name: "tabs", initial: [] });
+  const [currTabs] = useTriggerState({
+    name: "tabs",
+    initial: localStorage.getItem("tabs")
+      ? JSON.parse(localStorage.getItem("tabs")!)
+      : [],
+  });
+
+  useEffect(() => {
+    localStorage.setItem("tabs", JSON.stringify(currTabs));
+  }, [currTabs]);
 
   return (
     <TabsSt.Wrapper>
@@ -54,7 +63,7 @@ const Tab = memo(({ id, name }: { id: string; name: string }) => {
   );
 
   return (
-    <TabsSt.Option key={id} href={`${id}`} active={isActive}>
+    <TabsSt.Option key={id} href={`/${lang}/scribere/${id}`} active={isActive}>
       <TabsSt.OptionName title={name || translateThis("LEGERE.UNTITLED")}>
         {name || translateThis("LEGERE.UNTITLED")}
       </TabsSt.OptionName>
