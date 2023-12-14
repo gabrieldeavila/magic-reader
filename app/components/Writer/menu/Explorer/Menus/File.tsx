@@ -21,12 +21,7 @@ function FileMenu ({
     >
       <ContextMenuSt.Option.Wrapper>
         <ContextMenuSt.Option.Title>
-          {translateThis("SCRIBERE.NEW_FOLDER")}
-        </ContextMenuSt.Option.Title>
-      </ContextMenuSt.Option.Wrapper>
-      <ContextMenuSt.Option.Wrapper>
-        <ContextMenuSt.Option.Title>
-          {translateThis("SCRIBERE.NEW_FILE")}
+          {translateThis("SCRIBERE.OPEN")}
         </ContextMenuSt.Option.Title>
       </ContextMenuSt.Option.Wrapper>
       <ContextMenuSt.Divider />

@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { File, Settings, User } from "react-feather";
 import { useTriggerState } from "react-trigger-state";
 import SidebarSt from "./style";
 
 function Sidebar() {
-  const [menu, setMenu] = useTriggerState({ name: "menu" });
+  const [menu, setMenu] = useTriggerState({ name: "menu", initial: localStorage.getItem("menu") || "" });
 
   const handleClickFile = useCallback(() => {
     setMenu((prev: string) => {
@@ -14,6 +14,10 @@ function Sidebar() {
       return "file";
     });
   }, [setMenu]);
+
+  useEffect(() => {
+    localStorage.setItem("menu", menu);
+  }, [menu]);
 
   return (
     <SidebarSt.Wrapper>
