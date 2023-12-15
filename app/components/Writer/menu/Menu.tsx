@@ -25,7 +25,7 @@ function Menu() {
       </MenuSt.Container>
       {Divider}
     </MenuSt.Wrapper>
-  );
+  ); 
 }
 
 export default Menu;

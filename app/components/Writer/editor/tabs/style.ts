@@ -60,7 +60,11 @@ const activeTab = css`
   }
 `;
 
-const TabOption = styled(Link)<{ active?: boolean }>`
+const dragginOver = css`
+  background: var(--containerSecondary);
+`;
+
+const TabOption = styled(Link)<{ active?: boolean; isDraggingOver?: boolean }>`
   text-decoration: none;
 
   display: flex;
@@ -92,6 +96,8 @@ const TabOption = styled(Link)<{ active?: boolean }>`
   }
 
   ${({ active }) => active && activeTab}
+
+  ${({ isDraggingOver }) => isDraggingOver && dragginOver}
 `;
 
 export const TabsSt = {
