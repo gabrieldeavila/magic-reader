@@ -68,10 +68,17 @@ const Tab = memo(({ id, name }: { id: string; name: string }) => {
 
       const currTabs = stateStorage.get("tabs");
       const tabDragged = currTabs.find((tab: any) => tab.id === tabId);
+      const prevTabIndex = currTabs.findIndex((tab: any) => tab.id === id);
 
       const newTabs = currTabs.filter((tab: any) => tab.id !== tabId);
 
-      const index = newTabs.findIndex((tab: any) => tab.id === id);
+      let index = newTabs.findIndex((tab: any) => tab.id === id) + 1;
+
+      if (prevTabIndex < index) {
+        index--;
+      } else if (prevTabIndex > index) {
+        index++;
+      }
 
       newTabs.splice(index, 0, tabDragged);
 
