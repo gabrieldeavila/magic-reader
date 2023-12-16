@@ -5,15 +5,19 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
+  useRef
 } from "react";
 import {
   globalState,
   stateStorage,
   useTriggerState,
 } from "react-trigger-state";
+import { dcs } from "../../../utils/dcs";
+import { dga } from "../../../utils/dga";
 import uuid from "../../../utils/uuid";
 import useGetCurrBlockId from "../hooks/useGetCurrBlockId";
+import useResize from "../hooks/useResize";
+import Image from "../image/image";
 import {
   IText,
   IWriterContext,
@@ -22,12 +26,8 @@ import {
 } from "../interface";
 import Component from "../options/Component/Component";
 import { ReadWrite, Selector } from "../options/Component/style";
-import { dcs } from "../../../utils/dcs";
-import { dga } from "../../../utils/dga";
-import Toc from "../tocs/TableOfContents";
 import { StyledWriter } from "../style";
-import useResize from "../hooks/useResize";
-import Image from "../image/image";
+import Toc from "../tocs/TableOfContents";
 
 export const WriterContext = createContext<IWriterContext>({
   content: [],
@@ -882,6 +882,33 @@ const WriterContextProvider = ({
     },
     [setContent]
   );
+
+  const foundRef = useRef(false);
+
+  const addFocus = useCallback(() => {
+    const focus = document.querySelector("[data-line-id");
+
+    foundRef.current = !!focus;
+    if (focus) {
+      const range = document.createRange();
+      range.selectNodeContents(focus.firstChild);
+
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (foundRef.current) {
+      return;
+    }
+
+    addFocus();
+    setTimeout(() => {
+      addFocus();
+    });
+  }, [addFocus, content]);
 
   return (
     <WriterContext.Provider
