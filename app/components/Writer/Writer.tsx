@@ -11,7 +11,7 @@ function Writer() {
   // when alt + n is pressed, it will trigger this function
   useEffect(() => {
     const handleNewFile = async (e: KeyboardEvent) => {
-      if (e.altKey && e.key === "n") {
+      if (e.altKey && e.key.toLocaleLowerCase()=== "n") {
         e.preventDefault();
 
         const newId = await CREATE_SCRIBERE();

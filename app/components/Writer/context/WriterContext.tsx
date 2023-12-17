@@ -5,7 +5,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
-  useRef
+  useRef,
 } from "react";
 import {
   globalState,
@@ -623,7 +623,14 @@ const WriterContextProvider = ({
   );
 
   const handleBlur = useCallback(
-    (e) => {
+    (
+      e:
+        | React.FocusEvent<HTMLDivElement>
+        | React.MouseEvent<HTMLDivElement, MouseEvent>,
+      isBlur?: boolean
+    ) => {
+      isBlur = isBlur || true;
+
       const { dataLineId } = getBlockId({});
       globalState.set("select_all_content", null);
 
@@ -820,12 +827,12 @@ const WriterContextProvider = ({
     // add listener
     const handleChange = (e) => {
       // if ctrl is pressed and z is pressed, it will undo the last action
-      if (e.ctrlKey && e.key === "z") {
+      if (e.ctrlKey && e.key.toLocaleLowerCase() === "z") {
         undo();
         return;
       }
 
-      if (e.ctrlKey && e.key === "y") {
+      if (e.ctrlKey && e.key.toLocaleLowerCase()=== "y") {
         redo();
         return;
       }
@@ -934,7 +941,7 @@ const WriterContextProvider = ({
           <ReadWrite
             contentEditable
             onKeyDown={handleKeyDown}
-            onBlur={(e) => {
+            onBlur={(e: React.FocusEvent<HTMLDivElement>) => {
               const relatedTarget = e.relatedTarget as HTMLElement;
 
               if (
@@ -947,7 +954,7 @@ const WriterContextProvider = ({
               globalState.set("clicked-item", false);
               handleBlur(e);
             }}
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
               const datas = ["todo"];
               // info.current = {
               //   selection: 0,
@@ -968,7 +975,7 @@ const WriterContextProvider = ({
                 return;
               }
 
-              handleBlur(e);
+              handleBlur(e, false);
               globalState.set("clicked-item", true);
               handleClick();
             }}
