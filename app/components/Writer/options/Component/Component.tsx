@@ -1868,16 +1868,8 @@ function Component({
     initial: false,
   });
 
-  const hasFocusInComp = useCallback(() => {
-    const selection = window.getSelection();
-
-    const hasFocus =
-      selection.anchorNode?.parentElement?.getAttribute("data-line-id");
-  }, []);
-
   const onlyOneBlockAndIsEmpty = useMemo(
     () =>
-      hasFocusInComp() &&
       hasFocusId &&
       text.length === 1 &&
       text[0].value.length === 0,
@@ -1886,7 +1878,6 @@ function Component({
 
   const getOptions = useCallback((child: ChildNode) => {
     // returns if has some option: bold, italic, underline, strikethrough, highlight, code
-
     const options = [];
 
     // @ts-expect-error it sure does
