@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import DividerSt from "./style";
-import { globalState } from "react-trigger-state";
+import { globalState, stateStorage } from "react-trigger-state";
 
 function Divider({
   parentRef,
@@ -38,8 +38,16 @@ function Divider({
         dividerLeft < 200 ||
         dividerLeft > window.innerWidth - 200 ||
         dividerLeft > window.innerWidth * 0.9 - 50
-      )
+      ) {
+        if (dividerLeft < 0) {
+          stateStorage.set("menu", false);
+
+          const body = document.querySelector("body");
+          if (body) body.style.cursor = "default";
+        }
+
         return;
+      }
 
       parentRef.current.style.width = `${dividerLeft}px`;
 

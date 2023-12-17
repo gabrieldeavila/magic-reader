@@ -13,6 +13,7 @@ function Page({ params: { id } }: { params: { id: string } }) {
   const { addFocus } = useFocusOnStart();
   const { updateContent } = useUpdateContent({ id });
   const contextName = useMemo(() => `${id}_writter_context`, [id]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [newContent] = useTriggerState({
     name: `${id}_writter_context`,
@@ -29,8 +30,6 @@ function Page({ params: { id } }: { params: { id: string } }) {
       db.scribere.get({ id: parseInt(id) }).then((data) => {
         if (!data) return;
 
-        addFocus({ content: data.content });
-
         stateStorage.set(`${contextName}_title`, data.name);
         stateStorage.set(`${contextName}_emoji`, data.emoji);
         stateStorage.set(`${contextName}_img`, data.img);
@@ -46,12 +45,14 @@ function Page({ params: { id } }: { params: { id: string } }) {
 
         // add new tab
         stateStorage.set("tabs", tabs);
-
         // set active tab
         stateStorage.set("active_tab", data.id);
+        setIsLoading(false);
       });
     })();
   }, [addFocus, contextName, id]);
+
+  if (isLoading) return <div>...</div>;
 
   return <Editor name={id} content={content} />;
 }

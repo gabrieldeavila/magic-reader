@@ -63,8 +63,10 @@
   "SCRIBERE": {
     "NEW_FILE": "New File",
     "NEW_FOLDER": "New Folder",
+    "DELETE": "Delete",
+    "RENAME": "Rename",
     "EXPLORER": "Explorer",
-
+    "OPEN": "Open",
     "EMPTY": "Write something!",
     "TURN_INTO": "Turn into a...",
     "P": "Paragraph",

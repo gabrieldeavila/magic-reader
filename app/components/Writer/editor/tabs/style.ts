@@ -1,28 +1,36 @@
 import { scrolls } from "@geavila/gt-design";
+import Link from "next/link";
 import styled, { css } from "styled-components";
 
 const TabWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  flex: 1;
   height: 100%;
   overflow: hidden;
   position: relative;
+  max-height: 2rem;
 `;
 
 const TabContent = styled.div`
-  flex: 1;
   height: 100%;
-  overflow: hidden;
   position: relative;
   background: var(--primary);
   display: flex;
-  overflow: auto;
-  ${scrolls.default};
+  overflow-y: hidden;
+  overflow-x: hidden;
+  transition: 0.2s all;
+
+  &:hover {
+    overflow-x: auto;
+    ${scrolls.default};
+    &::-webkit-scrollbar-thumb {
+      border-radius: 2px;
+    }
+  }
 
   /* change the scroll height */
   &::-webkit-scrollbar {
-    height: 0.5rem;
+    height: 0.2rem;
   }
 `;
 
@@ -59,7 +67,13 @@ const activeTab = css`
   }
 `;
 
-const TabOption = styled.div<{ active?: boolean }>`
+const dragginOver = css`
+  background: var(--containerSecondary);
+`;
+
+const TabOption = styled(Link)<{ active?: boolean; isDraggingOver?: boolean }>`
+  text-decoration: none;
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -75,13 +89,13 @@ const TabOption = styled.div<{ active?: boolean }>`
     opacity: 1;
   }
 
-  &:first-child {
-    border-left: none;
+  /* to odd */
+  &:nth-child(odd):not(:last-child) {
+    border-right: none;
   }
 
-  /* to odd */
   &:nth-child(odd) {
-    border-right: none;
+    border-left: none;
   }
 
   &:hover {
@@ -89,6 +103,8 @@ const TabOption = styled.div<{ active?: boolean }>`
   }
 
   ${({ active }) => active && activeTab}
+
+  ${({ isDraggingOver }) => isDraggingOver && dragginOver}
 `;
 
 export const TabsSt = {

@@ -71,6 +71,12 @@ function Image() {
   );
 
   useLayoutEffect(() => {
+    const avoid = globalState.get("avoid-title-pos");
+    if (avoid) {
+      globalState.set("avoid-title-pos", false);
+      return;
+    }
+
     const currPos = globalState.get("curr_pos");
 
     // set the cursor to the end of the text

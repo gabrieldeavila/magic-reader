@@ -1006,7 +1006,7 @@ function Component({
       if (!ctrlPressed) return false;
       const popupActions = document.querySelector("[data-popup]");
 
-      if (e.key === "x") {
+      if (e.key.toLocaleLowerCase() === "x") {
         e.preventDefault();
         copyText();
         const length = window.getSelection().toString().length;
@@ -1038,7 +1038,7 @@ function Component({
         }
 
         return true;
-      } else if (e.key === "c") {
+      } else if (e.key.toLocaleLowerCase() === "c") {
         // e.preventDefault();
         copyText();
 
@@ -1085,7 +1085,7 @@ function Component({
         selection.removeAllRanges();
         selection.addRange(range);
         return true;
-      } else if (e.key === "b") {
+      } else if (e.key.toLocaleLowerCase() === "b") {
         e.preventDefault();
 
         if (!popupActions) {
@@ -1096,7 +1096,7 @@ function Component({
         }
 
         return true;
-      } else if (e.key === "i") {
+      } else if (e.key.toLocaleLowerCase() === "i") {
         e.preventDefault();
         if (!popupActions) {
           saveDecoration("italic");
@@ -1105,7 +1105,7 @@ function Component({
           popupActions.querySelector("[data-italic]").click();
         }
         return true;
-      } else if (e.key === "u") {
+      } else if (e.key.toLocaleLowerCase() === "u") {
         e.preventDefault();
         if (!popupActions) {
           saveDecoration("underline");
@@ -1115,7 +1115,7 @@ function Component({
         }
 
         return true;
-      } else if (e.key === "s") {
+      } else if (e.key.toLocaleLowerCase() === "s") {
         e.preventDefault();
         if (!popupActions) {
           saveDecoration("strikethrough");
@@ -1124,7 +1124,7 @@ function Component({
           popupActions.querySelector("[data-strikethrough]").click();
         }
         return true;
-      } else if (e.key === "h") {
+      } else if (e.key.toLocaleLowerCase() === "h") {
         e.preventDefault();
         if (!popupActions) {
           saveDecoration("highlight");
@@ -1133,7 +1133,7 @@ function Component({
           popupActions.querySelector("[data-highlight]").click();
         }
         return true;
-      } else if (e.key === "e") {
+      } else if (e.key.toLocaleLowerCase() === "e") {
         e.preventDefault();
         if (!popupActions) {
           saveDecoration("code");
@@ -1869,13 +1869,15 @@ function Component({
   });
 
   const onlyOneBlockAndIsEmpty = useMemo(
-    () => hasFocusId && text.length === 1 && text[0].value.length === 0,
+    () =>
+      hasFocusId &&
+      text.length === 1 &&
+      text[0].value.length === 0,
     [hasFocusId, text]
   );
 
   const getOptions = useCallback((child: ChildNode) => {
     // returns if has some option: bold, italic, underline, strikethrough, highlight, code
-
     const options = [];
 
     // @ts-expect-error it sure does
@@ -2329,7 +2331,7 @@ function Component({
     align,
   });
 
-  const DisEditable = Editable[type ?? "p"];
+  const DisEditable = useMemo(() => Editable[type ?? "p"], [type]);
 
   if (customStyle && "src" in customStyle) {
     return <Image id={id} customStyle={customStyle} />;

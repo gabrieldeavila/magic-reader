@@ -12,8 +12,12 @@ import {
   stateStorage,
   useTriggerState,
 } from "react-trigger-state";
+import { dcs } from "../../../utils/dcs";
+import { dga } from "../../../utils/dga";
 import uuid from "../../../utils/uuid";
 import useGetCurrBlockId from "../hooks/useGetCurrBlockId";
+import useResize from "../hooks/useResize";
+import Image from "../image/image";
 import {
   IText,
   IWriterContext,
@@ -22,12 +26,8 @@ import {
 } from "../interface";
 import Component from "../options/Component/Component";
 import { ReadWrite, Selector } from "../options/Component/style";
-import { dcs } from "../../../utils/dcs";
-import { dga } from "../../../utils/dga";
-import Toc from "../tocs/TableOfContents";
 import { StyledWriter } from "../style";
-import useResize from "../hooks/useResize";
-import Image from "../image/image";
+import Toc from "../tocs/TableOfContents";
 
 export const WriterContext = createContext<IWriterContext>({
   content: [],
@@ -623,7 +623,14 @@ const WriterContextProvider = ({
   );
 
   const handleBlur = useCallback(
-    (e) => {
+    (
+      e:
+        | React.FocusEvent<HTMLDivElement>
+        | React.MouseEvent<HTMLDivElement, MouseEvent>,
+      isBlur?: boolean
+    ) => {
+      isBlur = isBlur || true;
+
       const { dataLineId } = getBlockId({});
       globalState.set("select_all_content", null);
 
@@ -631,8 +638,17 @@ const WriterContextProvider = ({
       const selection = window.getSelection().toString().length;
       const selectedClicked = globalState.get("clicked-item");
 
-      if (prevSelected && selection === 0 && !selectedClicked) {
-        stateStorage.set(`has_focus_ev-${prevSelected}`, false);
+      if (isBlur && prevSelected && selection === 0 && !selectedClicked) {
+        const el = e.target as HTMLElement;
+        const isTheSame =
+          (el.getAttribute("data-line-id") ||
+            el.closest("[data-line-id]")?.getAttribute("data-line-id")) ===
+          prevSelected;
+
+        // if the prev selected is not the same as the current, it will remove the focus
+        if (!isTheSame) {
+          stateStorage.set(`has_focus_ev-${prevSelected}`, false);
+        }
       }
 
       const alreadyHasPopup = document
@@ -820,12 +836,12 @@ const WriterContextProvider = ({
     // add listener
     const handleChange = (e) => {
       // if ctrl is pressed and z is pressed, it will undo the last action
-      if (e.ctrlKey && e.key === "z") {
+      if (e.ctrlKey && e.key.toLocaleLowerCase() === "z") {
         undo();
         return;
       }
 
-      if (e.ctrlKey && e.key === "y") {
+      if (e.ctrlKey && e.key.toLocaleLowerCase() === "y") {
         redo();
         return;
       }
@@ -883,6 +899,46 @@ const WriterContextProvider = ({
     [setContent]
   );
 
+  const foundRef = useRef(false);
+
+  const addFocus = useCallback(() => {
+    const focus = document.querySelector("[data-line-id");
+
+    foundRef.current = !!focus;
+    if (focus) {
+      const range = document.createRange();
+      const child = focus.firstChild?.firstChild;
+      stateStorage.set(
+        `has_focus_ev-${focus.getAttribute("data-line-id")}`,
+        true
+      );
+
+      // if has the length, it will add the focus to the first letter
+      if (child != null) {
+        range.setStart(child, child.textContent.length);
+        range.setEnd(child, child.textContent.length);
+      } else {
+        // it`s empty
+        range.selectNodeContents(focus.firstChild);
+      }
+
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (foundRef.current) {
+      return;
+    }
+
+    addFocus();
+    setTimeout(() => {
+      addFocus();
+    });
+  }, [addFocus, content]);
+
   return (
     <WriterContext.Provider
       value={{
@@ -907,7 +963,7 @@ const WriterContextProvider = ({
           <ReadWrite
             contentEditable
             onKeyDown={handleKeyDown}
-            onBlur={(e) => {
+            onBlur={(e: React.FocusEvent<HTMLDivElement>) => {
               const relatedTarget = e.relatedTarget as HTMLElement;
 
               if (
@@ -920,7 +976,7 @@ const WriterContextProvider = ({
               globalState.set("clicked-item", false);
               handleBlur(e);
             }}
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
               const datas = ["todo"];
               // info.current = {
               //   selection: 0,
@@ -941,7 +997,7 @@ const WriterContextProvider = ({
                 return;
               }
 
-              handleBlur(e);
+              handleBlur(e, false);
               globalState.set("clicked-item", true);
               handleClick();
             }}

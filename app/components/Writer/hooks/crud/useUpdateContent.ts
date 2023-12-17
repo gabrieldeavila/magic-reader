@@ -38,6 +38,7 @@ function useUpdateContent({ id }: { id: string }) {
       return tab;
     });
 
+    stateStorage.set(`scribere_custom_name_${id}`, title);
     stateStorage.set("tabs", updatedTabs);
   }, [id, title]);
 
@@ -45,6 +46,7 @@ function useUpdateContent({ id }: { id: string }) {
     if (emoji == null || emoji === "") return;
 
     db.scribere.update(parseInt(id), { emoji });
+    stateStorage.set(`scribere_custom_emoji_${id}`, emoji);
   }, [id, emoji]);
 
   useEffect(() => {
