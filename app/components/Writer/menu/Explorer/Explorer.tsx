@@ -1,4 +1,5 @@
 import { useGTTranslate } from "@geavila/gt-design";
+import Link from "next/link";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronRight, FilePlus, FolderPlus } from "react-feather";
 import {
@@ -12,10 +13,9 @@ import CREATE_FOLDER from "../../_commands/folder/CREATE";
 import MenuSt from "../style";
 import FolderClosed from "./FolderClosed";
 import FolderOpened from "./FolderOpened";
+import FileMenu from "./Menus/File";
 import FolderMenu from "./Menus/Folder";
 import ExplorerSt from "./style";
-import FileMenu from "./Menus/File";
-import Link from "next/link";
 
 function Explorer() {
   const { translateThis } = useGTTranslate();
@@ -196,6 +196,8 @@ const File = memo(({ name, id, emoji }: Scribere) => {
   const handleRenameFile = useCallback(
     (name: string) => {
       setShowRename(false);
+      // removes all \n
+      name = name.replace(/\n/g, "");
 
       stateStorage.set(`scribere_custom_name_${id}`, name);
       db.scribere.update(id, { name });
@@ -211,8 +213,13 @@ const File = memo(({ name, id, emoji }: Scribere) => {
       });
 
       stateStorage.set("tabs", newTabs);
+
+      if (isActive) {
+        globalState.set("avoid-title-pos", true);
+        stateStorage.set(`${id}_writter_context_title`, name);
+      }
     },
-    [id]
+    [id, isActive]
   );
 
   useEffect(() => {

@@ -60,6 +60,10 @@ function Image() {
     document.title = `${emoji} ${title || translateThis("LEGERE.UNTITLED")}`;
   }, [title, emoji, translateThis]);
 
+  useEffect(() => {
+    console.log(title);
+  }, [title]);
+
   const handleTitle = useCallback(
     (e: React.KeyboardEvent<HTMLHeadingElement>) => {
       const currPos = window.getSelection()?.anchorOffset || 0;
@@ -71,6 +75,12 @@ function Image() {
   );
 
   useLayoutEffect(() => {
+    const avoid = globalState.get("avoid-title-pos");
+    if (avoid) {
+      globalState.set("avoid-title-pos", false);
+      return;
+    }
+
     const currPos = globalState.get("curr_pos");
 
     // set the cursor to the end of the text
