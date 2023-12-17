@@ -73,19 +73,32 @@ const Tab = memo(({ id, name }: { id: string; name: string }) => {
   useEffect(() => {
     if (!isActive) return;
 
-    const tabsRef = globalState.get("tabs_ref");
-
-    // scroll to the tab
-    // add to the middle of the screen (width)
-    const width = tabRef.current?.getBoundingClientRect().width;
-    const tabsWidth = tabsRef?.getBoundingClientRect().width;
-    const scrollLeft = tabRef.current?.offsetLeft;
-    const scrollLeftTo = scrollLeft - tabsWidth / 2 + width / 2;
-
-    tabsRef?.scrollTo({
-      left: scrollLeftTo,
+    tabRef.current?.scrollIntoView({
       behavior: "smooth",
+      block: "nearest",
+      inline: "start",
     });
+
+    const tabsRef = globalState.get("writter_ref");
+
+    // when change the height of the tabs, scroll to the active tab
+    const observer = new MutationObserver(() => {
+      tabRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "start",
+      });
+    });
+
+    observer.observe(tabsRef, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    });
+
+    return () => {
+      observer.disconnect();
+    };
   }, [isActive]);
 
   const handleDrop = useCallback(
