@@ -5,25 +5,32 @@ import styled, { css } from "styled-components";
 const TabWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  flex: 1;
   height: 100%;
   overflow: hidden;
   position: relative;
+  max-height: 2rem;
 `;
 
 const TabContent = styled.div`
-  flex: 1;
   height: 100%;
-  overflow: hidden;
   position: relative;
   background: var(--primary);
   display: flex;
-  overflow: auto;
-  ${scrolls.default};
+  overflow-y: hidden;
+  overflow-x: hidden;
+  transition: 0.2s all;
+
+  &:hover {
+    overflow-x: auto;
+    ${scrolls.default};
+    &::-webkit-scrollbar-thumb {
+      border-radius: 2px;
+    }
+  }
 
   /* change the scroll height */
   &::-webkit-scrollbar {
-    height: 0.5rem;
+    height: 0.2rem;
   }
 `;
 
