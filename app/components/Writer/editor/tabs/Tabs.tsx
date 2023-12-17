@@ -1,8 +1,12 @@
 import { useGTTranslate } from "@geavila/gt-design";
 import { useRouter } from "next/navigation";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { X } from "react-feather";
-import { stateStorage, useTriggerState } from "react-trigger-state";
+import {
+  globalState,
+  stateStorage,
+  useTriggerState,
+} from "react-trigger-state";
 import { TabsSt } from "./style";
 
 function Tabs() {
@@ -17,9 +21,13 @@ function Tabs() {
     localStorage.setItem("tabs", JSON.stringify(currTabs));
   }, [currTabs]);
 
+  const onRef = useCallback((node: HTMLDivElement) => {
+    globalState.set("tabs_ref", node);
+  }, []);
+
   return (
     <TabsSt.Wrapper>
-      <TabsSt.Content>
+      <TabsSt.Content ref={onRef}>
         {currTabs.map(({ id, name }) => (
           <Tab key={id} id={id} name={name} />
         ))}
@@ -34,7 +42,7 @@ const Tab = memo(({ id, name }: { id: string; name: string }) => {
   const [activeTab] = useTriggerState({ name: "active_tab" });
   const { translateThis } = useGTTranslate();
   const [lang] = useTriggerState({ name: "lang" });
-
+  const tabRef = useRef(null);
   const isActive = useMemo(() => activeTab === id, [activeTab, id]);
 
   const router = useRouter();
@@ -61,6 +69,24 @@ const Tab = memo(({ id, name }: { id: string; name: string }) => {
     },
     [id, isActive, lang, router]
   );
+
+  useEffect(() => {
+    if (!isActive) return;
+
+    const tabsRef = globalState.get("tabs_ref");
+
+    // scroll to the tab
+    // add to the middle of the screen (width)
+    const width = tabRef.current?.getBoundingClientRect().width;
+    const tabsWidth = tabsRef?.getBoundingClientRect().width;
+    const scrollLeft = tabRef.current?.offsetLeft;
+    const scrollLeftTo = scrollLeft - tabsWidth / 2 + width / 2;
+
+    tabsRef?.scrollTo({
+      left: scrollLeftTo,
+      behavior: "smooth",
+    });
+  }, [isActive]);
 
   const handleDrop = useCallback(
     (ev) => {
@@ -91,6 +117,7 @@ const Tab = memo(({ id, name }: { id: string; name: string }) => {
 
   return (
     <TabsSt.Option
+      ref={tabRef}
       isDraggingOver={isDraggingOver}
       draggable
       onDragStart={(ev) => {

@@ -60,10 +60,6 @@ function Image() {
     document.title = `${emoji} ${title || translateThis("LEGERE.UNTITLED")}`;
   }, [title, emoji, translateThis]);
 
-  useEffect(() => {
-    console.log(title);
-  }, [title]);
-
   const handleTitle = useCallback(
     (e: React.KeyboardEvent<HTMLHeadingElement>) => {
       const currPos = window.getSelection()?.anchorOffset || 0;
