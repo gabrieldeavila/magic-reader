@@ -43,7 +43,39 @@ const VisualizationContainer = styled.div`
   gap: 0.25rem;
 `;
 
-const VisualizationFile = styled.div<{ active?: boolean }>`
+const getBackground = (active?: boolean, selected?: boolean) => {
+  if (active) return "var(--preSelectColor)";
+
+  if (selected) return "var(--outline-0_5)";
+
+  return "none";
+};
+
+const getBorder = (active?: boolean, selected?: boolean, isHover?: boolean) => {
+  if (isHover) {
+    if (selected) return "1px solid var(--outline-0_5)";
+
+    if (!active) return "1px solid var(--preSelectColor)";
+
+    return "1px solid var(--primary-0_2)";
+  }
+
+  if (selected) return "1px solid var(--outline)";
+
+  if (active) return "1px solid var(--preSelectColor)";
+
+  return "1px solid transparent";
+};
+
+const getHover = (active?: boolean, selected?: boolean) => {
+  if (active) return "none";
+
+  if (selected) return "none";
+
+  return "var(--primary-0_5)";
+};
+
+const VisualizationFile = styled.div<{ active?: boolean; selected?: boolean }>`
   font-size: 0.75rem;
   font-weight: 300;
   display: flex;
@@ -53,11 +85,14 @@ const VisualizationFile = styled.div<{ active?: boolean }>`
   border-radius: 0.25rem;
   cursor: pointer;
 
-  background-color: ${({ active }) =>
-    active ? "var(--preSelectColor)" : "none"};
+  background-color: ${({ active, selected }) =>
+    getBackground(active, selected)};
+
+  border: ${({ active, selected }) => getBorder(active, selected)};
 
   &:hover {
-    background-color: var(--primary-0_5);
+    background-color: ${({ active, selected }) => getHover(active, selected)};
+    border: ${({ active, selected }) => getBorder(active, selected, true)};
   }
 `;
 

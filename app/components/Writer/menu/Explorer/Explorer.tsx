@@ -144,6 +144,9 @@ const ExplorerContent = memo(
 ExplorerContent.displayName = "ExplorerContent";
 
 const File = memo(({ name, id, emoji }: Scribere) => {
+  const [activeTab] = useTriggerState({ name: "active_tab" });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const isActive = useMemo(() => activeTab === id, [activeTab, id]);
   const [lang] = useTriggerState({ name: "lang" });
   const contextMenuRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const [showContextMenu, setShowContextMenu] = useState(false);
@@ -155,6 +158,7 @@ const File = memo(({ name, id, emoji }: Scribere) => {
     name: `scribere_custom_emoji_${id}`,
     initial: null,
   });
+  const [showRename, setShowRename] = useState(false);
 
   const fileName = useMemo(() => {
     if (customName) return customName;
@@ -179,26 +183,73 @@ const File = memo(({ name, id, emoji }: Scribere) => {
 
       contextMenuRef.current = { x, y };
 
+      setSelectedFile(id);
       setShowContextMenu(true);
     },
-    [setShowContextMenu]
+    [id, setSelectedFile]
   );
+
+  const handleRename = useCallback(() => {
+    setShowRename(true);
+  }, []);
+
+  const handleRenameFile = useCallback(
+    (name: string) => {
+      setShowRename(false);
+
+      stateStorage.set(`scribere_custom_name_${id}`, name);
+      db.scribere.update(id, { name });
+
+      const currTabs = stateStorage.get("tabs");
+
+      const newTabs = currTabs.map((tab: any) => {
+        if (tab.id === id) {
+          return { ...tab, name };
+        }
+
+        return tab;
+      });
+
+      stateStorage.set("tabs", newTabs);
+    },
+    [id]
+  );
+
+  useEffect(() => {
+    if (showContextMenu) return;
+
+    setSelectedFile(null);
+  }, [showContextMenu]);
 
   return (
     <>
-      <Link
-        style={{ textDecoration: "none" }}
-        href={`/${lang}/scribere/${id}`}
-        passHref
-      >
-        <ExplorerSt.Visualization.File onContextMenu={handleMenu}>
-          <span>{fileEmoji}</span>
-          <span>{fileName}</span>
-        </ExplorerSt.Visualization.File>
-      </Link>
+      {!showRename ? (
+        <Link
+          style={{ textDecoration: "none" }}
+          href={`/${lang}/scribere/${id}`}
+          passHref
+        >
+          <ExplorerSt.Visualization.File
+            active={isActive}
+            selected={selectedFile === id}
+            onContextMenu={handleMenu}
+          >
+            <span>{fileEmoji}</span>
+            <span>{fileName}</span>
+          </ExplorerSt.Visualization.File>
+        </Link>
+      ) : (
+        <NewFolder
+          id={id}
+          onBlur={handleRenameFile}
+          isFile
+          prevValue={fileName}
+        />
+      )}
 
       {showContextMenu && (
         <FileMenu
+          onRename={handleRename}
           setShowContextMenu={setShowContextMenu}
           position={contextMenuRef.current}
         />
@@ -291,112 +342,142 @@ const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
 
 Folder.displayName = "Folder";
 
-const NewFolder = memo(({ isFile, id }: { isFile?: boolean; id: number }) => {
-  const inputRef = useRef(null);
-  const iconRef = useRef(null);
+const NewFolder = memo(
+  ({
+    isFile,
+    id,
+    prevValue,
+    onBlur,
+  }: {
+    isFile?: boolean;
+    id: number;
+    prevValue?: string;
+    onBlur?: (name: string) => void;
+  }) => {
+    const inputRef = useRef(null);
+    const iconRef = useRef(null);
 
-  useEffect(() => {
-    inputRef.current.focus();
-  }, []);
+    useEffect(() => {
+      inputRef.current.focus();
+    }, []);
 
-  useEffect(() => {
-    if (isFile) return;
-    const handler = () => {
-      const bounds = stateStorage
-        .get("explorer_content")
-        .getBoundingClientRect();
+    useEffect(() => {
+      if (isFile) return;
+      const handler = () => {
+        const bounds = stateStorage
+          .get("explorer_content")
+          .getBoundingClientRect();
 
-      if (bounds.width == null) return;
+        if (bounds.width == null) return;
 
-      const iconWidth = iconRef.current.getBoundingClientRect().width;
+        const iconWidth = iconRef.current.getBoundingClientRect().width;
 
-      const width = bounds.width - iconWidth - 30;
+        const width = bounds.width - iconWidth - 30;
 
-      inputRef.current.style.width = `${width}px`;
-    };
+        inputRef.current.style.width = `${width}px`;
+      };
 
-    handler();
+      handler();
 
-    // gets when the explorer content is resized
-    const resizeObserver = new ResizeObserver(handler);
-    resizeObserver.observe(stateStorage.get("explorer_content"));
+      // gets when the explorer content is resized
+      const resizeObserver = new ResizeObserver(handler);
+      resizeObserver.observe(stateStorage.get("explorer_content"));
 
-    // cleanup
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [isFile]);
+      // cleanup
+      return () => {
+        resizeObserver.disconnect();
+      };
+    }, [isFile]);
 
-  const handleBlur = useCallback(async () => {
-    stateStorage.set("show_add_new_folder", false);
-    stateStorage.set("show_add_new_file", false);
+    const handleBlur = useCallback(async () => {
+      stateStorage.set("show_add_new_folder", false);
+      stateStorage.set("show_add_new_file", false);
 
-    const name = inputRef.current.innerText as string;
+      const name = inputRef.current.innerText as string;
 
-    if (name.trim() === "") return;
+      if (name.trim() === "") return;
 
-    if (isFile) {
-      const newScribere = await CREATE_SCRIBERE(
-        name,
-        globalState.get("selected_folder")
-      );
-
-      const currTabs = stateStorage.get("tabs");
-      const newTabs = [
-        ...currTabs,
-        { id: newScribere.id, name: newScribere.name },
-      ];
-      stateStorage.set("tabs", newTabs);
-
-      const scriberes = globalState.get(`explorer_scribere_${id}`);
-
-      scriberes.push(newScribere);
-      stateStorage.set(`explorer_scribere_${id}`, [...scriberes]);
-
-      return;
-    }
-
-    const newFolder = await CREATE_FOLDER({
-      name,
-      folderParentId: globalState.get("selected_folder"),
-    });
-
-    const folders = globalState.get(`explorer_folder_${id}`);
-    folders.push(newFolder);
-
-    stateStorage.set(`explorer_folder_${id}`, [...folders]);
-  }, [id, isFile]);
-
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === "Enter") {
-        handleBlur();
+      if (onBlur) {
+        onBlur(name);
+        return;
       }
-    },
-    [handleBlur]
-  );
 
-  return (
-    <ExplorerSt.Folder.Wrapper>
-      <ExplorerSt.Folder.Container>
-        {!isFile && (
-          <ExplorerSt.Folder.Icon ref={iconRef}>
-            <ChevronRight size={13} />
-            <FolderClosed />
-          </ExplorerSt.Folder.Icon>
-        )}
+      if (isFile) {
+        const newScribere = await CREATE_SCRIBERE(
+          name,
+          globalState.get("selected_folder")
+        );
 
-        <ExplorerSt.Folder.Input.Content isFile={isFile}>
-          <ExplorerSt.Folder.Input.Namer
-            onKeyDown={handleKeyDown}
-            onBlur={handleBlur}
-            ref={inputRef}
-            contentEditable
-          />
-        </ExplorerSt.Folder.Input.Content>
-      </ExplorerSt.Folder.Container>
-    </ExplorerSt.Folder.Wrapper>
-  );
-});
+        const currTabs = stateStorage.get("tabs");
+        const newTabs = [
+          ...currTabs,
+          { id: newScribere.id, name: newScribere.name },
+        ];
+        stateStorage.set("tabs", newTabs);
+
+        const scriberes = globalState.get(`explorer_scribere_${id}`);
+
+        scriberes.push(newScribere);
+        stateStorage.set(`explorer_scribere_${id}`, [...scriberes]);
+
+        return;
+      }
+
+      const newFolder = await CREATE_FOLDER({
+        name,
+        folderParentId: globalState.get("selected_folder"),
+      });
+
+      const folders = globalState.get(`explorer_folder_${id}`);
+      folders.push(newFolder);
+
+      stateStorage.set(`explorer_folder_${id}`, [...folders]);
+    }, [id, isFile, onBlur]);
+
+    const handleKeyDown = useCallback(
+      (event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (event.key === "Enter") {
+          handleBlur();
+        }
+      },
+      [handleBlur]
+    );
+
+    useEffect(() => {
+      if (prevValue == null) return;
+
+      inputRef.current.innerText = prevValue;
+      // select all the text
+      const range = document.createRange();
+      range.selectNodeContents(inputRef.current);
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }, [prevValue]);
+
+    return (
+      <ExplorerSt.Folder.Wrapper>
+        <ExplorerSt.Folder.Container>
+          {!isFile && (
+            <ExplorerSt.Folder.Icon ref={iconRef}>
+              <ChevronRight size={13} />
+              <FolderClosed />
+            </ExplorerSt.Folder.Icon>
+          )}
+
+          <ExplorerSt.Folder.Input.Content isFile={isFile}>
+            <ExplorerSt.Folder.Input.Namer
+              onKeyDown={handleKeyDown}
+              onBlur={handleBlur}
+              ref={inputRef}
+              defaultValue={prevValue}
+              contentEditable
+            />
+          </ExplorerSt.Folder.Input.Content>
+        </ExplorerSt.Folder.Container>
+      </ExplorerSt.Folder.Wrapper>
+    );
+  }
+);
 
 NewFolder.displayName = "NewFolder";

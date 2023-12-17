@@ -1,16 +1,22 @@
-import React from "react";
+import React, { useCallback } from "react";
 import ContextMenu from "../../../../ContextMenu/ContextMenu";
 import { useGTTranslate } from "@geavila/gt-design";
 import ContextMenuSt from "../../../../ContextMenu/style";
 
-function FileMenu ({
+function FileMenu({
   setShowContextMenu,
   position,
+  onRename,
 }: {
   setShowContextMenu: React.Dispatch<React.SetStateAction<boolean>>;
   position: { x: number; y: number };
+  onRename: () => void;
 }) {
   const { translateThis } = useGTTranslate();
+
+  const handleClose = useCallback(() => {
+    setShowContextMenu(false);
+  }, [setShowContextMenu]);
 
   return (
     <ContextMenu
@@ -25,7 +31,12 @@ function FileMenu ({
         </ContextMenuSt.Option.Title>
       </ContextMenuSt.Option.Wrapper>
       <ContextMenuSt.Divider />
-      <ContextMenuSt.Option.Wrapper>
+      <ContextMenuSt.Option.Wrapper
+        onClick={() => {
+          onRename();
+          handleClose();
+        }}
+      >
         <ContextMenuSt.Option.Title>
           {translateThis("SCRIBERE.RENAME")}
         </ContextMenuSt.Option.Title>
@@ -41,4 +52,4 @@ function FileMenu ({
   );
 }
 
-export default FileMenu ;
+export default FileMenu;
