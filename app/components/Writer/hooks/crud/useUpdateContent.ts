@@ -47,6 +47,17 @@ function useUpdateContent({ id }: { id: string }) {
 
     db.scribere.update(parseInt(id), { emoji });
     stateStorage.set(`scribere_custom_emoji_${id}`, emoji);
+
+    // update the emoji from the tab
+    const allTabs = globalState.get("tabs");
+    const updatedTabs = allTabs.map((tab) => {
+      if (tab.id == id) {
+        return { ...tab, emoji };
+      }
+      return tab;
+    });
+
+    stateStorage.set("tabs", updatedTabs);
   }, [id, emoji]);
 
   useEffect(() => {

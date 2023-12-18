@@ -28,8 +28,8 @@ function Tabs() {
   return (
     <TabsSt.Wrapper>
       <TabsSt.Content ref={onRef}>
-        {currTabs.map(({ id, name }) => (
-          <Tab key={id} id={id} name={name} />
+        {currTabs.map(({ id, name, emoji }) => (
+          <Tab key={id} id={id} name={name} emoji={emoji} />
         ))}
       </TabsSt.Content>
     </TabsSt.Wrapper>
@@ -38,7 +38,7 @@ function Tabs() {
 
 export default Tabs;
 
-const Tab = memo(({ id, name }: { id: string; name: string }) => {
+const Tab = memo(({ id, name, emoji }: { id: string; name: string, emoji: string }) => {
   const [activeTab] = useTriggerState({ name: "active_tab" });
   const { translateThis } = useGTTranslate();
   const [lang] = useTriggerState({ name: "lang" });
@@ -156,7 +156,7 @@ const Tab = memo(({ id, name }: { id: string; name: string }) => {
       active={isActive}
     >
       <TabsSt.OptionName title={name || translateThis("LEGERE.UNTITLED")}>
-        {name || translateThis("LEGERE.UNTITLED")}
+        {emoji} {name || translateThis("LEGERE.UNTITLED")}
       </TabsSt.OptionName>
       <TabsSt.OptionClose onClick={handleClose}>
         <X size={15} />
