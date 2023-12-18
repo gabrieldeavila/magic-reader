@@ -60,6 +60,8 @@ const Tab = memo(({ id, name }: { id: string; name: string }) => {
 
       stateStorage.set("tabs", newTabs);
 
+      if (!isActive) return;
+
       if (isActive && newTabs.length === 0) {
         router.push(`/${lang}/scribere`);
       } else {
