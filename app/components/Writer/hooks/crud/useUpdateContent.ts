@@ -49,7 +49,7 @@ function useUpdateContent({ id }: { id: string }) {
     stateStorage.set(`scribere_custom_emoji_${id}`, emoji);
 
     // update the emoji from the tab
-    const allTabs = globalState.get("tabs");
+    const allTabs = globalState.get("tabs"); 
     const updatedTabs = allTabs.map((tab) => {
       if (tab.id == id) {
         return { ...tab, emoji };

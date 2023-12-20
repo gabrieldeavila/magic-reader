@@ -5,6 +5,7 @@ const Img = styled.img`
   position: relative;
   border-radius: 0.5rem;
   user-select: none;
+  cursor: pointer;
 
   transition: 0.2s ease-in-out;
 
@@ -82,3 +83,39 @@ const ImageComp = {
 };
 
 export default ImageComp;
+
+const ViewerWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  background: var(--primary-0_8);
+  backdrop-filter: blur(5px);
+`;
+
+const ViewerContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  flex-grow: 1;
+
+  & img {
+    max-width: 100%;
+    border-radius: 0.5rem;
+    user-select: none;
+    cursor: grab;
+  }
+`;
+
+export const ViewerComp = {
+  Wrapper: ViewerWrapper,
+  Container: ViewerContainer,
+};
