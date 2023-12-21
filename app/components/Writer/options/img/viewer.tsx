@@ -230,7 +230,7 @@ function Viewer({ img, onClose }: { img: string; onClose: () => void }) {
 
   return createPortal(
     <ViewerComp.Wrapper onDoubleClick={handleClose}>
-      <ViewerComp.CloseBtn onClick={handleClose}>
+      <ViewerComp.CloseBtn onClick={onClose}>
         <X />
       </ViewerComp.CloseBtn>
 

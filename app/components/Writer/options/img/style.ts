@@ -1,11 +1,13 @@
 import styled from "styled-components";
 
 const Img = styled.img`
-  max-width: 100%;
+  width: fit-content;
+  max-width: 95%;
   position: relative;
   border-radius: 0.5rem;
   user-select: none;
   cursor: pointer;
+  object-fit: none;
 
   transition: 0.2s ease-in-out;
 
@@ -33,6 +35,7 @@ const Wrapper = styled.div`
   gap: 0.5rem;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   transition: 0.2s ease-in-out;
 
   &:hover {

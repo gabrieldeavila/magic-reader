@@ -1,5 +1,5 @@
 import { GTTooltip, useGTTranslate } from "@geavila/gt-design";
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import { Feather, Trash } from "react-feather";
 import { IImage } from "../../interface";
 import ImageComp from "./style";
@@ -64,6 +64,11 @@ function Image({ customStyle, id }: IImage) {
 
   const handleImgFullSize = useCallback(() => {
     setIsFullSize((prev) => !prev);
+  }, []);
+
+
+  useEffect(() => {
+    console.log(imgRef.current?.offsetHeight);
   }, []);
 
   return (
