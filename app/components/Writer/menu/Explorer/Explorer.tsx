@@ -401,7 +401,7 @@ const NewFolder = memo(
 
         const iconWidth = iconRef.current.getBoundingClientRect().width;
 
-        const width = bounds.width - iconWidth - 30;
+        const width = bounds.width - iconWidth - 40;
 
         inputRef.current.style.width = `${width}px`;
       };
