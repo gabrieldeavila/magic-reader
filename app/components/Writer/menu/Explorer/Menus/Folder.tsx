@@ -6,9 +6,11 @@ import ContextMenuSt from "../../../../ContextMenu/style";
 function FolderMenu({
   setShowContextMenu,
   position,
+  onAddNewFolder
 }: {
   setShowContextMenu: React.Dispatch<React.SetStateAction<boolean>>;
   position: { x: number; y: number };
+  onAddNewFolder: () => void;
 }) {
   const { translateThis } = useGTTranslate();
 
@@ -20,7 +22,7 @@ function FolderMenu({
       }}
     >
       <ContextMenuSt.Option.Wrapper>
-        <ContextMenuSt.Option.Title>
+        <ContextMenuSt.Option.Title onClick={onAddNewFolder}>
           {translateThis("SCRIBERE.NEW_FOLDER")}
         </ContextMenuSt.Option.Title>
       </ContextMenuSt.Option.Wrapper>

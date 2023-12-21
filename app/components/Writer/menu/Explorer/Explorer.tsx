@@ -270,6 +270,7 @@ File.displayName = "File";
 const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [show, setShow] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const [selectedFolder, setSelectedFolder] = useTriggerState({
     name: "selected_folder",
@@ -278,21 +279,24 @@ const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
 
   const [showContextMenu, setShowContextMenu] = useState(false);
 
-  const handleFolderClick = useCallback(() => {
-    setShow(true);
+  const handleFolderClick = useCallback(
+    (_: any, val?: boolean) => {
+      setShow(true);
 
-    setIsOpen((prev) => {
-      const value = !prev;
+      setIsOpen((prev) => {
+        const value = val ?? !prev;
 
-      if (value) {
-        setSelectedFolder(folder.id);
-      } else {
-        setSelectedFolder(null);
-      }
+        if (value) {
+          setSelectedFolder(folder.id);
+        } else {
+          setSelectedFolder(null);
+        }
 
-      return value;
-    });
-  }, [folder, setSelectedFolder]);
+        return value;
+      });
+    },
+    [folder, setSelectedFolder]
+  );
 
   const contextMenuRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
@@ -308,14 +312,31 @@ const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
       contextMenuRef.current = { x, y };
 
       setShowContextMenu(true);
+      setSelectedFile(folder.id);
     },
-    [setShowContextMenu]
+    [folder.id]
   );
+
+  useEffect(() => {
+    if (showContextMenu) return;
+
+    setSelectedFile(null);
+  }, [showContextMenu]);
+
+  const handleAddNewFolder = useCallback(() => {
+    handleFolderClick(null, true);
+
+    stateStorage.set("add_new_filter", new Date());
+    stateStorage.set("selected_folder", folder.id);
+
+    setShowContextMenu(false);
+  }, [folder.id, handleFolderClick]);
 
   return (
     <>
       <ExplorerSt.Visualization.File
         active={selectedFolder === folder.id}
+        selected={selectedFile === folder.id}
         role="button"
         onContextMenu={handleMenu}
         onClick={handleFolderClick}
@@ -339,6 +360,7 @@ const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
 
       {showContextMenu && (
         <FolderMenu
+          onAddNewFolder={handleAddNewFolder}
           setShowContextMenu={setShowContextMenu}
           position={contextMenuRef.current}
         />
