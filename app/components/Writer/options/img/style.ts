@@ -115,7 +115,77 @@ const ViewerContainer = styled.div`
   }
 `;
 
+const ViewerBtnClose = styled.button`
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--contrast-0_5);
+  font-size: 1.5rem;
+  outline: none;
+  z-index: 5;
+`;
+
+const ViewerArrowNext = styled.button`
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--contrast-0_5);
+  font-size: 1.5rem;
+  outline: none;
+  z-index: 5;
+`;
+
+const ViewerArrowPrev = styled.button`
+  position: absolute;
+  top: 50%;
+  left: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--contrast-0_5);
+  font-size: 1.5rem;
+  outline: none;
+  z-index: 5;
+`;
+
+const ViewerZoomIn = styled.button`
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--contrast-0_5);
+  font-size: 1.5rem;
+  outline: none;
+  z-index: 5;
+`;
+
+const ViewerZoomOut = styled.button`
+  position: absolute;
+  top: 0.5rem;
+  left: 3.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--contrast-0_5);
+  font-size: 1.5rem;
+  outline: none;
+  z-index: 5;
+`;
+
 export const ViewerComp = {
   Wrapper: ViewerWrapper,
   Container: ViewerContainer,
+  CloseBtn: ViewerBtnClose,
+  ArrowNext: ViewerArrowNext,
+  ArrowPrev: ViewerArrowPrev,
+  ZoomIn: ViewerZoomIn,
+  ZoomOut: ViewerZoomOut,
 };

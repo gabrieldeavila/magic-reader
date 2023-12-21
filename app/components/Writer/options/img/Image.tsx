@@ -92,6 +92,7 @@ function Image({ customStyle, id }: IImage) {
       </ImageComp.Svg>
 
       <ImageComp.Img
+        data-img
         onClick={handleImgFullSize}
         ref={imgRef}
         src={customStyle.src}

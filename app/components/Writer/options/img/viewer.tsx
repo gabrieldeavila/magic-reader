@@ -1,8 +1,22 @@
-import React, { useCallback, useRef } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
+import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from "react-feather";
 import { ViewerComp } from "./style";
 
 function Viewer({ img, onClose }: { img: string; onClose: () => void }) {
+  const [allImages, setAllImages] = useState<string[]>([]);
+  const [currImageIndex, setCurrImageIndex] = useState(0);
+  const currentImg = useMemo(
+    () => allImages[currImageIndex],
+    [allImages, currImageIndex]
+  );
+
   const ref = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const isMouseDown = useRef(false);
@@ -18,6 +32,14 @@ function Viewer({ img, onClose }: { img: string; onClose: () => void }) {
       y: 0,
     },
   });
+
+  useEffect(() => {
+    const imgs = Array.from(document.querySelectorAll("[data-img]"));
+    const currImg = imgs.findIndex((item) => item.getAttribute("src") === img);
+
+    setAllImages(imgs.map((item) => item.getAttribute("src")!));
+    setCurrImageIndex(currImg);
+  }, [img]);
 
   // adds zoom in and zoom out functionality
   const handleWheel = useCallback(
@@ -93,14 +115,102 @@ function Viewer({ img, onClose }: { img: string; onClose: () => void }) {
     []
   );
 
+  const handleNextImg = useCallback(
+    (e) => {
+      e.stopPropagation();
+
+      // remove the zoom and translate
+      ref.current!.style.transform = "scale(1)";
+
+      setCurrImageIndex((prev) => {
+        if (currImageIndex === allImages.length - 1) return 0;
+
+        return prev + 1;
+      });
+    },
+    [currImageIndex, allImages]
+  );
+
+  const handlePrevImg = useCallback(
+    (e) => {
+      e.stopPropagation();
+
+      // remove the zoom and translate
+      ref.current!.style.transform = "scale(1)";
+
+      setCurrImageIndex((prev) => {
+        if (currImageIndex === 0) return allImages.length - 1;
+
+        return prev - 1;
+      });
+    },
+    [allImages.length, currImageIndex]
+  );
+
+  const handleClose = useCallback(
+    (e: KeyboardEvent | React.MouseEvent) => {
+      e.stopPropagation();
+
+      // prevents the closing of the modal when clicking on the buttons
+      if ((e.target as Element).closest("button")) return;
+
+      onClose();
+    },
+    [onClose]
+  );
+
+  const handleZoomOut = useCallback((e) => {
+    e.stopPropagation();
+
+    // gets the current scale
+    const currentScale = ref.current?.style.transform
+      ? Number(ref.current?.style.transform.split("scale(")[1].split(")")[0])
+      : 1;
+
+    const scale = currentScale - 0.5;
+
+    if (scale < 0.1) return;
+
+    // sets the scale and translate
+    ref.current!.style.transform = `translate(${currStyle.current.translate.x}px, ${currStyle.current.translate.y}px) scale(${scale})`;
+
+    // sets the current scale
+    currStyle.current.scale = scale;
+  }, []);
+
+  const handleZoomIn = useCallback((e) => {
+    e.stopPropagation();
+
+    // gets the current scale
+    const currentScale = ref.current?.style.transform
+      ? Number(ref.current?.style.transform.split("scale(")[1].split(")")[0])
+      : 1;
+
+    const scale = currentScale + 0.5;
+
+    if (scale < 0.1) return;
+
+    // sets the scale and translate
+    ref.current!.style.transform = `translate(${currStyle.current.translate.x}px, ${currStyle.current.translate.y}px) scale(${scale})`;
+
+    // sets the current scale
+    currStyle.current.scale = scale;
+  }, []);
+
   // ads the escape key functionality
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        e.stopPropagation();
+      if (e.ctrlKey || e.shiftKey) return;
 
-        onClose();
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (e.key === "Escape") {
+        handleClose(e);
+      } else if (e.key === "ArrowRight") {
+        handleNextImg(e);
+      } else if (e.key === "ArrowLeft") {
+        handlePrevImg(e);
       }
     };
 
@@ -109,10 +219,37 @@ function Viewer({ img, onClose }: { img: string; onClose: () => void }) {
     return () => {
       window.removeEventListener("keydown", handleEscape);
     };
-  }, [onClose]);
+  }, [
+    handleClose,
+    handleNextImg,
+    handlePrevImg,
+    handleZoomIn,
+    handleZoomOut,
+    onClose,
+  ]);
 
   return createPortal(
-    <ViewerComp.Wrapper onDoubleClick={onClose}>
+    <ViewerComp.Wrapper onDoubleClick={handleClose}>
+      <ViewerComp.CloseBtn onClick={handleClose}>
+        <X />
+      </ViewerComp.CloseBtn>
+
+      <ViewerComp.ZoomIn onClick={handleZoomIn}>
+        <ZoomIn />
+      </ViewerComp.ZoomIn>
+
+      <ViewerComp.ZoomOut onClick={handleZoomOut}>
+        <ZoomOut />
+      </ViewerComp.ZoomOut>
+
+      <ViewerComp.ArrowNext onClick={handleNextImg}>
+        <ChevronRight />
+      </ViewerComp.ArrowNext>
+
+      <ViewerComp.ArrowPrev onClick={handlePrevImg}>
+        <ChevronLeft />
+      </ViewerComp.ArrowPrev>
+
       <ViewerComp.Container
         ref={ref}
         // when the middle mouse button is scrolled
@@ -124,7 +261,7 @@ function Viewer({ img, onClose }: { img: string; onClose: () => void }) {
         // when mouse is released
         onMouseUp={handleMouseUp}
       >
-        <img ref={imgRef} src={img} />
+        <img ref={imgRef} src={currentImg} />
       </ViewerComp.Container>
     </ViewerComp.Wrapper>,
     document.body
