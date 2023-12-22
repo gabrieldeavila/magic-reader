@@ -8,11 +8,13 @@ function FolderMenu({
   position,
   onAddNewFolder,
   onAddNewFile,
+  onRename
 }: {
   setShowContextMenu: React.Dispatch<React.SetStateAction<boolean>>;
   position: { x: number; y: number };
   onAddNewFolder: () => void;
   onAddNewFile: () => void;
+  onRename: () => void;
 }) {
   const { translateThis } = useGTTranslate();
 
@@ -34,7 +36,7 @@ function FolderMenu({
         </ContextMenuSt.Option.Title>
       </ContextMenuSt.Option.Wrapper>
       <ContextMenuSt.Divider />
-      <ContextMenuSt.Option.Wrapper>
+      <ContextMenuSt.Option.Wrapper onClick={onRename}>
         <ContextMenuSt.Option.Title>
           {translateThis("SCRIBERE.RENAME")}
         </ContextMenuSt.Option.Title>

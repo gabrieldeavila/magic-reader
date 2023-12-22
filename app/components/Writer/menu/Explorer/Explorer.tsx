@@ -126,7 +126,9 @@ const ExplorerContent = memo(
             return <Folder depth={depth} folder={folder} key={index} />;
           })}
 
-          {showAddNewFolder && selectedFolder === id && <NewFolder depth={depth} id={id} />}
+          {showAddNewFolder && selectedFolder === id && (
+            <NewFolder depth={depth} id={id} />
+          )}
 
           {scribere.map((scribere: Scribere) => {
             return <File {...scribere} key={scribere.id} />;
@@ -270,7 +272,19 @@ File.displayName = "File";
 const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [show, setShow] = useState(false);
+  const [showRename, setShowRename] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+
+  const [customFolderName] = useTriggerState({
+    name: `folder_custom_name_${folder.id}`,
+    initial: null,
+  });
+
+  const customName = useMemo(() => {
+    if (customFolderName) return customFolderName;
+
+    return folder.name;
+  }, [customFolderName, folder.name]);
 
   const [selectedFolder, setSelectedFolder] = useTriggerState({
     name: "selected_folder",
@@ -341,21 +355,49 @@ const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
     setShowContextMenu(false);
   }, [folder.id, handleFolderClick]);
 
+  const handleRenameFolder = useCallback(
+    (name: string) => {
+      stateStorage.set("show_rename_folder", false);
+      // removes all \n
+      name = name.replace(/\n/g, "");
+
+      stateStorage.set(`folder_custom_name_${folder.id}`, name);
+      db.folders.update(folder.id, { name });
+      setShowRename(false);
+    },
+    [folder.id]
+  );
+
+  const startRename = useCallback(() => {
+    setShowRename(true);
+
+    setShowContextMenu(false);
+  }, []);
+
   return (
     <>
-      <ExplorerSt.Visualization.File
-        active={selectedFolder === folder.id}
-        selected={selectedFile === folder.id}
-        role="button"
-        onContextMenu={handleMenu}
-        onClick={handleFolderClick}
-      >
-        <ExplorerSt.Folder.Icon>
-          {isOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
-          {isOpen ? <FolderOpened /> : <FolderClosed />}
-        </ExplorerSt.Folder.Icon>
-        {folder.name}
-      </ExplorerSt.Visualization.File>
+      {showRename ? (
+        <NewFolder
+          id={folder.id}
+          onBlur={handleRenameFolder}
+          prevValue={customName}
+          depth={depth}
+        />
+      ) : (
+        <ExplorerSt.Visualization.File
+          active={selectedFolder === folder.id}
+          selected={selectedFile === folder.id}
+          role="button"
+          onContextMenu={handleMenu}
+          onClick={handleFolderClick}
+        >
+          <ExplorerSt.Folder.Icon>
+            {isOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+            {isOpen ? <FolderOpened /> : <FolderClosed />}
+          </ExplorerSt.Folder.Icon>
+          {customName}
+        </ExplorerSt.Visualization.File>
+      )}
 
       {show && (
         <div
@@ -371,6 +413,7 @@ const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
         <FolderMenu
           onAddNewFolder={handleAddNewFolder}
           onAddNewFile={handleAddNewFile}
+          onRename={startRename}
           setShowContextMenu={setShowContextMenu}
           position={contextMenuRef.current}
         />
@@ -387,13 +430,13 @@ const NewFolder = memo(
     id,
     prevValue,
     onBlur,
-    depth = 0
+    depth = 0,
   }: {
     isFile?: boolean;
     id: number;
     prevValue?: string;
     onBlur?: (name: string) => void;
-    depth?: number
+    depth?: number;
   }) => {
     const inputRef = useRef(null);
     const iconRef = useRef(null);
