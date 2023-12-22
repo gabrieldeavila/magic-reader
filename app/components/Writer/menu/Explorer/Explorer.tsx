@@ -16,6 +16,7 @@ import FolderOpened from "./FolderOpened";
 import FileMenu from "./Menus/File";
 import FolderMenu from "./Menus/Folder";
 import ExplorerSt from "./style";
+import { useRouter } from "next/navigation";
 
 function Explorer() {
   const { translateThis } = useGTTranslate();
@@ -457,6 +458,8 @@ const NewFolder = memo(
   }) => {
     const inputRef = useRef(null);
     const iconRef = useRef(null);
+    const [lang] = useTriggerState({ name: "lang" });
+    const router = useRouter();
 
     useEffect(() => {
       inputRef.current.focus();
@@ -464,6 +467,7 @@ const NewFolder = memo(
 
     useEffect(() => {
       if (isFile) return;
+
       const handler = () => {
         const bounds = stateStorage
           .get("explorer_content")
@@ -520,7 +524,10 @@ const NewFolder = memo(
 
         scriberes.push(newScribere);
         stateStorage.set(`explorer_scribere_${id}`, [...scriberes]);
+        console.log(id);
 
+        // opens the new file
+        router.push(`/${lang}/scribere/${newScribere.id}`);
         return;
       }
 
@@ -533,7 +540,7 @@ const NewFolder = memo(
       folders.push(newFolder);
 
       stateStorage.set(`explorer_folder_${id}`, [...folders]);
-    }, [id, isFile, onBlur]);
+    }, [id, isFile, lang, onBlur, router]);
 
     const handleKeyDown = useCallback(
       (event: React.KeyboardEvent<HTMLDivElement>) => {
