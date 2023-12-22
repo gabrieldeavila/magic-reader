@@ -101,13 +101,30 @@ const ExplorerContent = memo(
       (async () => {
         const val = await db.scribere.where("folderId").equals(id).toArray();
 
-        setScribere(val);
+        const sortedScribere = val.sort((a, b) => {
+          if (a.name < b.name) return -1;
+
+          if (a.name > b.name) return 1;
+
+          return 0;
+        });
+
+        setScribere(sortedScribere);
+
         const folders = await db.folders
           .where("folderParentId")
           .equals(id)
           .toArray();
 
-        setFolders(folders);
+        // sort by name, ascending
+        const sortedFolders = folders.sort((a, b) => {
+          if (a.name < b.name) return -1;
+
+          if (a.name > b.name) return 1;
+
+          return 0;
+        });
+        setFolders(sortedFolders);
       })();
     }, [id, setFolders, setScribere]);
 
