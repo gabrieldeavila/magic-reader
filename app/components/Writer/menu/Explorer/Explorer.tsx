@@ -332,6 +332,15 @@ const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
     setShowContextMenu(false);
   }, [folder.id, handleFolderClick]);
 
+  const handleAddNewFile = useCallback(() => {
+    handleFolderClick(null, true);
+
+    stateStorage.set("show_add_new_file", true);
+    stateStorage.set("selected_folder", folder.id);
+
+    setShowContextMenu(false);
+  }, [folder.id, handleFolderClick]);
+
   return (
     <>
       <ExplorerSt.Visualization.File
@@ -361,6 +370,7 @@ const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
       {showContextMenu && (
         <FolderMenu
           onAddNewFolder={handleAddNewFolder}
+          onAddNewFile={handleAddNewFile}
           setShowContextMenu={setShowContextMenu}
           position={contextMenuRef.current}
         />
