@@ -126,7 +126,7 @@ const ExplorerContent = memo(
             return <Folder depth={depth} folder={folder} key={index} />;
           })}
 
-          {showAddNewFolder && selectedFolder === id && <NewFolder id={id} />}
+          {showAddNewFolder && selectedFolder === id && <NewFolder depth={depth} id={id} />}
 
           {scribere.map((scribere: Scribere) => {
             return <File {...scribere} key={scribere.id} />;
@@ -377,11 +377,13 @@ const NewFolder = memo(
     id,
     prevValue,
     onBlur,
+    depth = 0
   }: {
     isFile?: boolean;
     id: number;
     prevValue?: string;
     onBlur?: (name: string) => void;
+    depth?: number
   }) => {
     const inputRef = useRef(null);
     const iconRef = useRef(null);
@@ -401,7 +403,7 @@ const NewFolder = memo(
 
         const iconWidth = iconRef.current.getBoundingClientRect().width;
 
-        const width = bounds.width - iconWidth - 40;
+        const width = bounds.width - iconWidth - 30 - depth * 10;
 
         inputRef.current.style.width = `${width}px`;
       };
@@ -416,7 +418,7 @@ const NewFolder = memo(
       return () => {
         resizeObserver.disconnect();
       };
-    }, [isFile]);
+    }, [depth, isFile]);
 
     const handleBlur = useCallback(async () => {
       stateStorage.set("show_add_new_folder", false);

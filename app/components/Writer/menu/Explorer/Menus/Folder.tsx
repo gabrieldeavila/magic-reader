@@ -6,7 +6,7 @@ import ContextMenuSt from "../../../../ContextMenu/style";
 function FolderMenu({
   setShowContextMenu,
   position,
-  onAddNewFolder
+  onAddNewFolder,
 }: {
   setShowContextMenu: React.Dispatch<React.SetStateAction<boolean>>;
   position: { x: number; y: number };
@@ -21,8 +21,8 @@ function FolderMenu({
         position,
       }}
     >
-      <ContextMenuSt.Option.Wrapper>
-        <ContextMenuSt.Option.Title onClick={onAddNewFolder}>
+      <ContextMenuSt.Option.Wrapper onClick={onAddNewFolder}>
+        <ContextMenuSt.Option.Title>
           {translateThis("SCRIBERE.NEW_FOLDER")}
         </ContextMenuSt.Option.Title>
       </ContextMenuSt.Option.Wrapper>
