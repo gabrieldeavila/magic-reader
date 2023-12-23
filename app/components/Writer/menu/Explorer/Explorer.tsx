@@ -179,6 +179,7 @@ const File = memo(({ name, id, emoji }: Scribere) => {
     initial: null,
   });
   const [showRename, setShowRename] = useState(false);
+  const router = useRouter();
 
   const fileName = useMemo(() => {
     if (customName) return customName;
@@ -248,6 +249,12 @@ const File = memo(({ name, id, emoji }: Scribere) => {
     setSelectedFile(null);
   }, [showContextMenu]);
 
+  const handleOpen = useCallback(() => {
+    router.push(`/${lang}/scribere/${id}`);
+
+    setShowContextMenu(false);
+  }, [id, lang, router]);
+
   return (
     <>
       {!showRename ? (
@@ -276,6 +283,7 @@ const File = memo(({ name, id, emoji }: Scribere) => {
 
       {showContextMenu && (
         <FileMenu
+          onOpen={handleOpen}
           onRename={handleRename}
           setShowContextMenu={setShowContextMenu}
           position={contextMenuRef.current}
