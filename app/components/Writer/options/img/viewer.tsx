@@ -268,6 +268,10 @@ function Viewer({ img, onClose }: { img: string; onClose: () => void }) {
         <Download />
       </ViewerComp.DownloadBtn>
 
+      <ViewerComp.ImageCounter>
+        {currImageIndex + 1} / {allImages.length}
+      </ViewerComp.ImageCounter>
+
       <ViewerComp.Container
         ref={ref}
         // when the middle mouse button is scrolled

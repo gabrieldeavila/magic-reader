@@ -196,6 +196,19 @@ const ViewerBtnDownload = styled.button`
   z-index: 5;
 `;
 
+const ViewerImageCounter = styled.div`
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--contrast-0_5);
+  font-size: 1rem;
+  outline: none;
+  z-index: 5;
+`;
+
 export const ViewerComp = {
   Wrapper: ViewerWrapper,
   Container: ViewerContainer,
@@ -205,4 +218,5 @@ export const ViewerComp = {
   ZoomIn: ViewerZoomIn,
   ZoomOut: ViewerZoomOut,
   DownloadBtn: ViewerBtnDownload,
+  ImageCounter: ViewerImageCounter,
 };
