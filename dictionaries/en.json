@@ -78,6 +78,13 @@
     "TL": "Task List",
     "AC": "Accordion",
 
+    "WARNING": "Warning",
+    "ARE_YOU_SURE": "Are you sure about that?",
+    "THIS_ACTION": "This action cannot be undone.",
+    "NO": "No",
+    "YES": "Yes",
+    "CANCEL": "Cancel",
+
     "EMPTY_SCREEN": {
       "TIP": {
         "NEW_FILE": {

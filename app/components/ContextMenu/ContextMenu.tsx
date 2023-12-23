@@ -6,16 +6,20 @@ function ContextMenu({
   setShowContextMenu,
   position,
   children,
+  avoidClose,
 }: {
   setShowContextMenu: React.Dispatch<React.SetStateAction<boolean>>;
   position: { x: number; y: number };
   children: React.ReactNode | React.ReactNode[];
+  avoidClose?: boolean;
 }) {
   const ref = useRef(null);
 
   // gets clicks outside
   useEffect(() => {
     const handler = (e) => {
+      if (avoidClose) return;
+
       if (ref.current && ref.current.contains(e.target)) return;
 
       setShowContextMenu(false);
@@ -31,7 +35,7 @@ function ContextMenu({
       document.removeEventListener("click", handler);
       document.removeEventListener("contextmenu", handler);
     };
-  }, [setShowContextMenu]);
+  }, [avoidClose, setShowContextMenu]);
 
   // adds the context where the click was made
   useEffect(() => {

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import CREATE_SCRIBERE from "./_commands/CREATE";
+import CREATE_SCRIBERE from "./_commands/file/CREATE";
 import Empty from "./emptyw/Empty";
 
 function Writer() {

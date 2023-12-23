@@ -8,7 +8,7 @@ import {
   useTriggerState,
 } from "react-trigger-state";
 import { Folders, Scribere, db } from "../../../Dexie/Dexie";
-import CREATE_SCRIBERE from "../../_commands/CREATE";
+import CREATE_SCRIBERE from "../../_commands/file/CREATE";
 import CREATE_FOLDER from "../../_commands/folder/CREATE";
 import MenuSt from "../style";
 import FolderClosed from "./FolderClosed";
@@ -286,6 +286,7 @@ const File = memo(({ name, id, emoji }: Scribere) => {
           onOpen={handleOpen}
           onRename={handleRename}
           setShowContextMenu={setShowContextMenu}
+          id={id}
           position={contextMenuRef.current}
         />
       )}
@@ -532,7 +533,6 @@ const NewFolder = memo(
 
         scriberes.push(newScribere);
         stateStorage.set(`explorer_scribere_${id}`, [...scriberes]);
-        console.log(id);
 
         // opens the new file
         router.push(`/${lang}/scribere/${newScribere.id}`);

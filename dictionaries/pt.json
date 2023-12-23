@@ -77,6 +77,12 @@
     "NL": "Lista numerada",
     "TL": "Lista de tarefas",
     "AC": "Menu de expansível",
+    "WARNING": "Aviso",
+    "ARE_YOU_SURE": "Tem certeza?",
+    "THIS_ACTION": "Esta ação não pode ser desfeita!",
+    "NO": "Não",
+    "YES": "Sim",
+    "CANCEL": "Cancelar",
 
     "EMPTY_SCREEN": {
       "TIP": {

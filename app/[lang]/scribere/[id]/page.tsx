@@ -6,7 +6,7 @@ import { db } from "../../../components/Dexie/Dexie";
 import Editor from "../../../components/Writer/editor/Editor";
 import useUpdateContent from "../../../components/Writer/hooks/crud/useUpdateContent";
 import useFocusOnStart from "../../../components/Writer/hooks/focus/useFocusOnStart";
-import { initialContent } from "../../../components/Writer/_commands/CREATE";
+import { initialContent } from "../../../components/Writer/_commands/file/CREATE";
 
 function Page({ params: { id } }: { params: { id: string } }) {
   const [content, setContent] = useState([]);

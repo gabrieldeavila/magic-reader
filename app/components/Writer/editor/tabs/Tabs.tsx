@@ -1,5 +1,4 @@
 import { useGTTranslate } from "@geavila/gt-design";
-import { useRouter } from "next/navigation";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { X } from "react-feather";
 import {
@@ -7,6 +6,7 @@ import {
   stateStorage,
   useTriggerState,
 } from "react-trigger-state";
+import useUpdateTabs from "../../hooks/crud/useUpdateTabs";
 import { TabsSt } from "./style";
 
 function Tabs() {
@@ -38,131 +38,118 @@ function Tabs() {
 
 export default Tabs;
 
-const Tab = memo(({ id, name, emoji }: { id: string; name: string, emoji: string }) => {
-  const [activeTab] = useTriggerState({ name: "active_tab" });
-  const { translateThis } = useGTTranslate();
-  const [lang] = useTriggerState({ name: "lang" });
-  const tabRef = useRef(null);
-  const isActive = useMemo(() => activeTab === id, [activeTab, id]);
+const Tab = memo(
+  ({ id, name, emoji }: { id: string; name: string; emoji: string }) => {
+    const [activeTab] = useTriggerState({ name: "active_tab" });
+    const { translateThis } = useGTTranslate();
+    const [lang] = useTriggerState({ name: "lang" });
+    const tabRef = useRef(null);
+    const isActive = useMemo(() => activeTab === id, [activeTab, id]);
+    const updateTabs = useUpdateTabs();
 
-  const router = useRouter();
+    const handleClose = useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        updateTabs({
+          isActive,
+          id,
+        });
+      },
+      [id, isActive, updateTabs]
+    );
 
-  const handleClose = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      e.preventDefault();
-
-      if (isActive) {
-        stateStorage.set("active_tab", null);
-      }
-
-      const currTabs = stateStorage.get("tabs");
-      const newTabs = currTabs.filter((tab: any) => tab.id !== id);
-
-      stateStorage.set("tabs", newTabs);
-
+    useEffect(() => {
       if (!isActive) return;
 
-      if (isActive && newTabs.length === 0) {
-        router.push(`/${lang}/scribere`);
-      } else {
-        const newActiveTab = newTabs[newTabs.length - 1];
-        router.push(`/${lang}/scribere/${newActiveTab.id}`);
-      }
-    },
-    [id, isActive, lang, router]
-  );
-
-  useEffect(() => {
-    if (!isActive) return;
-
-    tabRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-      inline: "start",
-    });
-
-    const tabsRef = globalState.get("writter_ref");
-
-    // when change the height of the tabs, scroll to the active tab
-    const observer = new MutationObserver(() => {
       tabRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "nearest",
         inline: "start",
       });
-    });
 
-    observer.observe(tabsRef, {
-      attributes: true,
-      childList: true,
-      subtree: true,
-    });
+      const tabsRef = globalState.get("writter_ref");
 
-    return () => {
-      observer.disconnect();
-    };
-  }, [isActive]);
+      // when change the height of the tabs, scroll to the active tab
+      const observer = new MutationObserver(() => {
+        tabRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "start",
+        });
+      });
 
-  const handleDrop = useCallback(
-    (ev) => {
-      const tabId = parseInt(ev.dataTransfer.getData("text/plain"));
+      observer.observe(tabsRef, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+      });
 
-      const currTabs = stateStorage.get("tabs");
-      const tabDragged = currTabs.find((tab: any) => tab.id === tabId);
-      const prevTabIndex = currTabs.findIndex((tab: any) => tab.id === id);
+      return () => {
+        observer.disconnect();
+      };
+    }, [isActive]);
 
-      const newTabs = currTabs.filter((tab: any) => tab.id !== tabId);
+    const handleDrop = useCallback(
+      (ev) => {
+        const tabId = parseInt(ev.dataTransfer.getData("text/plain"));
 
-      let index = newTabs.findIndex((tab: any) => tab.id === id) + 1;
+        const currTabs = stateStorage.get("tabs");
+        const tabDragged = currTabs.find((tab: any) => tab.id === tabId);
+        const prevTabIndex = currTabs.findIndex((tab: any) => tab.id === id);
 
-      if (prevTabIndex < index) {
-        index--;
-      } else if (prevTabIndex > index) {
-        index++;
-      }
+        const newTabs = currTabs.filter((tab: any) => tab.id !== tabId);
 
-      newTabs.splice(index, 0, tabDragged);
+        let index = newTabs.findIndex((tab: any) => tab.id === id) + 1;
 
-      stateStorage.set("tabs", newTabs);
-    },
-    [id]
-  );
+        if (prevTabIndex < index) {
+          index--;
+        } else if (prevTabIndex > index) {
+          index++;
+        }
 
-  const [isDraggingOver, setIsDraggingOver] = useState(false);
+        newTabs.splice(index, 0, tabDragged);
 
-  return (
-    <TabsSt.Option
-      ref={tabRef}
-      isDraggingOver={isDraggingOver}
-      draggable
-      onDragStart={(ev) => {
-        ev.dataTransfer.setData("text/plain", id);
-      }}
-      onDragOver={(ev) => {
-        ev.preventDefault();
-        setIsDraggingOver(true);
-      }}
-      onDrop={(ev) => {
-        ev.preventDefault();
-        handleDrop(ev);
-        setIsDraggingOver(false);
-      }}
-      // remove isDraggingOver class when mouse leaves the tab
-      onDragLeave={() => setIsDraggingOver(false)}
-      // add data to drag to be able to move the tab
-      data-id={id}
-      key={id}
-      href={`/${lang}/scribere/${id}`}
-      active={isActive}
-    >
-      <TabsSt.OptionName title={name || translateThis("LEGERE.UNTITLED")}>
-        {emoji} {name || translateThis("LEGERE.UNTITLED")}
-      </TabsSt.OptionName>
-      <TabsSt.OptionClose onClick={handleClose}>
-        <X size={15} />
-      </TabsSt.OptionClose>
-    </TabsSt.Option>
-  );
-});
+        stateStorage.set("tabs", newTabs);
+      },
+      [id]
+    );
+
+    const [isDraggingOver, setIsDraggingOver] = useState(false);
+
+    return (
+      <TabsSt.Option
+        ref={tabRef}
+        isDraggingOver={isDraggingOver}
+        draggable
+        onDragStart={(ev) => {
+          ev.dataTransfer.setData("text/plain", id);
+        }}
+        onDragOver={(ev) => {
+          ev.preventDefault();
+          setIsDraggingOver(true);
+        }}
+        onDrop={(ev) => {
+          ev.preventDefault();
+          handleDrop(ev);
+          setIsDraggingOver(false);
+        }}
+        // remove isDraggingOver class when mouse leaves the tab
+        onDragLeave={() => setIsDraggingOver(false)}
+        // add data to drag to be able to move the tab
+        data-id={id}
+        key={id}
+        href={`/${lang}/scribere/${id}`}
+        active={isActive}
+      >
+        <TabsSt.OptionName title={name || translateThis("LEGERE.UNTITLED")}>
+          {emoji} {name || translateThis("LEGERE.UNTITLED")}
+        </TabsSt.OptionName>
+        <TabsSt.OptionClose onClick={handleClose}>
+          <X size={15} />
+        </TabsSt.OptionClose>
+      </TabsSt.Option>
+    );
+  }
+);
 
 Tab.displayName = "Tab";

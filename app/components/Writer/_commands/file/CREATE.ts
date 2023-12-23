@@ -1,6 +1,6 @@
-import uuid from "../../../utils/uuid";
-import { db } from "../../Dexie/Dexie";
-import { IWritterContent } from "../interface";
+import uuid from "../../../../utils/uuid";
+import { db } from "../../../Dexie/Dexie";
+import { IWritterContent } from "../../interface";
 
 export const initialContent: IWritterContent[] = [
   {
