@@ -6,7 +6,14 @@ import React, {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from "react-feather";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  X,
+  ZoomIn,
+  ZoomOut,
+} from "react-feather";
 import { ViewerComp } from "./style";
 
 function Viewer({ img, onClose }: { img: string; onClose: () => void }) {
@@ -228,6 +235,13 @@ function Viewer({ img, onClose }: { img: string; onClose: () => void }) {
     onClose,
   ]);
 
+  const handleDownload = useCallback(() => {
+    const link = document.createElement("a");
+    link.href = currentImg;
+    link.download = "image.png";
+    link.click();
+  }, [currentImg]);
+
   return createPortal(
     <ViewerComp.Wrapper onDoubleClick={handleClose}>
       <ViewerComp.CloseBtn onClick={onClose}>
@@ -249,6 +263,10 @@ function Viewer({ img, onClose }: { img: string; onClose: () => void }) {
       <ViewerComp.ArrowPrev onClick={handlePrevImg}>
         <ChevronLeft />
       </ViewerComp.ArrowPrev>
+
+      <ViewerComp.DownloadBtn onClick={handleDownload}>
+        <Download />
+      </ViewerComp.DownloadBtn>
 
       <ViewerComp.Container
         ref={ref}

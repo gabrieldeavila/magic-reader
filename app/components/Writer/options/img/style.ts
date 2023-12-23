@@ -183,6 +183,19 @@ const ViewerZoomOut = styled.button`
   z-index: 5;
 `;
 
+const ViewerBtnDownload = styled.button`
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--contrast-0_5);
+  font-size: 1.5rem;
+  outline: none;
+  z-index: 5;
+`;
+
 export const ViewerComp = {
   Wrapper: ViewerWrapper,
   Container: ViewerContainer,
@@ -191,4 +204,5 @@ export const ViewerComp = {
   ArrowPrev: ViewerArrowPrev,
   ZoomIn: ViewerZoomIn,
   ZoomOut: ViewerZoomOut,
+  DownloadBtn: ViewerBtnDownload,
 };
