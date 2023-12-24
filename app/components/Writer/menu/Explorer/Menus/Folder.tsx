@@ -55,14 +55,31 @@ function FolderMenu({
     setShowModalBasic(false);
     await DELETE_FOLDER({ id });
 
+    // if there is an active tab, it is the last one
     const scriberesDeleted = globalState.get("scriberes_deleted") || [];
 
+    let active;
+
     scriberesDeleted.forEach((scribereId: number) => {
+      const isActive = scribereId == globalState.get("active_tab");
+
+      if (isActive) {
+        active = scribereId;
+        return;
+      }
+
       updateTabs({
-        isActive: scribereId == globalState.get("active_tab"),
+        isActive: false,
         id: scribereId,
       });
     });
+
+    if (active) {
+      updateTabs({
+        isActive: true,
+        id: active,
+      });
+    }
 
     // removes from the parent folder
     const currentParent = globalState.get(`explorer_folder_${parentId}`);
