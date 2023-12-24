@@ -37,7 +37,10 @@ function Page({ params: { id } }: { params: { id: string } }) {
         setContent(data.content.length === 0 ? initialContent : data.content);
 
         const currTabs = stateStorage.get("tabs");
-        const newTabs = [...currTabs, { id: data.id, name: data.name, emoji: data.emoji }];
+        const newTabs = [
+          ...currTabs,
+          { id: data.id, name: data.name, emoji: data.emoji },
+        ];
         // filters tabs
         const tabs = newTabs.filter(
           (tab, index, self) => index === self.findIndex((t) => t.id === tab.id)
