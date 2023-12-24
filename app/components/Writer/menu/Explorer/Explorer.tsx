@@ -17,12 +17,13 @@ import FileMenu from "./Menus/File";
 import FolderMenu from "./Menus/Folder";
 import ExplorerSt from "./style";
 import { useRouter } from "next/navigation";
+import ExplorerPortal from "./Menus/Explorer";
 
 function Explorer() {
   const { translateThis } = useGTTranslate();
 
   const handleAddNewFolder = useCallback(() => {
-    stateStorage.set("add_new_filter", new Date());
+    stateStorage.set("add_new_folder", new Date());
   }, []);
 
   const handleAddNewFile = useCallback(() => {
@@ -53,6 +54,8 @@ function Explorer() {
         </MenuSt.Title.Options>
       </MenuSt.Title.Content>
 
+      <ExplorerPortal />
+
       <ExplorerContent />
     </>
   );
@@ -72,7 +75,7 @@ const ExplorerContent = memo(
     });
 
     const [addNewFilter, setAddNewFilter] = useTriggerState({
-      name: "add_new_filter",
+      name: "add_new_folder",
       initial: null,
     });
 
@@ -141,7 +144,9 @@ const ExplorerContent = memo(
           }}
         >
           {folders.map((folder, index) => {
-            return <Folder depth={depth} folder={folder} key={index} parentId={id} />;
+            return (
+              <Folder depth={depth} folder={folder} key={index} parentId={id} />
+            );
           })}
 
           {showAddNewFolder && selectedFolder === id && (
@@ -296,160 +301,170 @@ const File = memo(({ name, id, emoji }: Scribere) => {
 
 File.displayName = "File";
 
-const Folder = memo(({ folder, depth, parentId }: { folder: Folders; depth: number, parentId: number }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [show, setShow] = useState(false);
-  const [showRename, setShowRename] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
+const Folder = memo(
+  ({
+    folder,
+    depth,
+    parentId,
+  }: {
+    folder: Folders;
+    depth: number;
+    parentId: number;
+  }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [show, setShow] = useState(false);
+    const [showRename, setShowRename] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
 
-  const [customFolderName] = useTriggerState({
-    name: `folder_custom_name_${folder.id}`,
-    initial: null,
-  });
+    const [customFolderName] = useTriggerState({
+      name: `folder_custom_name_${folder.id}`,
+      initial: null,
+    });
 
-  const customName = useMemo(() => {
-    if (customFolderName) return customFolderName;
+    const customName = useMemo(() => {
+      if (customFolderName) return customFolderName;
 
-    return folder.name;
-  }, [customFolderName, folder.name]);
+      return folder.name;
+    }, [customFolderName, folder.name]);
 
-  const [selectedFolder, setSelectedFolder] = useTriggerState({
-    name: "selected_folder",
-    initial: null,
-  });
+    const [selectedFolder, setSelectedFolder] = useTriggerState({
+      name: "selected_folder",
+      initial: null,
+    });
 
-  const [showContextMenu, setShowContextMenu] = useState(false);
+    const [showContextMenu, setShowContextMenu] = useState(false);
 
-  const handleFolderClick = useCallback(
-    (_: any, val?: boolean) => {
-      setShow(true);
+    const handleFolderClick = useCallback(
+      (_: any, val?: boolean) => {
+        setShow(true);
 
-      setIsOpen((prev) => {
-        const value = val ?? !prev;
+        setIsOpen((prev) => {
+          const value = val ?? !prev;
 
-        if (value) {
-          setSelectedFolder(folder.id);
-        } else {
-          setSelectedFolder(null);
-        }
+          if (value) {
+            setSelectedFolder(folder.id);
+          } else {
+            setSelectedFolder(null);
+          }
 
-        return value;
-      });
-    },
-    [folder, setSelectedFolder]
-  );
+          return value;
+        });
+      },
+      [folder, setSelectedFolder]
+    );
 
-  const contextMenuRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+    const contextMenuRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  const handleMenu = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
+    const handleMenu = useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
 
-      // gets the click position
-      const x = e.clientX;
-      const y = e.clientY;
+        // gets the click position
+        const x = e.clientX;
+        const y = e.clientY;
 
-      contextMenuRef.current = { x, y };
+        contextMenuRef.current = { x, y };
 
-      setShowContextMenu(true);
-      setSelectedFile(folder.id);
-    },
-    [folder.id]
-  );
+        setShowContextMenu(true);
+        setSelectedFile(folder.id);
+      },
+      [folder.id]
+    );
 
-  useEffect(() => {
-    if (showContextMenu) return;
+    useEffect(() => {
+      if (showContextMenu) return;
 
-    setSelectedFile(null);
-  }, [showContextMenu]);
+      setSelectedFile(null);
+    }, [showContextMenu]);
 
-  const handleAddNewFolder = useCallback(() => {
-    handleFolderClick(null, true);
+    const handleAddNewFolder = useCallback(() => {
+      handleFolderClick(null, true);
 
-    stateStorage.set("add_new_filter", new Date());
-    stateStorage.set("selected_folder", folder.id);
+      stateStorage.set("add_new_folder", new Date());
+      stateStorage.set("selected_folder", folder.id);
 
-    setShowContextMenu(false);
-  }, [folder.id, handleFolderClick]);
+      setShowContextMenu(false);
+    }, [folder.id, handleFolderClick]);
 
-  const handleAddNewFile = useCallback(() => {
-    handleFolderClick(null, true);
+    const handleAddNewFile = useCallback(() => {
+      handleFolderClick(null, true);
 
-    stateStorage.set("show_add_new_file", true);
-    stateStorage.set("selected_folder", folder.id);
+      stateStorage.set("show_add_new_file", true);
+      stateStorage.set("selected_folder", folder.id);
 
-    setShowContextMenu(false);
-  }, [folder.id, handleFolderClick]);
+      setShowContextMenu(false);
+    }, [folder.id, handleFolderClick]);
 
-  const handleRenameFolder = useCallback(
-    (name: string) => {
-      stateStorage.set("show_rename_folder", false);
-      // removes all \n
-      name = name.replace(/\n/g, "");
+    const handleRenameFolder = useCallback(
+      (name: string) => {
+        stateStorage.set("show_rename_folder", false);
+        // removes all \n
+        name = name.replace(/\n/g, "");
 
-      stateStorage.set(`folder_custom_name_${folder.id}`, name);
-      db.folders.update(folder.id, { name });
-      setShowRename(false);
-    },
-    [folder.id]
-  );
+        stateStorage.set(`folder_custom_name_${folder.id}`, name);
+        db.folders.update(folder.id, { name });
+        setShowRename(false);
+      },
+      [folder.id]
+    );
 
-  const startRename = useCallback(() => {
-    setShowRename(true);
+    const startRename = useCallback(() => {
+      setShowRename(true);
 
-    setShowContextMenu(false);
-  }, []);
+      setShowContextMenu(false);
+    }, []);
 
-  return (
-    <>
-      {showRename ? (
-        <NewFolder
-          id={folder.id}
-          onBlur={handleRenameFolder}
-          prevValue={customName}
-          depth={depth}
-        />
-      ) : (
-        <ExplorerSt.Visualization.File
-          active={selectedFolder === folder.id}
-          selected={selectedFile === folder.id}
-          role="button"
-          onContextMenu={handleMenu}
-          onClick={handleFolderClick}
-        >
-          <ExplorerSt.Folder.Icon>
-            {isOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
-            {isOpen ? <FolderOpened /> : <FolderClosed />}
-          </ExplorerSt.Folder.Icon>
-          {customName}
-        </ExplorerSt.Visualization.File>
-      )}
+    return (
+      <>
+        {showRename ? (
+          <NewFolder
+            id={folder.id}
+            onBlur={handleRenameFolder}
+            prevValue={customName}
+            depth={depth}
+          />
+        ) : (
+          <ExplorerSt.Visualization.File
+            active={selectedFolder === folder.id}
+            selected={selectedFile === folder.id}
+            role="button"
+            onContextMenu={handleMenu}
+            onClick={handleFolderClick}
+          >
+            <ExplorerSt.Folder.Icon>
+              {isOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+              {isOpen ? <FolderOpened /> : <FolderClosed />}
+            </ExplorerSt.Folder.Icon>
+            {customName}
+          </ExplorerSt.Visualization.File>
+        )}
 
-      {show && (
-        <div
-          style={{
-            display: isOpen ? "block" : "none",
-          }}
-        >
-          <ExplorerContent depth={depth + 1} id={folder.id} />
-        </div>
-      )}
+        {show && (
+          <div
+            style={{
+              display: isOpen ? "block" : "none",
+            }}
+          >
+            <ExplorerContent depth={depth + 1} id={folder.id} />
+          </div>
+        )}
 
-      {showContextMenu && (
-        <FolderMenu
-          onAddNewFolder={handleAddNewFolder}
-          onAddNewFile={handleAddNewFile}
-          onRename={startRename}
-          setShowContextMenu={setShowContextMenu}
-          position={contextMenuRef.current}
-          id={folder.id}
-          parentId={parentId}
-        />
-      )}
-    </>
-  );
-});
+        {showContextMenu && (
+          <FolderMenu
+            onAddNewFolder={handleAddNewFolder}
+            onAddNewFile={handleAddNewFile}
+            onRename={startRename}
+            setShowContextMenu={setShowContextMenu}
+            position={contextMenuRef.current}
+            id={folder.id}
+            parentId={parentId}
+          />
+        )}
+      </>
+    );
+  }
+);
 
 Folder.displayName = "Folder";
 
