@@ -141,7 +141,7 @@ const ExplorerContent = memo(
           }}
         >
           {folders.map((folder, index) => {
-            return <Folder depth={depth} folder={folder} key={index} />;
+            return <Folder depth={depth} folder={folder} key={index} parentId={id} />;
           })}
 
           {showAddNewFolder && selectedFolder === id && (
@@ -296,7 +296,7 @@ const File = memo(({ name, id, emoji }: Scribere) => {
 
 File.displayName = "File";
 
-const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
+const Folder = memo(({ folder, depth, parentId }: { folder: Folders; depth: number, parentId: number }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [show, setShow] = useState(false);
   const [showRename, setShowRename] = useState(false);
@@ -443,6 +443,8 @@ const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
           onRename={startRename}
           setShowContextMenu={setShowContextMenu}
           position={contextMenuRef.current}
+          id={folder.id}
+          parentId={parentId}
         />
       )}
     </>
