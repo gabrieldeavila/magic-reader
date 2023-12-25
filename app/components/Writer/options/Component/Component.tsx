@@ -1869,10 +1869,7 @@ function Component({
   });
 
   const onlyOneBlockAndIsEmpty = useMemo(
-    () =>
-      hasFocusId &&
-      text.length === 1 &&
-      text[0].value.length === 0,
+    () => hasFocusId && text.length === 1 && text[0].value.length === 0,
     [hasFocusId, text]
   );
 
@@ -2330,6 +2327,10 @@ function Component({
     customStyle,
     align,
   });
+
+  useEffect(() => {
+    console.log(showPopup);
+  }, [showPopup]);
 
   const DisEditable = useMemo(() => Editable[type ?? "p"], [type]);
 

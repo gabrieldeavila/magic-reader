@@ -707,6 +707,29 @@ const WriterContextProvider = ({
     [getBlockId]
   );
 
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      e.preventDefault();
+
+      const { dataLineId } = getBlockId({});
+      // gets the line
+      const line = (e.target as HTMLDivElement).closest("[data-line-id]");
+      // selects all the text
+      const range = document.createRange();
+      range.selectNodeContents(line);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+
+      setTimeout(() => {
+        stateStorage.set(`has_focus_ev-${dataLineId}`, true);
+        stateStorage.set(`select_ev-${dataLineId}`, { e, date: new Date() });
+        stateStorage.set("is_context_menu", true);
+      });
+    },
+    [getBlockId]
+  );
+
   const handlePaste = useCallback(
     (e) => {
       if ((e.target as HTMLElement).closest("[data-link]")) {
@@ -962,6 +985,7 @@ const WriterContextProvider = ({
 
           <ReadWrite
             contentEditable
+            onContextMenu={handleContextMenu}
             onKeyDown={handleKeyDown}
             onBlur={(e: React.FocusEvent<HTMLDivElement>) => {
               const relatedTarget = e.relatedTarget as HTMLElement;
