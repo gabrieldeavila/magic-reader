@@ -30,7 +30,7 @@ const Title = styled.div`
   justify-content: center;
   margin-top: -1.5rem;
   gap: 0.5rem;
-  max-width: 100%;
+  max-width: calc(100% - 4rem);
   padding: 0 2rem;
   white-space: pre;
 `;
@@ -40,7 +40,9 @@ const H1 = styled.h1`
   font-weight: 700;
   color: var(--contrast);
   outline: none;
-  word-break: break-word;
+  white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
   text-align: center;
 
   /* add shadow */

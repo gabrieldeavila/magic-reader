@@ -7,6 +7,7 @@ const MenuTitleOptions = styled.div`
   justify-content: center;
   gap: 0.5rem;
   opacity: 0;
+  padding-right: 0.5rem;
 `;
 
 const MenuWrapper = styled.div`
