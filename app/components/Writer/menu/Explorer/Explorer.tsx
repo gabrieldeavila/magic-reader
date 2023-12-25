@@ -56,7 +56,9 @@ function Explorer() {
 
       <ExplorerPortal />
 
-      <ExplorerContent />
+      <MenuSt.Overflow>
+        <ExplorerContent />
+      </MenuSt.Overflow>
     </>
   );
 }

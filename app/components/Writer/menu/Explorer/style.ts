@@ -48,7 +48,7 @@ const getBackground = (active?: boolean, selected?: boolean) => {
 
   if (selected) return "var(--outline-0_5)";
 
-  return "none";
+  return "transparent";
 };
 
 const getBorder = (active?: boolean, selected?: boolean, isHover?: boolean) => {
@@ -68,9 +68,9 @@ const getBorder = (active?: boolean, selected?: boolean, isHover?: boolean) => {
 };
 
 const getHover = (active?: boolean, selected?: boolean) => {
-  if (active) return "none";
+  if (active) return "transparent";
 
-  if (selected) return "none";
+  if (selected) return "transparent";
 
   return "var(--primary-0_5)";
 };
@@ -84,6 +84,7 @@ const VisualizationFile = styled.div<{ active?: boolean; selected?: boolean }>`
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
   cursor: pointer;
+  overflow: hidden;
 
   background-color: ${({ active, selected }) =>
     getBackground(active, selected)};
@@ -93,6 +94,11 @@ const VisualizationFile = styled.div<{ active?: boolean; selected?: boolean }>`
   &:hover {
     background-color: ${({ active, selected }) => getHover(active, selected)};
     border: ${({ active, selected }) => getBorder(active, selected, true)};
+  }
+
+  & span:nth-child(2) {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 `;
 
