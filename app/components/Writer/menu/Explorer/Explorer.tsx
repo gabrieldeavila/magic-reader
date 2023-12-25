@@ -18,6 +18,7 @@ import FolderMenu from "./Menus/Folder";
 import ExplorerSt from "./style";
 import { useRouter } from "next/navigation";
 import ExplorerPortal from "./Menus/Explorer";
+import useFoldersParents from "../../hooks/crud/useFoldersParents";
 
 function Explorer() {
   const { translateThis } = useGTTranslate();
@@ -29,6 +30,8 @@ function Explorer() {
   const handleAddNewFile = useCallback(() => {
     stateStorage.set("show_add_new_file", true);
   }, []);
+
+  useFoldersParents();
 
   return (
     <>
@@ -262,11 +265,16 @@ const File = memo(({ name, id, emoji }: Scribere) => {
     setShowContextMenu(false);
   }, [id, lang, router]);
 
+  const handleLinkClick = useCallback(() => {
+    stateStorage.set("selected_folder", null);
+  }, []);
+
   return (
     <>
       {!showRename ? (
         <Link
           style={{ textDecoration: "none" }}
+          onClick={handleLinkClick}
           href={`/${lang}/scribere/${id}`}
           passHref
         >
@@ -317,6 +325,11 @@ const Folder = memo(
     const [show, setShow] = useState(false);
     const [showRename, setShowRename] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
+
+    const [foldersParent] = useTriggerState({
+      name: "folders_parents",
+      initial: [],
+    });
 
     const [customFolderName] = useTriggerState({
       name: `folder_custom_name_${folder.id}`,
@@ -417,6 +430,11 @@ const Folder = memo(
       setShowContextMenu(false);
     }, []);
 
+    const isActive = useMemo(
+      () => selectedFolder === folder.id || foldersParent.includes(folder.id),
+      [folder.id, foldersParent, selectedFolder]
+    );
+
     return (
       <>
         {showRename ? (
@@ -428,7 +446,7 @@ const Folder = memo(
           />
         ) : (
           <ExplorerSt.Visualization.File
-            active={selectedFolder === folder.id}
+            active={isActive}
             selected={selectedFile === folder.id}
             role="button"
             onContextMenu={handleMenu}
