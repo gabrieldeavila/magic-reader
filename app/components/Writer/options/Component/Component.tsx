@@ -2328,10 +2328,6 @@ function Component({
     align,
   });
 
-  useEffect(() => {
-    console.log(showPopup);
-  }, [showPopup]);
-
   const DisEditable = useMemo(() => Editable[type ?? "p"], [type]);
 
   if (customStyle && "src" in customStyle) {
