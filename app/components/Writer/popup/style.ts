@@ -46,7 +46,7 @@ const PopupItem = styled.div`
   ${transitions.smooth}
 `;
 
-const Base = styled.button`
+const Base = styled.button<{ isSelected: boolean }>`
   /* resets */
   border: none;
   background: none;
@@ -56,10 +56,10 @@ const Base = styled.button`
   cursor: pointer;
 
   /* if is selected, uses another color */
-  color: ${({ isSelected }: { isSelected: boolean }) =>
+  color: ${({ isSelected }) =>
     isSelected ? "var(--outline)" : "var(--contrast)"};
   * {
-    color: ${({ isSelected }: { isSelected: boolean }) =>
+    color: ${({ isSelected }) =>
       isSelected ? "var(--outline)" : "var(--contrast)"};
   }
 `;

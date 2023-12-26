@@ -249,6 +249,7 @@ const Decoration = memo(
 
     if (options.includes("code") && value.length > 0) {
       return (
+        // @ts-expect-error - future me will fix this
         <DCode {...tagOptions} as={isLink ? "a" : null}>
           <Code
             text={value}

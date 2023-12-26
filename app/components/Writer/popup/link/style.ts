@@ -1,7 +1,7 @@
 import { shadows } from "@geavila/gt-design";
 import styled from "styled-components";
 
-const LinkWrapper = styled.div`
+const LinkWrapper = styled.div<{ show: boolean }>`
   position: absolute;
   pointer-events: all;
 
@@ -9,7 +9,7 @@ const LinkWrapper = styled.div`
   right: 0;
   transition: 0.2s ease-in-out;
 
-  ${({ show }: { show: boolean }) => `
+  ${({ show }) => `
     opacity: ${show ? 1 : 0};
     transform: ${
       show ? "scale(1) translateY(0)" : "scale(0.95) translateY(-1rem)"

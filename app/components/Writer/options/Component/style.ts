@@ -1,5 +1,6 @@
 import styled from "styled-components";
 
+// @ts-expect-error - TODO: fix this
 export const DCode = styled.span.attrs(({ as }: { as?: string }) => ({
   as: as || "code",
 }))`
