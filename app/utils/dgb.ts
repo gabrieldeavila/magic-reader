@@ -14,8 +14,7 @@ export const dgb = (id: string, first?: boolean, exactly?: number) => {
 
   if (block?.nodeName !== "#text") {
     // gets the querySelector
-    // @ts-expect-error - it's a node
-    const isCode = block?.querySelector("code");
+    const isCode = (block as HTMLElement)?.querySelector("code");
 
     if (exactly != null) {
       let found = false;

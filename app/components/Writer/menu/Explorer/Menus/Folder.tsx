@@ -135,7 +135,6 @@ function FolderMenu({
           show={showModalBasic}
           setShow={setShowModalBasic}
         >
-          {/* @ts-expect-error gt-design gottta fix it */}
           <Space.Center mb="1rem">
             <Text.H2>{translateThis("SCRIBERE.THIS_ACTION")}</Text.H2>
           </Space.Center>

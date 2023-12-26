@@ -175,8 +175,7 @@ const Decoration = memo(
       let nextIsHighlight = false;
       let prevIsHighlight = false;
 
-      // @ts-expect-error - uh
-      const nextId = nextSibling?.getAttribute("data-block-id");
+      const nextId = (nextSibling as Element)?.getAttribute("data-block-id");
 
       if (nextId != null) {
         const nextBlock = parentText.find((item) => item.id === nextId);
@@ -188,8 +187,7 @@ const Decoration = memo(
 
       const prevSibling = tagRef.current.previousSibling;
 
-      // @ts-expect-error - uh
-      const prevId = prevSibling?.getAttribute("data-block-id");
+      const prevId = (prevSibling as Element)?.getAttribute("data-block-id");
 
       if (prevId != null) {
         const prevBlock = parentText.find((item) => item.id === prevId);
@@ -251,10 +249,8 @@ const Decoration = memo(
 
     if (options.includes("code") && value.length > 0) {
       return (
-        // @ts-expect-error - uh
         <DCode {...tagOptions} as={isLink ? "a" : null}>
           <Code
-            // @ts-expect-error - uh
             text={value}
             language="javascript"
             theme={currTheme === "darkTheme" ? dracula : atomOneLight}

@@ -28,9 +28,7 @@ function Books() {
   const { isSSR } = useIsSSR();
 
   return (
-    // @ts-expect-error - do later
     <Space.Modifiers mt="1rem" display="grid">
-      {/* @ts-expect-error  - uh*/}
       <Text.Strong mb="1rem">{translateThis("LEGERE.BOOKS")}</Text.Strong>
 
       {isSSR && <Loader.Simple />}
@@ -70,7 +68,6 @@ const Book = memo(({ book }: { book: Record<string, string> }) => {
         href={`/${page}/legere/${book.id}/`}
       >
         <Space.MiddleCenter>
-          {/* @ts-expect-error  - uh*/}
           <Text.P textAlign="center" className={font}>
             {convertedName}
           </Text.P>

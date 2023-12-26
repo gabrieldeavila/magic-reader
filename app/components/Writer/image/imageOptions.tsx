@@ -38,7 +38,6 @@ function ImageOptions() {
           </UnsplashSty.TabOptions>
 
           <Space.Modifiers>
-            {/* @ts-expect-error - gtdesign gotta fix it */}
             <Space.Modifiers mr="1rem" ref={onRef}></Space.Modifiers>
             <X
               cursor="pointer"
