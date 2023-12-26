@@ -1,28 +1,24 @@
 "use client";
 
-import { SectionContainer, Space } from "@geavila/gt-design";
-import axios from "axios";
-import { useCallback, useEffect } from "react";
-import Books from "../../components/Books/Books";
-import DropPDF from "../../components/Drop/DropPDF";
+import { Space } from "@geavila/gt-design";
 
 function Legere() {
-  const handleClick = useCallback(async (formData: FormData) => {
-    const { data } = await axios.post("/api/legere", formData);
+  // const handleClick = useCallback(async (formData: FormData) => {
+  //   const { data } = await axios.post("/api/legere", formData);
 
-    return data;
-  }, []);
+  //   return data;
+  // }, []);
 
-  useEffect(() => {
-    axios.get("/api");
-  }, []);
+  // useEffect(() => {
+  //   axios.get("/api");
+  // }, []);
 
   return (
     <Space.Horizontal mt="-1rem" px="1.5rem">
-      <SectionContainer title="Dissolutus Legere" subtitle="LEGERE.START" />
+      {/* <SectionContainer title="Dissolutus Legere" subtitle="LEGERE.START" />
 
       <DropPDF uploadFile={handleClick} />
-      <Books />
+      <Books /> */}
 
     </Space.Horizontal>
   );
