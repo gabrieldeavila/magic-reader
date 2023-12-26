@@ -71,10 +71,10 @@ const EmojiPicker = styled.div`
   z-index: 10;
 `;
 
-const Change = styled.div`
+const Change = styled.div<{ show: boolean }>`
   transition: 0.2s ease-in-out;
 
-  ${({ show }: { show: boolean }) => `
+  ${({ show }) => `
   opacity: ${show ? 1 : 0};
   transform: ${
     show ? "scale(1) translateY(0)" : "scale(0.95) translateY(-1rem)"
@@ -219,7 +219,7 @@ const UnsplashStyInput = styled.input`
   }
 `;
 
-const Tab = styled.h3`
+const Tab = styled.h3<{ active?: boolean }>`
   color: var(--contrast);
   cursor: pointer;
   padding: 0.5rem;
@@ -234,7 +234,7 @@ const Tab = styled.h3`
     transform: scale(0.95);
   }
 
-  ${({ active }: { active?: boolean }) =>
+  ${({ active }) =>
     active &&
     css`
       background: var(--primary-0_5);

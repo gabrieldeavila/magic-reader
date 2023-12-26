@@ -7,7 +7,8 @@
     "lint": "next lint",
     "build": "next build",
     "start": "next start -H 0.0.0.0",
-    "start-localhost": "next start"
+    "start-localhost": "next start",
+    "check-types": "tsc"
   },
   "dependencies": {
     "@formatjs/intl-localematcher": "^0.2.32",
