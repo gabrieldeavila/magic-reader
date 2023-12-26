@@ -115,7 +115,6 @@ function Reader() {
 
   return (
     <Space.Modifiers
-      // @ts-expect-error - do later
       overflow="hidden"
       flexDirection="column"
       py="1rem"
@@ -128,16 +127,13 @@ function Reader() {
         handleNext={handleNext}
       />
       <Space.Modifiers
-        // @ts-expect-error - do later
         position="relative"
         justifyContent="center"
         width="-webkit-fill-available"
         ref={readerRef}
       >
-        {/* @ts-expect-error - uh */}
         <ReadWrapper my="1rem">
           <ReadContent ref={pageRef}>
-            {/* @ts-expect-error - uh */}
             <Space.Modifiers flexDirection="column">
               {lines.map((phrase: string, index: number) => (
                 <Phrase key={index} index={index} phrase={phrase} />
@@ -146,7 +142,6 @@ function Reader() {
           </ReadContent>
 
           <Space.Modifiers
-            // @ts-expect-error - do later
             position="absolute"
             justifyContent="space-between"
             bottom="1rem"
@@ -200,7 +195,6 @@ const ReaderNav = memo(
       }, [disabledNav]);
 
       return (
-        // @ts-expect-error - do later
         <Space.Modifiers ref={ref} gridGap="1rem">
           <Button.Normal disabled={disabledNav.prev} onClick={handlePrev}>
             {translateThis(label.prev)}
@@ -244,7 +238,6 @@ export const ReaderModal = memo(() => {
       show={showModalBasic}
       setShow={setShowModalBasic}
     >
-      {/* @ts-expect-error - uh*/}
       <Space.Between alignItems="center">
         <Text.Strong>{translateThis("LEGERE.WPM")}:</Text.Strong>
 

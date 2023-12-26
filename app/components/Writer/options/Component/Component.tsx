@@ -770,11 +770,10 @@ function Component({
 
   const copyEntireBlock = useCallback(() => {
     // copy all the text
-    const lineId = document.querySelector(`[data-line-id="${id}"]`);
+    const lineId = document.querySelector(`[data-line-id="${id}"]`) as HTMLDivElement;
 
     // Create a Blob for the HTML content and a Blob for the plain text
     const htmlBlob = new Blob([lineId.outerHTML], { type: "text/html" });
-    // @ts-expect-error - it sure is a text
     const textBlob = new Blob([lineId.innerText], { type: "text/plain" });
 
     // Create a ClipboardItem with both HTML and text representations
@@ -1091,8 +1090,9 @@ function Component({
         if (!popupActions) {
           saveDecoration("bold");
         } else {
-          // @ts-expect-error - fix later
-          popupActions.querySelector("[data-bold]").click();
+          (
+            popupActions.querySelector("[data-bold]") as HTMLButtonElement
+          ).click();
         }
 
         return true;
@@ -1101,8 +1101,9 @@ function Component({
         if (!popupActions) {
           saveDecoration("italic");
         } else {
-          // @ts-expect-error - fix later
-          popupActions.querySelector("[data-italic]").click();
+          (
+            popupActions.querySelector("[data-italic]") as HTMLButtonElement
+          ).click();
         }
         return true;
       } else if (e.key.toLocaleLowerCase() === "u") {
@@ -1110,8 +1111,9 @@ function Component({
         if (!popupActions) {
           saveDecoration("underline");
         } else {
-          // @ts-expect-error - fix later
-          popupActions.querySelector("[data-underline]").click();
+          (
+            popupActions.querySelector("[data-underline]") as HTMLButtonElement
+          ).click();
         }
 
         return true;
@@ -1120,8 +1122,11 @@ function Component({
         if (!popupActions) {
           saveDecoration("strikethrough");
         } else {
-          // @ts-expect-error - fix later
-          popupActions.querySelector("[data-strikethrough]").click();
+          (
+            popupActions.querySelector(
+              "[data-strikethrough]"
+            ) as HTMLButtonElement
+          ).click();
         }
         return true;
       } else if (e.key.toLocaleLowerCase() === "h") {
@@ -1129,8 +1134,9 @@ function Component({
         if (!popupActions) {
           saveDecoration("highlight");
         } else {
-          // @ts-expect-error - fix later
-          popupActions.querySelector("[data-highlight]").click();
+          (
+            popupActions.querySelector("[data-highlight]") as HTMLButtonElement
+          ).click();
         }
         return true;
       } else if (e.key.toLocaleLowerCase() === "e") {
@@ -1138,8 +1144,9 @@ function Component({
         if (!popupActions) {
           saveDecoration("code");
         } else {
-          // @ts-expect-error - fix later
-          popupActions.querySelector("[data-code]").click();
+          (
+            popupActions.querySelector("[data-code]") as HTMLButtonElement
+          ).click();
         }
         return true;
       } else if (e.key === "Backspace") {

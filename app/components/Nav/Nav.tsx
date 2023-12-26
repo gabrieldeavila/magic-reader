@@ -39,7 +39,6 @@ function Nav({ logo }: { logo: string }) {
       <GTNavbar>
         <Space.Center>
           <Space.Modifiers
-            //  @ts-expect-error - uh
             justifyContent="space-between"
             width="-webkit-fill-available"
           >
@@ -59,7 +58,6 @@ function Nav({ logo }: { logo: string }) {
                 {
                   <Navbar.Options>
                     <Navbar.OptionWrapper>
-                      {/* @ts-expect-error - uh */}
                       <Space.Modifiers gridGap="1rem">
                         <button
                           onClick={handleSettings}
@@ -75,7 +73,6 @@ function Nav({ logo }: { logo: string }) {
                     </Navbar.OptionWrapper>
 
                     <Navbar.OptionWrapper>
-                      {/* @ts-expect-error - uh */}
                       <Space.Modifiers gridGap="1rem"></Space.Modifiers>
                     </Navbar.OptionWrapper>
                   </Navbar.Options>
@@ -93,13 +90,11 @@ function Nav({ logo }: { logo: string }) {
       {showMobileMenu && (
         <Navbar.Mobile.Wrapper isOpen={tempShowMobileMenu}>
           <Space.Modifiers
-            //  @ts-expect-error - uh
             mb="1rem"
             pl="0.2rem"
             justifyContent="space-between"
             alignItems="center"
           >
-            {/* @ts-expect-error - uh */}
             <Text.Title mb="0" fontSize="1.2rem !important">
               {logo}
             </Text.Title>
@@ -107,11 +102,9 @@ function Nav({ logo }: { logo: string }) {
             <X onClick={handleCloseMobile} className="navbar-x" />
           </Space.Modifiers>
           <Space.Modifiers
-            // @ts-expect-error - do later
             flexDirection="column"
             gridGap="1rem"
           ></Space.Modifiers>
-          {/*  @ts-expect-error - uh */}
           <Space.Modifiers pt="2rem"></Space.Modifiers>
         </Navbar.Mobile.Wrapper>
       )}

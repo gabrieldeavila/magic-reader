@@ -18,7 +18,6 @@ function Legere() {
   }, []);
 
   return (
-    // @ts-expect-error - do later
     <Space.Horizontal mt="-1rem !important" px="1.5rem !important">
       <SectionContainer title="Dissolutus Legere" subtitle="LEGERE.START" />
 
