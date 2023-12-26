@@ -8,7 +8,7 @@ import {
   useTriggerState,
 } from "react-trigger-state";
 import { Folders, Scribere, db } from "../../../Dexie/Dexie";
-import CREATE_SCRIBERE from "../../_commands/CREATE";
+import CREATE_SCRIBERE from "../../_commands/file/CREATE";
 import CREATE_FOLDER from "../../_commands/folder/CREATE";
 import MenuSt from "../style";
 import FolderClosed from "./FolderClosed";
@@ -16,17 +16,22 @@ import FolderOpened from "./FolderOpened";
 import FileMenu from "./Menus/File";
 import FolderMenu from "./Menus/Folder";
 import ExplorerSt from "./style";
+import { useRouter } from "next/navigation";
+import ExplorerPortal from "./Menus/Explorer";
+import useFoldersParents from "../../hooks/crud/useFoldersParents";
 
 function Explorer() {
   const { translateThis } = useGTTranslate();
 
   const handleAddNewFolder = useCallback(() => {
-    stateStorage.set("add_new_filter", new Date());
+    stateStorage.set("add_new_folder", new Date());
   }, []);
 
   const handleAddNewFile = useCallback(() => {
     stateStorage.set("show_add_new_file", true);
   }, []);
+
+  useFoldersParents();
 
   return (
     <>
@@ -52,7 +57,11 @@ function Explorer() {
         </MenuSt.Title.Options>
       </MenuSt.Title.Content>
 
-      <ExplorerContent />
+      <ExplorerPortal />
+
+      <MenuSt.Overflow>
+        <ExplorerContent />
+      </MenuSt.Overflow>
     </>
   );
 }
@@ -71,7 +80,7 @@ const ExplorerContent = memo(
     });
 
     const [addNewFilter, setAddNewFilter] = useTriggerState({
-      name: "add_new_filter",
+      name: "add_new_folder",
       initial: null,
     });
 
@@ -101,13 +110,30 @@ const ExplorerContent = memo(
       (async () => {
         const val = await db.scribere.where("folderId").equals(id).toArray();
 
-        setScribere(val);
+        const sortedScribere = val.sort((a, b) => {
+          if (a.name < b.name) return -1;
+
+          if (a.name > b.name) return 1;
+
+          return 0;
+        });
+
+        setScribere(sortedScribere);
+
         const folders = await db.folders
           .where("folderParentId")
           .equals(id)
           .toArray();
 
-        setFolders(folders);
+        // sort by name, ascending
+        const sortedFolders = folders.sort((a, b) => {
+          if (a.name < b.name) return -1;
+
+          if (a.name > b.name) return 1;
+
+          return 0;
+        });
+        setFolders(sortedFolders);
       })();
     }, [id, setFolders, setScribere]);
 
@@ -123,10 +149,14 @@ const ExplorerContent = memo(
           }}
         >
           {folders.map((folder, index) => {
-            return <Folder depth={depth} folder={folder} key={index} />;
+            return (
+              <Folder depth={depth} folder={folder} key={index} parentId={id} />
+            );
           })}
 
-          {showAddNewFolder && selectedFolder === id && <NewFolder id={id} />}
+          {showAddNewFolder && selectedFolder === id && (
+            <NewFolder depth={depth} id={id} />
+          )}
 
           {scribere.map((scribere: Scribere) => {
             return <File {...scribere} key={scribere.id} />;
@@ -159,6 +189,7 @@ const File = memo(({ name, id, emoji }: Scribere) => {
     initial: null,
   });
   const [showRename, setShowRename] = useState(false);
+  const router = useRouter();
 
   const fileName = useMemo(() => {
     if (customName) return customName;
@@ -228,11 +259,22 @@ const File = memo(({ name, id, emoji }: Scribere) => {
     setSelectedFile(null);
   }, [showContextMenu]);
 
+  const handleOpen = useCallback(() => {
+    router.push(`/${lang}/scribere/${id}`);
+
+    setShowContextMenu(false);
+  }, [id, lang, router]);
+
+  const handleLinkClick = useCallback(() => {
+    stateStorage.set("selected_folder", null);
+  }, []);
+
   return (
     <>
       {!showRename ? (
         <Link
           style={{ textDecoration: "none" }}
+          onClick={handleLinkClick}
           href={`/${lang}/scribere/${id}`}
           passHref
         >
@@ -256,8 +298,10 @@ const File = memo(({ name, id, emoji }: Scribere) => {
 
       {showContextMenu && (
         <FileMenu
+          onOpen={handleOpen}
           onRename={handleRename}
           setShowContextMenu={setShowContextMenu}
+          id={id}
           position={contextMenuRef.current}
         />
       )}
@@ -267,85 +311,180 @@ const File = memo(({ name, id, emoji }: Scribere) => {
 
 File.displayName = "File";
 
-const Folder = memo(({ folder, depth }: { folder: Folders; depth: number }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [show, setShow] = useState(false);
+const Folder = memo(
+  ({
+    folder,
+    depth,
+    parentId,
+  }: {
+    folder: Folders;
+    depth: number;
+    parentId: number;
+  }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [show, setShow] = useState(false);
+    const [showRename, setShowRename] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
 
-  const [selectedFolder, setSelectedFolder] = useTriggerState({
-    name: "selected_folder",
-    initial: null,
-  });
-
-  const [showContextMenu, setShowContextMenu] = useState(false);
-
-  const handleFolderClick = useCallback(() => {
-    setShow(true);
-
-    setIsOpen((prev) => {
-      const value = !prev;
-
-      if (value) {
-        setSelectedFolder(folder.id);
-      } else {
-        setSelectedFolder(null);
-      }
-
-      return value;
+    const [foldersParent] = useTriggerState({
+      name: "folders_parents",
+      initial: [],
     });
-  }, [folder, setSelectedFolder]);
 
-  const contextMenuRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+    const [customFolderName] = useTriggerState({
+      name: `folder_custom_name_${folder.id}`,
+      initial: null,
+    });
 
-  const handleMenu = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
+    const customName = useMemo(() => {
+      if (customFolderName) return customFolderName;
 
-      // gets the click position
-      const x = e.clientX;
-      const y = e.clientY;
+      return folder.name;
+    }, [customFolderName, folder.name]);
 
-      contextMenuRef.current = { x, y };
+    const [selectedFolder, setSelectedFolder] = useTriggerState({
+      name: "selected_folder",
+      initial: null,
+    });
 
-      setShowContextMenu(true);
-    },
-    [setShowContextMenu]
-  );
+    const [showContextMenu, setShowContextMenu] = useState(false);
 
-  return (
-    <>
-      <ExplorerSt.Visualization.File
-        active={selectedFolder === folder.id}
-        role="button"
-        onContextMenu={handleMenu}
-        onClick={handleFolderClick}
-      >
-        <ExplorerSt.Folder.Icon>
-          {isOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
-          {isOpen ? <FolderOpened /> : <FolderClosed />}
-        </ExplorerSt.Folder.Icon>
-        {folder.name}
-      </ExplorerSt.Visualization.File>
+    const handleFolderClick = useCallback(
+      (_: any, val?: boolean) => {
+        setShow(true);
 
-      {show && (
-        <div
-          style={{
-            display: isOpen ? "block" : "none",
-          }}
-        >
-          <ExplorerContent depth={depth + 1} id={folder.id} />
-        </div>
-      )}
+        setIsOpen((prev) => {
+          const value = val ?? !prev;
 
-      {showContextMenu && (
-        <FolderMenu
-          setShowContextMenu={setShowContextMenu}
-          position={contextMenuRef.current}
-        />
-      )}
-    </>
-  );
-});
+          if (value) {
+            setSelectedFolder(folder.id);
+          } else {
+            setSelectedFolder(null);
+          }
+
+          return value;
+        });
+      },
+      [folder, setSelectedFolder]
+    );
+
+    const contextMenuRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+    const handleMenu = useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // gets the click position
+        const x = e.clientX;
+        const y = e.clientY;
+
+        contextMenuRef.current = { x, y };
+
+        setShowContextMenu(true);
+        setSelectedFile(folder.id);
+      },
+      [folder.id]
+    );
+
+    useEffect(() => {
+      if (showContextMenu) return;
+
+      setSelectedFile(null);
+    }, [showContextMenu]);
+
+    const handleAddNewFolder = useCallback(() => {
+      handleFolderClick(null, true);
+
+      stateStorage.set("add_new_folder", new Date());
+      stateStorage.set("selected_folder", folder.id);
+
+      setShowContextMenu(false);
+    }, [folder.id, handleFolderClick]);
+
+    const handleAddNewFile = useCallback(() => {
+      handleFolderClick(null, true);
+
+      stateStorage.set("show_add_new_file", true);
+      stateStorage.set("selected_folder", folder.id);
+
+      setShowContextMenu(false);
+    }, [folder.id, handleFolderClick]);
+
+    const handleRenameFolder = useCallback(
+      (name: string) => {
+        stateStorage.set("show_rename_folder", false);
+        // removes all \n
+        name = name.replace(/\n/g, "");
+
+        stateStorage.set(`folder_custom_name_${folder.id}`, name);
+        db.folders.update(folder.id, { name });
+        setShowRename(false);
+      },
+      [folder.id]
+    );
+
+    const startRename = useCallback(() => {
+      setShowRename(true);
+
+      setShowContextMenu(false);
+    }, []);
+
+    const isActive = useMemo(
+      () => selectedFolder === folder.id || foldersParent.includes(folder.id),
+      [folder.id, foldersParent, selectedFolder]
+    );
+
+    return (
+      <>
+        {showRename ? (
+          <NewFolder
+            id={folder.id}
+            onBlur={handleRenameFolder}
+            prevValue={customName}
+            depth={depth}
+          />
+        ) : (
+          <ExplorerSt.Visualization.File
+            active={isActive}
+            selected={selectedFile === folder.id}
+            role="button"
+            onContextMenu={handleMenu}
+            onClick={handleFolderClick}
+          >
+            <ExplorerSt.Folder.Icon>
+              {isOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+              {isOpen ? <FolderOpened /> : <FolderClosed />}
+            </ExplorerSt.Folder.Icon>
+            {customName}
+          </ExplorerSt.Visualization.File>
+        )}
+
+        {show && (
+          <div
+            style={{
+              display: isOpen ? "block" : "none",
+            }}
+          >
+            <ExplorerContent depth={depth + 1} id={folder.id} />
+          </div>
+        )}
+
+        {showContextMenu && (
+          <FolderMenu
+            onAddNewFolder={handleAddNewFolder}
+            onAddNewFile={handleAddNewFile}
+            onRename={startRename}
+            setShowContextMenu={setShowContextMenu}
+            position={contextMenuRef.current}
+            id={folder.id}
+            parentId={parentId}
+          />
+        )}
+      </>
+    );
+  }
+);
 
 Folder.displayName = "Folder";
 
@@ -355,14 +494,18 @@ const NewFolder = memo(
     id,
     prevValue,
     onBlur,
+    depth = 0,
   }: {
     isFile?: boolean;
     id: number;
     prevValue?: string;
     onBlur?: (name: string) => void;
+    depth?: number;
   }) => {
     const inputRef = useRef(null);
     const iconRef = useRef(null);
+    const [lang] = useTriggerState({ name: "lang" });
+    const router = useRouter();
 
     useEffect(() => {
       inputRef.current.focus();
@@ -370,6 +513,7 @@ const NewFolder = memo(
 
     useEffect(() => {
       if (isFile) return;
+
       const handler = () => {
         const bounds = stateStorage
           .get("explorer_content")
@@ -379,7 +523,7 @@ const NewFolder = memo(
 
         const iconWidth = iconRef.current.getBoundingClientRect().width;
 
-        const width = bounds.width - iconWidth - 30;
+        const width = bounds.width - iconWidth - 30 - depth * 10;
 
         inputRef.current.style.width = `${width}px`;
       };
@@ -394,7 +538,7 @@ const NewFolder = memo(
       return () => {
         resizeObserver.disconnect();
       };
-    }, [isFile]);
+    }, [depth, isFile]);
 
     const handleBlur = useCallback(async () => {
       stateStorage.set("show_add_new_folder", false);
@@ -427,6 +571,8 @@ const NewFolder = memo(
         scriberes.push(newScribere);
         stateStorage.set(`explorer_scribere_${id}`, [...scriberes]);
 
+        // opens the new file
+        router.push(`/${lang}/scribere/${newScribere.id}`);
         return;
       }
 
@@ -439,7 +585,7 @@ const NewFolder = memo(
       folders.push(newFolder);
 
       stateStorage.set(`explorer_folder_${id}`, [...folders]);
-    }, [id, isFile, onBlur]);
+    }, [id, isFile, lang, onBlur, router]);
 
     const handleKeyDown = useCallback(
       (event: React.KeyboardEvent<HTMLDivElement>) => {

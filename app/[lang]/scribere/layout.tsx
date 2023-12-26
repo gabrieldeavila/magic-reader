@@ -9,6 +9,7 @@ import Navbar from "../../components/Writer/navbar/Navbar";
 import Sidebar from "../../components/Writer/sidebar/Sidebar";
 import { Scribere } from "../../components/Writer/style";
 import useIsSSR from "../../hooks/useIsSSR";
+import useShortcuts from "../../components/Writer/hooks/crud/useShortcuts";
 
 function Layout({ children }: { children: React.ReactNode }) {
   const { isSSR } = useIsSSR();
@@ -19,6 +20,8 @@ function Layout({ children }: { children: React.ReactNode }) {
 
     globalState.set("writter_ref", e);
   }, []);
+
+  useShortcuts();
 
   if (isSSR) {
     return <Skeletons.Canary />;

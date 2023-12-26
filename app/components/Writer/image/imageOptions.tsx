@@ -1,9 +1,9 @@
-import { useGTTranslate } from "@geavila/gt-design";
+import { Space, useGTTranslate } from "@geavila/gt-design";
 import { X } from "react-feather";
-import { stateStorage } from "react-trigger-state";
+import { globalState, stateStorage } from "react-trigger-state";
 import Gradient from "./gradient";
 import { UnsplashSty } from "./style";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Unsplash from "./unsplash";
 
 function ImageOptions() {
@@ -13,6 +13,10 @@ function ImageOptions() {
   const handleClick = (tab: "GRADIENT" | "UNSPLASH") => {
     setTabShow(tab);
   };
+
+  const onRef = useCallback((node) => {
+    globalState.set("image_options_ref", node);
+  }, []);
 
   return (
     <>
@@ -33,11 +37,15 @@ function ImageOptions() {
             </UnsplashSty.Tab>
           </UnsplashSty.TabOptions>
 
-          <X
-            cursor="pointer"
-            size={15}
-            onClick={() => stateStorage.set("show_img", false)}
-          />
+          <Space.Modifiers>
+            {/* @ts-expect-error - gtdesign gotta fix it */}
+            <Space.Modifiers mr="1rem" ref={onRef}></Space.Modifiers>
+            <X
+              cursor="pointer"
+              size={15}
+              onClick={() => stateStorage.set("show_img", false)}
+            />
+          </Space.Modifiers>
         </UnsplashSty.Title>
         {
           {

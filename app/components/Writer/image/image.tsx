@@ -144,6 +144,7 @@ function Image() {
             {emoji}
           </WritterImg.Emoji>
           <WritterImg.H1
+            title={title}
             aria-placeholder={translateThis("LEGERE.UNTITLED")}
             ref={onTitleRef}
             onKeyUp={handleTitle}

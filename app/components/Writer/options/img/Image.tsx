@@ -1,10 +1,11 @@
 import { GTTooltip, useGTTranslate } from "@geavila/gt-design";
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import { Feather, Trash } from "react-feather";
 import { IImage } from "../../interface";
 import ImageComp from "./style";
 import { useContextName } from "../../context/WriterContext";
 import { globalState, stateStorage } from "react-trigger-state";
+import Viewer from "./viewer";
 
 function Image({ customStyle, id }: IImage) {
   const { translateThis } = useGTTranslate();
@@ -59,6 +60,17 @@ function Image({ customStyle, id }: IImage) {
     stateStorage.set(contextName, [...content]);
   }, [contextName, id]);
 
+  const [isFullSize, setIsFullSize] = React.useState(false);
+
+  const handleImgFullSize = useCallback(() => {
+    setIsFullSize((prev) => !prev);
+  }, []);
+
+
+  useEffect(() => {
+    console.log(imgRef.current?.offsetHeight);
+  }, []);
+
   return (
     <ImageComp.Wrapper
       ref={wrapperRef}
@@ -68,6 +80,10 @@ function Image({ customStyle, id }: IImage) {
       onDragStart={(e) => e.preventDefault()}
       onDrag={(e) => e.preventDefault()}
     >
+      {isFullSize && (
+        <Viewer img={customStyle.src} onClose={handleImgFullSize} />
+      )}
+
       <ImageComp.Svg ref={iconsRef}>
         <ImageComp.IconBtn onClick={addCaption} role="button" ref={featherRef}>
           <Feather size={15} />
@@ -80,7 +96,12 @@ function Image({ customStyle, id }: IImage) {
         </ImageComp.IconBtn>
       </ImageComp.Svg>
 
-      <ImageComp.Img ref={imgRef} src={customStyle.src} />
+      <ImageComp.Img
+        data-img
+        onClick={handleImgFullSize}
+        ref={imgRef}
+        src={customStyle.src}
+      />
       <ImageComp.Caption
         ref={captionRef}
         onKeyUp={handleAddCaption}

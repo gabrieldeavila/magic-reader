@@ -181,9 +181,14 @@ const TOCLink = ({ header }: { header: IKeys }) => {
       : null;
   }, [header.inside]);
 
+  if (!header.text || !header.id) return null;
+
   return (
     <STOC.List>
-      <STOC.A href={href}>{header.text}</STOC.A>
+      {/* @ts-expect-error fix it */}
+      <STOC.A href={href}>
+        {header.text}
+      </STOC.A>
       {children}
     </STOC.List>
   );

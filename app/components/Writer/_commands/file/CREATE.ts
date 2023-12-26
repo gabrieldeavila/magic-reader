@@ -1,6 +1,7 @@
-import uuid from "../../../utils/uuid";
-import { db } from "../../Dexie/Dexie";
-import { IWritterContent } from "../interface";
+import uuid from "../../../../utils/uuid";
+import { db } from "../../../Dexie/Dexie";
+import { IWritterContent } from "../../interface";
+import RANDOM_COLOR, { RANDOM_DEGREES } from "../color/RANDOM";
 
 export const initialContent: IWritterContent[] = [
   {
@@ -19,10 +20,14 @@ export const initialContent: IWritterContent[] = [
 
 const CREATE_SCRIBERE = async (name?: string, folderId?: number) => {
   const scribere = {
-    name: name || "",
+    name: name || "--",
     content: initialContent,
     folderId: folderId || -1,
-    img: "https://images.unsplash.com/photo-1607970669494-309137683be5",
+    img: {
+      top: RANDOM_COLOR(),
+      bottom: RANDOM_COLOR(),
+      deg: RANDOM_DEGREES(),
+    },
     position: { x: 0, y: 0 },
     emoji: "📝",
     createdAt: new Date(),

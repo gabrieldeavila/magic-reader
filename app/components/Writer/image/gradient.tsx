@@ -1,51 +1,39 @@
-import { useCallback } from "react";
-import { stateStorage } from "react-trigger-state";
+import { useCallback, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+import { RefreshCcw } from "react-feather";
+import { stateStorage, useTriggerState } from "react-trigger-state";
+import { RANDOM_BACKGROUND } from "../_commands/color/RANDOM";
 import { useContextName } from "../context/WriterContext";
 import { UnsplashSty } from "./style";
 
-const gradients = [
-  {
-    top: "#61A3E6",
-    bottom: "#63E2FF",
-    deg: 180,
-  },
-  {
-    top: "#FF7E5F",
-    bottom: "#FFB56E",
-    deg: 180,
-  },
-  {
-    top: "#5A3F37",
-    bottom: "#7A6332",
-    deg: 90,
-  },
-  {
-    top: "#8A2387",
-    bottom: "#E94057",
-    deg: 45,
-  },
-  {
-    top: "#FFD700",
-    bottom: "#FF9800",
-    deg: 270,
-  },
-  {
-    top: "#FF5F6D",
-    bottom: "#FFC371",
-    deg: 75,
-  },
-];
-
 function Gradient() {
   const contextName = useContextName();
+  const [key, setKey] = useState(0);
 
-  const handleClick = useCallback((gradient) => {
-    stateStorage.set(`${contextName}_img`, gradient);
-    stateStorage.set("show_img", false);
-  }, [contextName]);
+  const [portalRef] = useTriggerState({ name: "image_options_ref" });
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const gradients = useMemo(() => RANDOM_BACKGROUND(6), [key]);
+
+  const newGradient = useCallback(() => {
+    setKey((prev) => prev + 1);
+  }, []);
+
+  const handleClick = useCallback(
+    (gradient) => {
+      stateStorage.set(`${contextName}_img`, gradient);
+      stateStorage.set("show_img", false);
+    },
+    [contextName]
+  );
 
   return (
     <UnsplashSty.Container style={{ gap: "1rem 0.5rem" }}>
+      {createPortal(
+        <RefreshCcw onClick={newGradient} cursor="pointer" size={15} />,
+        portalRef as HTMLDivElement
+      )}
+
       {gradients.map((gradient, index) => (
         <UnsplashSty.ImgWrapper
           onClick={() => handleClick(gradient)}
