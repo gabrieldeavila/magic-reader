@@ -185,7 +185,6 @@ const TOCLink = ({ header }: { header: IKeys }) => {
 
   return (
     <STOC.List>
-      {/* @ts-expect-error fix it */}
       <STOC.A href={href}>
         {header.text}
       </STOC.A>
