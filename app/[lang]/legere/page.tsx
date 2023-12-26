@@ -18,7 +18,7 @@ function Legere() {
   }, []);
 
   return (
-    <Space.Horizontal mt="-1rem !important" px="1.5rem !important">
+    <Space.Horizontal mt="-1rem" px="1.5rem">
       <SectionContainer title="Dissolutus Legere" subtitle="LEGERE.START" />
 
       <DropPDF uploadFile={handleClick} />
