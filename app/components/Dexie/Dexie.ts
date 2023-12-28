@@ -32,7 +32,7 @@ export interface Scribere {
   content: IWritterContent[];
   emoji: string;
   img: string | { top: string; bottom: string; deg: number };
-  position: { x: number; y: number };
+  position: number;
   folderId?: number | null;
   createdAt: Date;
   updatedAt: Date;

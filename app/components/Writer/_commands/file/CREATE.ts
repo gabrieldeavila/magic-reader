@@ -28,7 +28,7 @@ const CREATE_SCRIBERE = async (name?: string, folderId?: number) => {
       bottom: RANDOM_COLOR(),
       deg: RANDOM_DEGREES(),
     },
-    position: { x: 0, y: 0 },
+    position: 0,
     emoji: "📝",
     createdAt: new Date(),
     updatedAt: new Date(),

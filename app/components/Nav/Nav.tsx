@@ -1,26 +1,15 @@
 "use client";
 
-import { GTNavbar, Navbar, Space, Text, useIsMobile } from "@geavila/gt-design";
+import { GTNavbar, Navbar, Space, useIsMobile } from "@geavila/gt-design";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
-import { Info, Menu, X } from "react-feather";
+import { useCallback } from "react";
+import { Info, Menu } from "react-feather";
 import { stateStorage } from "react-trigger-state";
 
 function Nav({ logo }: { logo: string }) {
   const isMobile = useIsMobile();
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [tempShowMobileMenu, setTempShowMobileMenu] = useState(false);
 
   const handleOpenMobile = useCallback(() => {
-    setShowMobileMenu(true);
-    setTempShowMobileMenu(true);
-  }, []);
-
-  const handleCloseMobile = useCallback(() => {
-    setTempShowMobileMenu(false);
-    setTimeout(() => {
-      setShowMobileMenu(false);
-    }, 300);
   }, []);
 
   const handleSettings = useCallback(() => {
@@ -87,7 +76,7 @@ function Nav({ logo }: { logo: string }) {
         </Space.Center>
       </GTNavbar>
 
-      {showMobileMenu && (
+      {/* {showMobileMenu && (
         <Navbar.Mobile.Wrapper isOpen={tempShowMobileMenu}>
           <Space.Modifiers
             mb="1rem"
@@ -107,7 +96,7 @@ function Nav({ logo }: { logo: string }) {
           ></Space.Modifiers>
           <Space.Modifiers pt="2rem"></Space.Modifiers>
         </Navbar.Mobile.Wrapper>
-      )}
+      )} */}
     </>
   );
 }
