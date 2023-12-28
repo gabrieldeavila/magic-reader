@@ -93,9 +93,14 @@ const Tab = memo(
       (ev) => {
         const tabId = parseInt(ev.dataTransfer.getData("text/plain"));
 
+        if (isNaN(tabId)) return;
+
         const currTabs = stateStorage.get("tabs");
-        const tabDragged = currTabs.find((tab: any) => tab.id === tabId);
         const prevTabIndex = currTabs.findIndex((tab: any) => tab.id === id);
+
+        const tabDragged = currTabs.find((tab: any) => tab.id === tabId);
+
+        if (!tabDragged) return;
 
         const newTabs = currTabs.filter((tab: any) => tab.id !== tabId);
 
