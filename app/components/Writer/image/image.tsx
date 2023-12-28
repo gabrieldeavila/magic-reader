@@ -189,10 +189,6 @@ const ChangeImg = memo(({ show }: { show: boolean }) => {
     setShowChangePosition((prev) => {
       const value = !prev;
 
-      if (!value) {
-        console.log("novo valor", value);
-      }
-
       return value;
     });
   }, [setShowChangePosition]);

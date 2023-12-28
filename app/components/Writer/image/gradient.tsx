@@ -27,6 +27,8 @@ function Gradient() {
     [contextName]
   );
 
+  if (!portalRef) return null;
+
   return (
     <UnsplashSty.Container style={{ gap: "1rem 0.5rem" }}>
       {createPortal(

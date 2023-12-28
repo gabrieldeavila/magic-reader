@@ -1,9 +1,9 @@
 import { Space, useGTTranslate } from "@geavila/gt-design";
+import { useCallback, useState } from "react";
 import { X } from "react-feather";
-import { globalState, stateStorage } from "react-trigger-state";
+import { stateStorage } from "react-trigger-state";
 import Gradient from "./gradient";
 import { UnsplashSty } from "./style";
-import { useCallback, useState } from "react";
 import Unsplash from "./unsplash";
 
 function ImageOptions() {
@@ -14,8 +14,8 @@ function ImageOptions() {
     setTabShow(tab);
   };
 
-  const onRef = useCallback((node) => {
-    globalState.set("image_options_ref", node);
+  const onRef = useCallback((node: HTMLDivElement) => {
+    stateStorage.set("image_options_ref", node);
   }, []);
 
   return (

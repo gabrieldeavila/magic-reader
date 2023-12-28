@@ -1,10 +1,10 @@
 import { GTTooltip, useGTTranslate } from "@geavila/gt-design";
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback } from "react";
 import { Feather, Trash } from "react-feather";
+import { globalState, stateStorage } from "react-trigger-state";
+import { useContextName } from "../../context/WriterContext";
 import { IImage } from "../../interface";
 import ImageComp from "./style";
-import { useContextName } from "../../context/WriterContext";
-import { globalState, stateStorage } from "react-trigger-state";
 import Viewer from "./viewer";
 
 function Image({ customStyle, id }: IImage) {
@@ -64,11 +64,6 @@ function Image({ customStyle, id }: IImage) {
 
   const handleImgFullSize = useCallback(() => {
     setIsFullSize((prev) => !prev);
-  }, []);
-
-
-  useEffect(() => {
-    console.log(imgRef.current?.offsetHeight);
   }, []);
 
   return (
