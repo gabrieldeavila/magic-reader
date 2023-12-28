@@ -1,20 +1,41 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import CREATE_SCRIBERE from "../../_commands/file/CREATE";
-import { useTriggerState } from "react-trigger-state";
+import {
+  globalState,
+  stateStorage,
+  useTriggerState,
+} from "react-trigger-state";
+import randomAlias from "../../utils/randomAlias";
+import { useGTTranslate } from "@geavila/gt-design";
 
 function useShortcuts() {
   const router = useRouter();
   const [lang] = useTriggerState({ name: "lang" });
+  const { translateThis } = useGTTranslate();
 
   // when alt + n is pressed, it will trigger this function
   useEffect(() => {
     const handleNewFile = async (e: KeyboardEvent) => {
       if (e.altKey && e.key.toLocaleLowerCase() === "n") {
         e.preventDefault();
+        e.stopPropagation();
 
-        const { id } = await CREATE_SCRIBERE();
-        router.push(`/${lang}/scribere/${id}`);
+        const parentId = globalState.get("selected_folder");
+
+        const newScribere = await CREATE_SCRIBERE(
+          translateThis(randomAlias()),
+          parentId
+        );
+
+        const currScriberes = globalState.get(`explorer_scribere_${parentId}`);
+
+        stateStorage.set(`explorer_scribere_${parentId}`, [
+          ...currScriberes,
+          newScribere,
+        ]);
+
+        router.push(`/${lang}/scribere/${newScribere.id}`);
       }
     };
 
@@ -23,7 +44,7 @@ function useShortcuts() {
     return () => {
       document.removeEventListener("keydown", handleNewFile);
     };
-  }, [lang, router]);
+  }, [lang, router, translateThis]);
 }
 
 export default useShortcuts;

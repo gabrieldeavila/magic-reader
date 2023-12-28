@@ -83,6 +83,28 @@
     "NO": "Não",
     "YES": "Sim",
     "CANCEL": "Cancelar",
+    "RANDOM_ALIAS": {
+      "1": "Alegre",
+      "2": "Animado",
+      "3": "Curioso",
+      "4": "Divertido",
+      "5": "Energético",
+      "6": "Macaco roxo",
+      "7": "Onça pescadora",
+      "8": "Bixo preguiça",
+      "9": "Panda vermelho",
+      "10": "Pinguim Andarilho",
+      "11": "Pinguim Imperador",
+      "12": "Baleia Azul",
+      "13": "Maluco Beleza",
+      "14": "Será?",
+      "15": "Pensador",
+      "16": "Vasco",
+      "17": "Irineu",
+      "18": "Ednaldo Pereira",
+      "19": "Mestre dos Magos",
+      "20": "Gênio da Lâmpada"
+    },
 
     "EMPTY_SCREEN": {
       "TIP": {

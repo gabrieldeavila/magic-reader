@@ -84,7 +84,28 @@
     "NO": "No",
     "YES": "Yes",
     "CANCEL": "Cancel",
-
+    "RANDOM_ALIAS": {
+      "1": "Mr. Beast",
+      "2": "Happy",
+      "3": "Nice",
+      "4": "hehe",
+      "5": "Cool",
+      "6": "Awesome",
+      "7": "Amazing",
+      "8": "Great",
+      "9": "Heinsenberg",
+      "10": "Walter White",
+      "11": "Jesse Pinkman",
+      "12": "Saul Goodman",
+      "13": "Gus Fring",
+      "14": "Giovanni Giorgio",
+      "15": "Starman",
+      "16": "Ziggy Stardust",
+      "17": "Major Tom",
+      "18": "Bohemian",
+      "19": "Love of my Life",
+      "20": "Killer Queen"
+    },
     "EMPTY_SCREEN": {
       "TIP": {
         "NEW_FILE": {
