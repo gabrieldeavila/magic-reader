@@ -1,5 +1,5 @@
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import CREATE_SCRIBERE from "../../_commands/file/CREATE";
 import {
   globalState,
@@ -48,3 +48,13 @@ function useShortcuts() {
 }
 
 export default useShortcuts;
+
+export const useIsAShortcut = () => {
+  const is = useCallback((e: KeyboardEvent) => {
+    if (e.altKey && e.key.toLocaleLowerCase() === "n") {
+      return true;
+    }
+  }, []);
+
+  return is;
+};
