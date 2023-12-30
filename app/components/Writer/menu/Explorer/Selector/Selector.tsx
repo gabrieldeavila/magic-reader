@@ -1,13 +1,14 @@
 import React, { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import SelectorSt from "./style";
-import { useTriggerState } from "react-trigger-state";
+import { stateStorage, useTriggerState } from "react-trigger-state";
 
 function Selector() {
   const isMoving = useRef(false);
   const [menuRef] = useTriggerState({ name: "divider_container_ref" }) as [
     HTMLDivElement,
   ];
+  const canClose = useRef(false);
 
   const positions = useRef({
     x: 0,
@@ -33,6 +34,10 @@ function Selector() {
 
     const handlerUp = () => {
       isMoving.current = false;
+
+      setTimeout(() => {
+        canClose.current = true;
+      }, 0);
     };
 
     menuRef?.addEventListener("mousedown", handlerDowm);
@@ -48,6 +53,7 @@ function Selector() {
     const handlerMove = (e: MouseEvent) => {
       if (isMoving.current) {
         const menuBounds = menuRef.getBoundingClientRect();
+        canClose.current = false;
 
         positions.current.x = e.clientX;
         positions.current.y = e.clientY;
@@ -94,6 +100,14 @@ function Selector() {
 
         selectorRef.current!.style.width = `${width}px`;
         selectorRef.current!.style.height = `${height}px`;
+
+        stateStorage.set("selector_bounds", {
+          left,
+          top,
+          bottom,
+          width,
+          height,
+        });
       }
     };
 
@@ -103,6 +117,23 @@ function Selector() {
       window?.removeEventListener("mousemove", handlerMove);
     };
   }, [menuRef]);
+
+  // when there's a click, close the selector
+  useEffect(() => {
+    const handlerClick = () => {
+      if (!canClose.current) return;
+      console.log("oia");
+
+      selectorRef.current!.style.width = "0px";
+      selectorRef.current!.style.height = "0px";
+    };
+
+    window?.addEventListener("click", handlerClick);
+
+    return () => {
+      window?.removeEventListener("click", handlerClick);
+    };
+  }, []);
 
   return createPortal(<SelectorSt.Wrapper ref={selectorRef} />, document.body);
 }

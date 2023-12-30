@@ -162,7 +162,7 @@ const ExplorerContent = memo(
           )}
 
           {scribere.map((scribere: Scribere) => {
-            return <File {...scribere} key={scribere.id} />;
+            return <File {...scribere} depth={depth} key={scribere.id} />;
           })}
 
           {showAddNewFile && selectedFolder === id && (
@@ -176,141 +176,175 @@ const ExplorerContent = memo(
 
 ExplorerContent.displayName = "ExplorerContent";
 
-const File = memo(({ name, id, emoji }: Scribere) => {
-  const [activeTab] = useTriggerState({ name: "active_tab" });
-  const [selectedFile, setSelectedFile] = useState(null);
-  const isActive = useMemo(() => activeTab === id, [activeTab, id]);
-  const [lang] = useTriggerState({ name: "lang" });
-  const contextMenuRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [showContextMenu, setShowContextMenu] = useState(false);
-  const [customName] = useTriggerState({
-    name: `scribere_custom_name_${id}`,
-    initial: null,
-  });
-  const [customEmoji] = useTriggerState({
-    name: `scribere_custom_emoji_${id}`,
-    initial: null,
-  });
-  const [showRename, setShowRename] = useState(false);
-  const router = useRouter();
+const File = memo(
+  ({ name, id, emoji, depth }: Scribere & { depth: number }) => {
+    const [activeTab] = useTriggerState({ name: "active_tab" });
+    const [selectedFile, setSelectedFile] = useState(null);
+    const isActive = useMemo(() => activeTab === id, [activeTab, id]);
+    const [lang] = useTriggerState({ name: "lang" });
+    const contextMenuRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+    const [showContextMenu, setShowContextMenu] = useState(false);
+    const [customName] = useTriggerState({
+      name: `scribere_custom_name_${id}`,
+      initial: null,
+    });
+    const [customEmoji] = useTriggerState({
+      name: `scribere_custom_emoji_${id}`,
+      initial: null,
+    });
 
-  const fileName = useMemo(() => {
-    if (customName) return customName;
+    const [showRename, setShowRename] = useState(false);
+    const router = useRouter();
 
-    return name;
-  }, [customName, name]);
+    const fileName = useMemo(() => {
+      if (customName) return customName;
 
-  const fileEmoji = useMemo(() => {
-    if (customEmoji) return customEmoji;
+      return name;
+    }, [customName, name]);
 
-    return emoji;
-  }, [customEmoji, emoji]);
+    const fileEmoji = useMemo(() => {
+      if (customEmoji) return customEmoji;
 
-  const handleMenu = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
+      return emoji;
+    }, [customEmoji, emoji]);
 
-      // gets the click position
-      const x = e.clientX;
-      const y = e.clientY;
+    const handleMenu = useCallback(
+      (e: React.MouseEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
 
-      contextMenuRef.current = { x, y };
+        // gets the click position
+        const x = e.clientX;
+        const y = e.clientY;
 
-      setSelectedFile(id);
-      setShowContextMenu(true);
-    },
-    [id, setSelectedFile]
-  );
+        contextMenuRef.current = { x, y };
 
-  const handleRename = useCallback(() => {
-    setShowRename(true);
-  }, []);
+        setSelectedFile(id);
+        setShowContextMenu(true);
+      },
+      [id, setSelectedFile]
+    );
 
-  const handleRenameFile = useCallback(
-    (name: string) => {
-      setShowRename(false);
-      // removes all \n
-      name = name.replace(/\n/g, "");
+    const handleRename = useCallback(() => {
+      setShowRename(true);
+    }, []);
 
-      stateStorage.set(`scribere_custom_name_${id}`, name);
-      db.scribere.update(id, { name });
+    const handleRenameFile = useCallback(
+      (name: string) => {
+        setShowRename(false);
+        // removes all \n
+        name = name.replace(/\n/g, "");
 
-      const currTabs = stateStorage.get("tabs");
+        stateStorage.set(`scribere_custom_name_${id}`, name);
+        db.scribere.update(id, { name });
 
-      const newTabs = currTabs.map((tab: any) => {
-        if (tab.id === id) {
-          return { ...tab, name };
+        const currTabs = stateStorage.get("tabs");
+
+        const newTabs = currTabs.map((tab: any) => {
+          if (tab.id === id) {
+            return { ...tab, name };
+          }
+
+          return tab;
+        });
+
+        stateStorage.set("tabs", newTabs);
+
+        if (isActive) {
+          globalState.set("avoid-title-pos", true);
+          stateStorage.set(`${id}_writter_context_title`, name);
         }
+      },
+      [id, isActive]
+    );
 
-        return tab;
-      });
+    useEffect(() => {
+      if (showContextMenu) return;
 
-      stateStorage.set("tabs", newTabs);
+      setSelectedFile(null);
+    }, [showContextMenu]);
 
-      if (isActive) {
-        globalState.set("avoid-title-pos", true);
-        stateStorage.set(`${id}_writter_context_title`, name);
+    const handleOpen = useCallback(() => {
+      router.push(`/${lang}/scribere/${id}`);
+
+      setShowContextMenu(false);
+    }, [id, lang, router]);
+
+    const handleLinkClick = useCallback(() => {
+      stateStorage.set("selected_folder", null);
+    }, []);
+
+    const dataFileSelect = useMemo(() => {
+      if (depth === 0) {
+        return {
+          "data-file-select": id,
+        };
       }
-    },
-    [id, isActive]
-  );
 
-  useEffect(() => {
-    if (showContextMenu) return;
+      return {};
+    }, [depth, id]);
 
-    setSelectedFile(null);
-  }, [showContextMenu]);
+    const [selectorBounds] = useTriggerState({
+      name: "selector_bounds",
+      initial: {},
+    });
 
-  const handleOpen = useCallback(() => {
-    router.push(`/${lang}/scribere/${id}`);
+    const fileRef = useRef<HTMLDivElement>(null);
 
-    setShowContextMenu(false);
-  }, [id, lang, router]);
+    const isFileSelected = useMemo(() => {
+      if (selectorBounds == null) return false;
 
-  const handleLinkClick = useCallback(() => {
-    stateStorage.set("selected_folder", null);
-  }, []);
+      if (fileRef.current == null) return false;
 
-  return (
-    <>
-      {!showRename ? (
-        <Link
-          style={{ textDecoration: "none" }}
-          onClick={handleLinkClick}
-          href={`/${lang}/scribere/${id}`}
-          passHref
-        >
-          <ExplorerSt.Visualization.File
-            active={isActive}
-            selected={selectedFile === id}
-            onContextMenu={handleMenu}
+      const fileBounds = fileRef.current.getBoundingClientRect();
+
+      const isY = fileBounds.bottom >= selectorBounds.top && fileBounds.top <= selectorBounds.bottom;
+
+      return isY;
+    }, [selectorBounds]);
+
+    return (
+      <>
+        {!showRename ? (
+          <Link
+            style={{ textDecoration: "none" }}
+            onClick={handleLinkClick}
+            href={`/${lang}/scribere/${id}`}
+            passHref
+            {...dataFileSelect}
           >
-            <span>{fileEmoji}</span>
-            <span>{fileName}</span>
-          </ExplorerSt.Visualization.File>
-        </Link>
-      ) : (
-        <NewFolder
-          id={id}
-          onBlur={handleRenameFile}
-          isFile
-          prevValue={fileName}
-        />
-      )}
+            <ExplorerSt.Visualization.File
+              ref={fileRef}
+              active={isActive && !isFileSelected}
+              selected={selectedFile === id || isFileSelected}
+              onContextMenu={handleMenu}
+            >
+              <span>{fileEmoji}</span>
+              <span>{fileName}</span>
+            </ExplorerSt.Visualization.File>
+          </Link>
+        ) : (
+          <NewFolder
+            id={id}
+            onBlur={handleRenameFile}
+            isFile
+            prevValue={fileName}
+          />
+        )}
 
-      {showContextMenu && (
-        <FileMenu
-          onOpen={handleOpen}
-          onRename={handleRename}
-          setShowContextMenu={setShowContextMenu}
-          id={id}
-          position={contextMenuRef.current}
-        />
-      )}
-    </>
-  );
-});
+        {showContextMenu && (
+          <FileMenu
+            onOpen={handleOpen}
+            onRename={handleRename}
+            setShowContextMenu={setShowContextMenu}
+            id={id}
+            position={contextMenuRef.current}
+          />
+        )}
+      </>
+    );
+  }
+);
 
 File.displayName = "File";
 
@@ -438,6 +472,17 @@ const Folder = memo(
       [folder.id, foldersParent, selectedFolder]
     );
 
+    // only the folders with depth = 0 can be selected
+    const dataFolderSelect = useMemo(() => {
+      if (depth === 0) {
+        return {
+          "data-folder-select": folder.id,
+        };
+      }
+
+      return {};
+    }, [depth, folder.id]);
+
     return (
       <>
         {showRename ? (
@@ -446,9 +491,11 @@ const Folder = memo(
             onBlur={handleRenameFolder}
             prevValue={customName}
             depth={depth}
+            {...dataFolderSelect}
           />
         ) : (
           <ExplorerSt.Visualization.File
+            {...dataFolderSelect}
             active={isActive}
             selected={selectedFile === folder.id}
             role="button"

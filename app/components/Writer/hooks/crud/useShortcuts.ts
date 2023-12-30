@@ -28,7 +28,8 @@ function useShortcuts() {
           parentId
         );
 
-        const currScriberes = globalState.get(`explorer_scribere_${parentId}`);
+        const currScriberes =
+          globalState.get(`explorer_scribere_${parentId}`) || [];
 
         stateStorage.set(`explorer_scribere_${parentId}`, [
           ...currScriberes,
