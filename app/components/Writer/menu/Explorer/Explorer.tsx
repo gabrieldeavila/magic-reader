@@ -19,6 +19,7 @@ import ExplorerSt from "./style";
 import { useRouter } from "next/navigation";
 import ExplorerPortal from "./Menus/Explorer";
 import useFoldersParents from "../../hooks/crud/useFoldersParents";
+import Selector from "./Selector/Selector";
 
 function Explorer() {
   const { translateThis } = useGTTranslate();
@@ -58,6 +59,8 @@ function Explorer() {
       </MenuSt.Title.Content>
 
       <ExplorerPortal />
+
+      <Selector />
 
       <MenuSt.Overflow>
         <ExplorerContent />
