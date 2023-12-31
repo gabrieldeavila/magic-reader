@@ -30,10 +30,14 @@ function Selector() {
       positions.current.startY = e.clientY;
 
       isMoving.current = true;
+
+      stateStorage.set("show_context_menu", false);
     };
 
     const handlerUp = () => {
       isMoving.current = false;
+
+      selectorRef.current.style.left = "-9999px";
 
       setTimeout(() => {
         canClose.current = true;
@@ -126,6 +130,8 @@ function Selector() {
 
       selectorRef.current!.style.width = "0px";
       selectorRef.current!.style.height = "0px";
+
+      stateStorage.set("selector_bounds", {});
     };
 
     window?.addEventListener("click", handlerClick);
