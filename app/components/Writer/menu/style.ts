@@ -67,19 +67,29 @@ const MenuOverflow = styled.div`
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 1rem;
+  max-width: 200px;
+  transition: 0.2s all;
 
-  ${scrolls.default};
+  ${scrolls.default}
 
   &:hover {
     overflow-y: auto;
     &::-webkit-scrollbar-thumb {
       border-radius: 2px;
     }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--contrast);
+    }
   }
 
   /* change the scroll width */
   &::-webkit-scrollbar {
     width: 0.2rem;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: transparent;
   }
 
   /* change the scrollbar color */
