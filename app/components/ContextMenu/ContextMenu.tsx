@@ -40,13 +40,21 @@ function ContextMenu({
   // adds the context where the click was made
   useEffect(() => {
     const { x, y } = position;
+    const bounds = ref.current.getBoundingClientRect();
+    const isOutOfScreen = bounds.bottom > window.innerHeight;
 
     ref.current.style.left = `${x}px`;
-    ref.current.style.top = `${y}px`;
+    ref.current.style.top = `${isOutOfScreen ? y - bounds.height : y}px`;
   }, [position]);
 
   return createPortal(
-    <ContextMenuSt.Wrapper ref={ref}>
+    <ContextMenuSt.Wrapper
+      ref={ref}
+      onContextMenu={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+      }}
+    >
       <ContextMenuSt.Container>{children}</ContextMenuSt.Container>
     </ContextMenuSt.Wrapper>,
     document.body
