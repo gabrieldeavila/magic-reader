@@ -103,6 +103,7 @@ function Selector() {
 
         stateStorage.set("selector_bounds", {
           left,
+          right: left + width,
           top,
           bottom,
           width,
@@ -122,7 +123,6 @@ function Selector() {
   useEffect(() => {
     const handlerClick = () => {
       if (!canClose.current) return;
-      console.log("oia");
 
       selectorRef.current!.style.width = "0px";
       selectorRef.current!.style.height = "0px";

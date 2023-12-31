@@ -298,9 +298,15 @@ const File = memo(
 
       const fileBounds = fileRef.current.getBoundingClientRect();
 
-      const isY = fileBounds.bottom >= selectorBounds.top && fileBounds.top <= selectorBounds.bottom;
+      const isY =
+        fileBounds.bottom >= selectorBounds.top &&
+        fileBounds.top <= selectorBounds.bottom;
 
-      return isY;
+      const isX =
+        fileBounds.right >= selectorBounds.left &&
+        fileBounds.left <= selectorBounds.right;
+
+      return isY && isX;
     }, [selectorBounds]);
 
     return (
@@ -482,6 +488,30 @@ const Folder = memo(
 
       return {};
     }, [depth, folder.id]);
+    const folderRef = useRef<HTMLDivElement>(null);
+
+    const [selectorBounds] = useTriggerState({
+      name: "selector_bounds",
+      initial: {},
+    });
+
+    const isFolderSelected = useMemo(() => {
+      if (selectorBounds == null) return false;
+
+      if (folderRef.current == null) return false;
+
+      const folderBounds = folderRef.current.getBoundingClientRect();
+
+      const isY =
+        folderBounds.bottom >= selectorBounds.top &&
+        folderBounds.top <= selectorBounds.bottom;
+
+      const isX =
+        folderBounds.right >= selectorBounds.left &&
+        folderBounds.left <= selectorBounds.right;
+
+      return isY && isX;
+    }, [selectorBounds]);
 
     return (
       <>
@@ -491,13 +521,13 @@ const Folder = memo(
             onBlur={handleRenameFolder}
             prevValue={customName}
             depth={depth}
-            {...dataFolderSelect}
           />
         ) : (
           <ExplorerSt.Visualization.File
+            ref={folderRef}
             {...dataFolderSelect}
             active={isActive}
-            selected={selectedFile === folder.id}
+            selected={selectedFile === folder.id || isFolderSelected}
             role="button"
             onContextMenu={handleMenu}
             onClick={handleFolderClick}
