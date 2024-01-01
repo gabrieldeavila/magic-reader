@@ -23,6 +23,12 @@ function Selector() {
     if (menuRef == null) return;
 
     const handlerDowm = (e: MouseEvent) => {
+      const isSelector = (e.target as HTMLElement)?.closest("[data-selector]");
+
+      if (isSelector) {
+        return;
+      }
+
       positions.current.x = e.clientX;
       positions.current.y = e.clientY;
 

@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 import ExplorerPortal from "./Menus/Explorer";
 import useFoldersParents from "../../hooks/crud/useFoldersParents";
 import Selector from "./Selector/Selector";
+import useDrag from "./hooks/useDrag";
 
 function Explorer() {
   const { translateThis } = useGTTranslate();
@@ -278,6 +279,7 @@ const File = memo(
       if (depth === 0) {
         return {
           "data-file-select": id,
+          "data-selector": id,
         };
       }
 
@@ -289,7 +291,7 @@ const File = memo(
       initial: {},
     });
 
-    const fileRef = useRef<HTMLDivElement>(null);
+    const fileRef = useRef<HTMLAnchorElement>(null);
 
     const isFileSelected = useMemo(() => {
       if (selectorBounds == null) return false;
@@ -309,18 +311,23 @@ const File = memo(
       return isY && isX;
     }, [selectorBounds]);
 
+    const { handleDragStart, DragComponent } = useDrag({ ref: fileRef });
+
     return (
       <>
+        {DragComponent()}
         {!showRename ? (
           <Link
+            ref={fileRef}
             style={{ textDecoration: "none" }}
             onClick={handleLinkClick}
             href={`/${lang}/scribere/${id}`}
+            onDragStart={handleDragStart}
+            draggable
             passHref
             {...dataFileSelect}
           >
             <ExplorerSt.Visualization.File
-              ref={fileRef}
               active={isActive && !isFileSelected}
               selected={selectedFile === id || isFileSelected}
               onContextMenu={handleMenu}
@@ -483,6 +490,7 @@ const Folder = memo(
       if (depth === 0) {
         return {
           "data-folder-select": folder.id,
+          "data-selector": folder.id,
         };
       }
 
