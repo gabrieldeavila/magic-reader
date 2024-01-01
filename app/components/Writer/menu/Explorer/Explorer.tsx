@@ -1,5 +1,6 @@
 import { useGTTranslate } from "@geavila/gt-design";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronRight, FilePlus, FolderPlus } from "react-feather";
 import {
@@ -10,17 +11,16 @@ import {
 import { Folders, Scribere, db } from "../../../Dexie/Dexie";
 import CREATE_SCRIBERE from "../../_commands/file/CREATE";
 import CREATE_FOLDER from "../../_commands/folder/CREATE";
+import useFoldersParents from "../../hooks/crud/useFoldersParents";
 import MenuSt from "../style";
 import FolderClosed from "./FolderClosed";
 import FolderOpened from "./FolderOpened";
+import ExplorerPortal from "./Menus/Explorer";
 import FileMenu from "./Menus/File";
 import FolderMenu from "./Menus/Folder";
-import ExplorerSt from "./style";
-import { useRouter } from "next/navigation";
-import ExplorerPortal from "./Menus/Explorer";
-import useFoldersParents from "../../hooks/crud/useFoldersParents";
 import Selector from "./Selector/Selector";
 import useDrag from "./hooks/useDrag";
+import ExplorerSt from "./style";
 
 function Explorer() {
   const { translateThis } = useGTTranslate();
@@ -32,6 +32,21 @@ function Explorer() {
   const handleAddNewFile = useCallback(() => {
     stateStorage.set("show_add_new_file", true);
   }, []);
+
+  useTriggerState({
+    name: "explorer-selected-folders",
+    initial: {},
+  });
+
+  useTriggerState({
+    name: "explorer-folders-ref",
+    initial: {},
+  });
+
+  useTriggerState({
+    name: "explorer-selected-files",
+    initial: {},
+  });
 
   useFoldersParents();
 
@@ -163,7 +178,7 @@ const ExplorerContent = memo(
           )}
 
           {scribere.map((scribere: Scribere) => {
-            return <File {...scribere} depth={depth} key={scribere.id} />;
+            return <File {...scribere} key={scribere.id} />;
           })}
 
           {showAddNewFile && selectedFolder === id && (
@@ -177,187 +192,195 @@ const ExplorerContent = memo(
 
 ExplorerContent.displayName = "ExplorerContent";
 
-const File = memo(
-  ({ name, id, emoji, depth }: Scribere & { depth: number }) => {
-    const [activeTab] = useTriggerState({ name: "active_tab" });
-    const [selectedFile, setSelectedFile] = useState(null);
-    const isActive = useMemo(() => activeTab === id, [activeTab, id]);
-    const [lang] = useTriggerState({ name: "lang" });
-    const contextMenuRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-    const [showContextMenu, setShowContextMenu] = useState(false);
-    const [customName] = useTriggerState({
-      name: `scribere_custom_name_${id}`,
-      initial: null,
-    });
-    const [customEmoji] = useTriggerState({
-      name: `scribere_custom_emoji_${id}`,
-      initial: null,
-    });
+const File = memo(({ name, id, emoji }: Scribere) => {
+  const [activeTab] = useTriggerState({ name: "active_tab" });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const isActive = useMemo(() => activeTab === id, [activeTab, id]);
+  const [lang] = useTriggerState({ name: "lang" });
+  const contextMenuRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const [customName] = useTriggerState({
+    name: `scribere_custom_name_${id}`,
+    initial: null,
+  });
+  const [customEmoji] = useTriggerState({
+    name: `scribere_custom_emoji_${id}`,
+    initial: null,
+  });
 
-    const [showRename, setShowRename] = useState(false);
-    const router = useRouter();
+  const [showRename, setShowRename] = useState(false);
+  const router = useRouter();
 
-    const fileName = useMemo(() => {
-      if (customName) return customName;
+  const fileName = useMemo(() => {
+    if (customName) return customName;
 
-      return name;
-    }, [customName, name]);
+    return name;
+  }, [customName, name]);
 
-    const fileEmoji = useMemo(() => {
-      if (customEmoji) return customEmoji;
+  const fileEmoji = useMemo(() => {
+    if (customEmoji) return customEmoji;
 
-      return emoji;
-    }, [customEmoji, emoji]);
+    return emoji;
+  }, [customEmoji, emoji]);
 
-    const handleMenu = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
+  const handleMenu = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-        // gets the click position
-        const x = e.clientX;
-        const y = e.clientY;
+      // gets the click position
+      const x = e.clientX;
+      const y = e.clientY;
 
-        contextMenuRef.current = { x, y };
+      contextMenuRef.current = { x, y };
 
-        setSelectedFile(id);
-        setShowContextMenu(true);
-      },
-      [id, setSelectedFile]
-    );
+      setSelectedFile(id);
+      setShowContextMenu(true);
+    },
+    [id, setSelectedFile]
+  );
 
-    const handleRename = useCallback(() => {
-      setShowRename(true);
-    }, []);
+  const handleRename = useCallback(() => {
+    setShowRename(true);
+  }, []);
 
-    const handleRenameFile = useCallback(
-      (name: string) => {
-        setShowRename(false);
-        // removes all \n
-        name = name.replace(/\n/g, "");
+  const handleRenameFile = useCallback(
+    (name: string) => {
+      setShowRename(false);
+      // removes all \n
+      name = name.replace(/\n/g, "");
 
-        stateStorage.set(`scribere_custom_name_${id}`, name);
-        db.scribere.update(id, { name });
+      stateStorage.set(`scribere_custom_name_${id}`, name);
+      db.scribere.update(id, { name });
 
-        const currTabs = stateStorage.get("tabs");
+      const currTabs = stateStorage.get("tabs");
 
-        const newTabs = currTabs.map((tab: any) => {
-          if (tab.id === id) {
-            return { ...tab, name };
-          }
-
-          return tab;
-        });
-
-        stateStorage.set("tabs", newTabs);
-
-        if (isActive) {
-          globalState.set("avoid-title-pos", true);
-          stateStorage.set(`${id}_writter_context_title`, name);
+      const newTabs = currTabs.map((tab: any) => {
+        if (tab.id === id) {
+          return { ...tab, name };
         }
-      },
-      [id, isActive]
-    );
 
-    useEffect(() => {
-      if (showContextMenu) return;
+        return tab;
+      });
 
-      setSelectedFile(null);
-    }, [showContextMenu]);
+      stateStorage.set("tabs", newTabs);
 
-    const handleOpen = useCallback(() => {
-      router.push(`/${lang}/scribere/${id}`);
-
-      setShowContextMenu(false);
-    }, [id, lang, router]);
-
-    const handleLinkClick = useCallback(() => {
-      stateStorage.set("selected_folder", null);
-    }, []);
-
-    const dataFileSelect = useMemo(() => {
-      if (depth === 0) {
-        return {
-          "data-file-select": id,
-          "data-selector": id,
-        };
+      if (isActive) {
+        globalState.set("avoid-title-pos", true);
+        stateStorage.set(`${id}_writter_context_title`, name);
       }
+    },
+    [id, isActive]
+  );
 
-      return {};
-    }, [depth, id]);
+  useEffect(() => {
+    if (showContextMenu) return;
 
-    const [selectorBounds] = useTriggerState({
-      name: "selector_bounds",
-      initial: {},
-    });
+    setSelectedFile(null);
+  }, [showContextMenu]);
 
-    const fileRef = useRef<HTMLAnchorElement>(null);
+  const handleOpen = useCallback(() => {
+    router.push(`/${lang}/scribere/${id}`);
 
-    const isFileSelected = useMemo(() => {
-      if (selectorBounds == null) return false;
+    setShowContextMenu(false);
+  }, [id, lang, router]);
 
-      if (fileRef.current == null) return false;
+  const handleLinkClick = useCallback(() => {
+    stateStorage.set("selected_folder", null);
+  }, []);
 
-      const fileBounds = fileRef.current.getBoundingClientRect();
+  const dataFileSelect = useMemo(() => {
+    return {
+      "data-file-select": id,
+      "data-selector": id,
+    };
+  }, [id]);
 
-      const isY =
-        fileBounds.bottom >= selectorBounds.top &&
-        fileBounds.top <= selectorBounds.bottom;
+  const [selectorBounds] = useTriggerState({
+    name: "selector_bounds",
+    initial: {},
+  });
 
-      const isX =
-        fileBounds.right >= selectorBounds.left &&
-        fileBounds.left <= selectorBounds.right;
+  const fileRef = useRef<HTMLAnchorElement>(null);
 
-      return isY && isX;
-    }, [selectorBounds]);
+  const isFileSelected = useMemo(() => {
+    if (selectorBounds == null) return false;
 
-    const { handleDragStart, DragComponent } = useDrag({ ref: fileRef });
+    if (fileRef.current == null) return false;
 
-    return (
-      <>
-        {DragComponent()}
-        {!showRename ? (
-          <Link
-            ref={fileRef}
-            style={{ textDecoration: "none" }}
-            onClick={handleLinkClick}
-            href={`/${lang}/scribere/${id}`}
-            onDragStart={handleDragStart}
-            draggable
-            passHref
-            {...dataFileSelect}
+    const fileBounds = fileRef.current.getBoundingClientRect();
+
+    const isY =
+      fileBounds.bottom >= selectorBounds.top &&
+      fileBounds.top <= selectorBounds.bottom;
+
+    const isX =
+      fileBounds.right >= selectorBounds.left &&
+      fileBounds.left <= selectorBounds.right;
+
+    return isY && isX;
+  }, [selectorBounds]);
+
+  useEffect(() => {
+    const files = stateStorage.get("explorer-selected-files");
+
+    if (isFileSelected) {
+      stateStorage.set("explorer-selected-files", {
+        ...files,
+        [id]: true,
+      });
+    } else {
+      delete files[id];
+
+      stateStorage.set("explorer-selected-files", { ...files });
+    }
+  }, [id, isFileSelected]);
+
+  const { DragComponent } = useDrag({ ref: fileRef, id, isFile: true });
+
+  return (
+    <>
+      {DragComponent()}
+      {!showRename ? (
+        <Link
+          style={{ textDecoration: "none", userSelect: "none" }}
+          onClick={handleLinkClick}
+          ref={fileRef}
+          draggable={false}
+          href={`/${lang}/scribere/${id}`}
+          passHref
+          {...dataFileSelect}
+        >
+          <ExplorerSt.Visualization.File
+            active={isActive && !isFileSelected}
+            selected={selectedFile === id || isFileSelected}
+            onContextMenu={handleMenu}
           >
-            <ExplorerSt.Visualization.File
-              active={isActive && !isFileSelected}
-              selected={selectedFile === id || isFileSelected}
-              onContextMenu={handleMenu}
-            >
-              <span>{fileEmoji}</span>
-              <span>{fileName}</span>
-            </ExplorerSt.Visualization.File>
-          </Link>
-        ) : (
-          <NewFolder
-            id={id}
-            onBlur={handleRenameFile}
-            isFile
-            prevValue={fileName}
-          />
-        )}
+            <span>{fileEmoji}</span>
+            <span>{fileName}</span>
+          </ExplorerSt.Visualization.File>
+        </Link>
+      ) : (
+        <NewFolder
+          id={id}
+          onBlur={handleRenameFile}
+          isFile
+          prevValue={fileName}
+        />
+      )}
 
-        {showContextMenu && (
-          <FileMenu
-            onOpen={handleOpen}
-            onRename={handleRename}
-            setShowContextMenu={setShowContextMenu}
-            id={id}
-            position={contextMenuRef.current}
-          />
-        )}
-      </>
-    );
-  }
-);
+      {showContextMenu && (
+        <FileMenu
+          onOpen={handleOpen}
+          onRename={handleRename}
+          setShowContextMenu={setShowContextMenu}
+          id={id}
+          position={contextMenuRef.current}
+        />
+      )}
+    </>
+  );
+});
 
 File.displayName = "File";
 
@@ -487,15 +510,12 @@ const Folder = memo(
 
     // only the folders with depth = 0 can be selected
     const dataFolderSelect = useMemo(() => {
-      if (depth === 0) {
-        return {
-          "data-folder-select": folder.id,
-          "data-selector": folder.id,
-        };
-      }
+      return {
+        "data-folder-select": folder.id,
+        "data-selector": folder.id,
+      };
+    }, [folder.id]);
 
-      return {};
-    }, [depth, folder.id]);
     const folderRef = useRef<HTMLDivElement>(null);
 
     const [selectorBounds] = useTriggerState({
@@ -521,8 +541,49 @@ const Folder = memo(
       return isY && isX;
     }, [selectorBounds]);
 
+    useEffect(() => {
+      const folders = stateStorage.get("explorer-selected-folders");
+
+      if (isFolderSelected) {
+        stateStorage.set("explorer-selected-folders", {
+          ...folders,
+          [folder.id]: true,
+        });
+      } else {
+        delete folders[folder.id];
+
+        stateStorage.set("explorer-selected-folders", {
+          ...folders,
+        });
+      }
+    }, [folder.id, isActive, isFolderSelected]);
+
+    const { DragComponent } = useDrag({ ref: folderRef, id: folder.id });
+
+    const [dragginHover] = useTriggerState({
+      name: "folder_drag_hover",
+      initial: false,
+    });
+
+    const isDraggingHover = useMemo(
+      () => dragginHover == folder.id,
+      [dragginHover, folder.id]
+    );
+
+    // add the folder ref
+    useEffect(() => {
+      const foldersRef = stateStorage.get("explorer-folders-ref");
+
+      stateStorage.set("explorer-folders-ref", {
+        ...foldersRef,
+        [folder.id]: folderRef,
+      });
+    }, [folder.id]);
+
     return (
       <>
+        {DragComponent()}
+
         {showRename ? (
           <NewFolder
             id={folder.id}
@@ -534,7 +595,7 @@ const Folder = memo(
           <ExplorerSt.Visualization.File
             ref={folderRef}
             {...dataFolderSelect}
-            active={isActive}
+            active={isActive || isDraggingHover}
             selected={selectedFile === folder.id || isFolderSelected}
             role="button"
             onContextMenu={handleMenu}
