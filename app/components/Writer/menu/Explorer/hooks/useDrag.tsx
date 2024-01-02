@@ -169,7 +169,7 @@ function useDrag({
         if (scriberes) {
           stateStorage.set(`explorer_scribere_${folderId}`, [
             ...scriberes,
-            moveScribere,
+            { ...moveScribere, folderId },
           ]);
         }
       }
@@ -189,7 +189,7 @@ function useDrag({
     foldersToMove.forEach((folder) => {
       const moveFolder = folders?.[folder];
 
-      const folderFolderId = moveFolder?.folderId?.toString() ?? -1;
+      const folderFolderId = moveFolder?.folderParentId?.toString() ?? -1;
 
       if (folderFolderId == folderId) return;
 
@@ -214,7 +214,7 @@ function useDrag({
         if (folders) {
           stateStorage.set(`explorer_folder_${folderId}`, [
             ...folders,
-            moveFolder,
+            { ...moveFolder, folderParentId: folderId },
           ]);
         }
       }
