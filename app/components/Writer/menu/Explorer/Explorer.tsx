@@ -129,32 +129,40 @@ const ExplorerContent = memo(
       (async () => {
         const val = await db.scribere.where("folderId").equals(id).toArray();
 
-        const sortedScribere = val.sort((a, b) => {
-          if (a.name < b.name) return -1;
-
-          if (a.name > b.name) return 1;
-
-          return 0;
-        });
-
-        setScribere(sortedScribere);
+        setScribere(val);
 
         const folders = await db.folders
           .where("folderParentId")
           .equals(id)
           .toArray();
 
-        // sort by name, ascending
-        const sortedFolders = folders.sort((a, b) => {
+        setFolders(folders);
+      })();
+    }, [id, setFolders, setScribere]);
+
+    const sortedScribere = useMemo(
+      () =>
+        scribere.sort((a: Scribere, b: Scribere) => {
           if (a.name < b.name) return -1;
 
           if (a.name > b.name) return 1;
 
           return 0;
-        });
-        setFolders(sortedFolders);
-      })();
-    }, [id, setFolders, setScribere]);
+        }),
+      [scribere]
+    );
+
+    const sortedFolders = useMemo(
+      () =>
+        folders.sort((a: Folders, b: Folders) => {
+          if (a.name < b.name) return -1;
+
+          if (a.name > b.name) return 1;
+
+          return 0;
+        }),
+      [folders]
+    );
 
     const handleRef = useCallback((node) => {
       stateStorage.set("explorer_content", node);
@@ -167,7 +175,7 @@ const ExplorerContent = memo(
             paddingLeft: `${depth * 10}px`,
           }}
         >
-          {folders.map((folder, index) => {
+          {sortedFolders.map((folder: Folders, index: number) => {
             return (
               <Folder depth={depth} folder={folder} key={index} parentId={id} />
             );
@@ -177,7 +185,7 @@ const ExplorerContent = memo(
             <NewFolder depth={depth} id={id} />
           )}
 
-          {scribere.map((scribere: Scribere) => {
+          {sortedScribere.map((scribere: Scribere) => {
             return <File {...scribere} key={scribere.id} />;
           })}
 
@@ -569,7 +577,11 @@ const Folder = memo(
       }
     }, [folder, isActive, isFolderSelected]);
 
-    const { DragComponent } = useDrag({ ref: folderRef, id: folder.id, folder });
+    const { DragComponent } = useDrag({
+      ref: folderRef,
+      id: folder.id,
+      folder,
+    });
 
     const [dragginHover] = useTriggerState({
       name: "folder_drag_hover",
