@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { globalState, stateStorage } from "react-trigger-state";
 import DragSt from "./Drag";
+import DROP from "../../../_commands/DROP";
 
 function useDrag({
   ref,
@@ -96,7 +97,6 @@ function useDrag({
         .catch((err) => {
           console.log(err);
         });
-      console.log("oloco", new Date());
 
       // remove the container from the body
       document.body.removeChild(container);
@@ -112,10 +112,45 @@ function useDrag({
     setIsDragging(false);
     setDragImage(null);
 
-    const folderId = stateStorage.get("folder_drag_hover");
+    let folderId = stateStorage.get("folder_drag_hover");
 
     stateStorage.set("folder_drag_hover", null);
-  }, [isDragging]);
+
+    if (!folderId) {
+      folderId = -1;
+    }
+
+    let filesToMove = Object.keys(
+      globalState.get("explorer-selected-files") || {}
+    );
+
+    if (isLonely.current && isFile) {
+      filesToMove = [id.toString()];
+    }
+
+    let foldersToMove = Object.keys(
+      globalState.get("explorer-selected-folders") || {}
+    );
+
+    filesToMove = filesToMove.filter((file) => {
+      const fileFolderId = globalState
+        .get("explorer-selected-files")
+        ?.[file]?.folderId.toString();
+
+      // if the folderId is in the folderToMove array, don't move the file
+      return !foldersToMove.includes(fileFolderId);
+    });
+
+    if (isLonely.current && !isFile) {
+      foldersToMove = [id.toString()];
+    }
+
+    DROP({
+      toFolderId: folderId,
+      filesId: filesToMove,
+      foldersIds: foldersToMove,
+    });
+  }, [id, isDragging, isFile]);
 
   useEffect(() => {
     if (!ref.current) return;

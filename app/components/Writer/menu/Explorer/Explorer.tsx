@@ -192,7 +192,7 @@ const ExplorerContent = memo(
 
 ExplorerContent.displayName = "ExplorerContent";
 
-const File = memo(({ name, id, emoji }: Scribere) => {
+const File = memo(({ name, id, emoji, folderId }: Scribere) => {
   const [activeTab] = useTriggerState({ name: "active_tab" });
   const [selectedFile, setSelectedFile] = useState(null);
   const isActive = useMemo(() => activeTab === id, [activeTab, id]);
@@ -327,14 +327,16 @@ const File = memo(({ name, id, emoji }: Scribere) => {
     if (isFileSelected) {
       stateStorage.set("explorer-selected-files", {
         ...files,
-        [id]: true,
+        [id]: {
+          folderId,
+        },
       });
     } else {
       delete files[id];
 
       stateStorage.set("explorer-selected-files", { ...files });
     }
-  }, [id, isFileSelected]);
+  }, [folderId, id, isFileSelected]);
 
   const { DragComponent } = useDrag({ ref: fileRef, id, isFile: true });
 
