@@ -31,14 +31,14 @@ export default async function RootLayout({
   const dict = await getDictionary(params.lang);
 
   return (
-    <StyledComponentsRegistry>
-      <html lang={params.lang} className={kanit.className}>
-        <body>
+    <html lang={params.lang} className={kanit.className}>
+      <body>
+        <StyledComponentsRegistry>
           <GTWrapper kanit={kanit} serverTranslation={dict} lang={params.lang}>
             {children}
           </GTWrapper>
-        </body>
-      </html>
-    </StyledComponentsRegistry>
+        </StyledComponentsRegistry>
+      </body>
+    </html>
   );
 }

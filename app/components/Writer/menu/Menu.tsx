@@ -29,8 +29,17 @@ function Menu() {
     });
   }, []);
 
+  const onRef = useCallback(
+    (ref: HTMLDivElement) => {
+      dividerContainerRef.current = ref;
+
+      stateStorage.set("divider_container_ref", ref);
+    },
+    [dividerContainerRef]
+  );
+
   return (
-    <MenuSt.Wrapper ref={dividerContainerRef}>
+    <MenuSt.Wrapper ref={onRef}>
       <MenuSt.Container onContextMenu={handleContextMenu}>
         <Component />
       </MenuSt.Container>

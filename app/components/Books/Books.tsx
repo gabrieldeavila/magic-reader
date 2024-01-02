@@ -4,7 +4,7 @@ import {
   MotionBox,
   Space,
   Text,
-  useGTTranslate
+  useGTTranslate,
 } from "@geavila/gt-design";
 import Link from "next/link";
 import { memo, useEffect, useMemo } from "react";
@@ -29,7 +29,7 @@ function Books() {
 
   return (
     <Space.Modifiers mt="1rem" display="grid">
-      <Text.Strong mb="1rem">{translateThis("LEGERE.BOOKS")}</Text.Strong>
+      {/* <Text.Strong mb="1rem">{translateThis("LEGERE.BOOKS")}</Text.Strong> */}
 
       {isSSR && <Loader.Simple />}
 
@@ -68,9 +68,7 @@ const Book = memo(({ book }: { book: Record<string, string> }) => {
         href={`/${page}/legere/${book.id}/`}
       >
         <Space.MiddleCenter>
-          <Text.P textAlign="center" className={font}>
-            {convertedName}
-          </Text.P>
+          <Text.P className={font}>{convertedName}</Text.P>
           <Text.P className={font}>
             {translateThis("LEGERE.NUM_OF_PAGES", { PAGES: book.numOfPages })}
           </Text.P>

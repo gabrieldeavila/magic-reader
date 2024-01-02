@@ -1,5 +1,6 @@
 import { useGTTranslate } from "@geavila/gt-design";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronRight, FilePlus, FolderPlus } from "react-feather";
 import {
@@ -10,15 +11,16 @@ import {
 import { Folders, Scribere, db } from "../../../Dexie/Dexie";
 import CREATE_SCRIBERE from "../../_commands/file/CREATE";
 import CREATE_FOLDER from "../../_commands/folder/CREATE";
+import useFoldersParents from "../../hooks/crud/useFoldersParents";
 import MenuSt from "../style";
 import FolderClosed from "./FolderClosed";
 import FolderOpened from "./FolderOpened";
+import ExplorerPortal from "./Menus/Explorer";
 import FileMenu from "./Menus/File";
 import FolderMenu from "./Menus/Folder";
+import Selector from "./Selector/Selector";
+import useDrag from "./hooks/useDrag";
 import ExplorerSt from "./style";
-import { useRouter } from "next/navigation";
-import ExplorerPortal from "./Menus/Explorer";
-import useFoldersParents from "../../hooks/crud/useFoldersParents";
 
 function Explorer() {
   const { translateThis } = useGTTranslate();
@@ -30,6 +32,21 @@ function Explorer() {
   const handleAddNewFile = useCallback(() => {
     stateStorage.set("show_add_new_file", true);
   }, []);
+
+  useTriggerState({
+    name: "explorer-selected-folders",
+    initial: {},
+  });
+
+  useTriggerState({
+    name: "explorer-folders-ref",
+    initial: {},
+  });
+
+  useTriggerState({
+    name: "explorer-selected-files",
+    initial: {},
+  });
 
   useFoldersParents();
 
@@ -58,6 +75,8 @@ function Explorer() {
       </MenuSt.Title.Content>
 
       <ExplorerPortal />
+
+      <Selector />
 
       <MenuSt.Overflow>
         <ExplorerContent />
@@ -110,32 +129,40 @@ const ExplorerContent = memo(
       (async () => {
         const val = await db.scribere.where("folderId").equals(id).toArray();
 
-        const sortedScribere = val.sort((a, b) => {
-          if (a.name < b.name) return -1;
-
-          if (a.name > b.name) return 1;
-
-          return 0;
-        });
-
-        setScribere(sortedScribere);
+        setScribere(val);
 
         const folders = await db.folders
           .where("folderParentId")
           .equals(id)
           .toArray();
 
-        // sort by name, ascending
-        const sortedFolders = folders.sort((a, b) => {
+        setFolders(folders);
+      })();
+    }, [id, setFolders, setScribere]);
+
+    const sortedScribere = useMemo(
+      () =>
+        scribere.sort((a: Scribere, b: Scribere) => {
           if (a.name < b.name) return -1;
 
           if (a.name > b.name) return 1;
 
           return 0;
-        });
-        setFolders(sortedFolders);
-      })();
-    }, [id, setFolders, setScribere]);
+        }),
+      [scribere]
+    );
+
+    const sortedFolders = useMemo(
+      () =>
+        folders.sort((a: Folders, b: Folders) => {
+          if (a.name < b.name) return -1;
+
+          if (a.name > b.name) return 1;
+
+          return 0;
+        }),
+      [folders]
+    );
 
     const handleRef = useCallback((node) => {
       stateStorage.set("explorer_content", node);
@@ -148,7 +175,7 @@ const ExplorerContent = memo(
             paddingLeft: `${depth * 10}px`,
           }}
         >
-          {folders.map((folder, index) => {
+          {sortedFolders.map((folder: Folders, index: number) => {
             return (
               <Folder depth={depth} folder={folder} key={index} parentId={id} />
             );
@@ -158,7 +185,7 @@ const ExplorerContent = memo(
             <NewFolder depth={depth} id={id} />
           )}
 
-          {scribere.map((scribere: Scribere) => {
+          {sortedScribere.map((scribere: Scribere) => {
             return <File {...scribere} key={scribere.id} />;
           })}
 
@@ -173,7 +200,9 @@ const ExplorerContent = memo(
 
 ExplorerContent.displayName = "ExplorerContent";
 
-const File = memo(({ name, id, emoji }: Scribere) => {
+const File = memo((scribere: Scribere) => {
+  const { name, id, emoji, folderId } = useMemo(() => scribere, [scribere]);
+
   const [activeTab] = useTriggerState({ name: "active_tab" });
   const [selectedFile, setSelectedFile] = useState(null);
   const isActive = useMemo(() => activeTab === id, [activeTab, id]);
@@ -188,6 +217,7 @@ const File = memo(({ name, id, emoji }: Scribere) => {
     name: `scribere_custom_emoji_${id}`,
     initial: null,
   });
+
   const [showRename, setShowRename] = useState(false);
   const router = useRouter();
 
@@ -269,18 +299,78 @@ const File = memo(({ name, id, emoji }: Scribere) => {
     stateStorage.set("selected_folder", null);
   }, []);
 
+  const dataFileSelect = useMemo(() => {
+    return {
+      "data-file-select": id,
+      "data-selector": id,
+    };
+  }, [id]);
+
+  const [selectorBounds] = useTriggerState({
+    name: "selector_bounds",
+    initial: {},
+  });
+
+  const fileRef = useRef<HTMLAnchorElement>(null);
+
+  const isFileSelected = useMemo(() => {
+    if (selectorBounds == null) return false;
+
+    if (fileRef.current == null) return false;
+
+    const fileBounds = fileRef.current.getBoundingClientRect();
+
+    const isY =
+      fileBounds.bottom >= selectorBounds.top &&
+      fileBounds.top <= selectorBounds.bottom;
+
+    const isX =
+      fileBounds.right >= selectorBounds.left &&
+      fileBounds.left <= selectorBounds.right;
+
+    return isY && isX;
+  }, [selectorBounds]);
+
+  useEffect(() => {
+    const files = stateStorage.get("explorer-selected-files");
+
+    if (isFileSelected) {
+      stateStorage.set("explorer-selected-files", {
+        ...files,
+        [id]: {
+          ...scribere,
+        },
+      });
+    } else {
+      delete files[id];
+
+      stateStorage.set("explorer-selected-files", { ...files });
+    }
+  }, [folderId, id, isFileSelected, scribere]);
+
+  const { DragComponent } = useDrag({
+    ref: fileRef,
+    id,
+    isFile: true,
+    scribere,
+  });
+
   return (
     <>
+      {DragComponent()}
       {!showRename ? (
         <Link
-          style={{ textDecoration: "none" }}
+          style={{ textDecoration: "none", userSelect: "none" }}
           onClick={handleLinkClick}
+          ref={fileRef}
+          draggable={false}
           href={`/${lang}/scribere/${id}`}
           passHref
+          {...dataFileSelect}
         >
           <ExplorerSt.Visualization.File
-            active={isActive}
-            selected={selectedFile === id}
+            active={isActive && !isFileSelected}
+            selected={selectedFile === id || isFileSelected}
             onContextMenu={handleMenu}
           >
             <span>{fileEmoji}</span>
@@ -435,8 +525,88 @@ const Folder = memo(
       [folder.id, foldersParent, selectedFolder]
     );
 
+    // only the folders with depth = 0 can be selected
+    const dataFolderSelect = useMemo(() => {
+      return {
+        "data-folder-select": folder.id,
+        "data-selector": folder.id,
+      };
+    }, [folder.id]);
+
+    const folderRef = useRef<HTMLDivElement>(null);
+
+    const [selectorBounds] = useTriggerState({
+      name: "selector_bounds",
+      initial: {},
+    });
+
+    const isFolderSelected = useMemo(() => {
+      if (selectorBounds == null) return false;
+
+      if (folderRef.current == null) return false;
+
+      const folderBounds = folderRef.current.getBoundingClientRect();
+
+      const isY =
+        folderBounds.bottom >= selectorBounds.top &&
+        folderBounds.top <= selectorBounds.bottom;
+
+      const isX =
+        folderBounds.right >= selectorBounds.left &&
+        folderBounds.left <= selectorBounds.right;
+
+      return isY && isX;
+    }, [selectorBounds]);
+
+    useEffect(() => {
+      const folders = stateStorage.get("explorer-selected-folders");
+
+      if (isFolderSelected) {
+        stateStorage.set("explorer-selected-folders", {
+          ...folders,
+          [folder.id]: {
+            ...folder,
+          },
+        });
+      } else {
+        delete folders[folder.id];
+
+        stateStorage.set("explorer-selected-folders", {
+          ...folders,
+        });
+      }
+    }, [folder, isActive, isFolderSelected]);
+
+    const { DragComponent } = useDrag({
+      ref: folderRef,
+      id: folder.id,
+      folder,
+    });
+
+    const [dragginHover] = useTriggerState({
+      name: "folder_drag_hover",
+      initial: false,
+    });
+
+    const isDraggingHover = useMemo(
+      () => dragginHover == folder.id,
+      [dragginHover, folder.id]
+    );
+
+    // add the folder ref
+    useEffect(() => {
+      const foldersRef = stateStorage.get("explorer-folders-ref");
+
+      stateStorage.set("explorer-folders-ref", {
+        ...foldersRef,
+        [folder.id]: folderRef,
+      });
+    }, [folder.id]);
+
     return (
       <>
+        {DragComponent()}
+
         {showRename ? (
           <NewFolder
             id={folder.id}
@@ -446,8 +616,10 @@ const Folder = memo(
           />
         ) : (
           <ExplorerSt.Visualization.File
-            active={isActive}
-            selected={selectedFile === folder.id}
+            ref={folderRef}
+            {...dataFolderSelect}
+            active={isActive || isDraggingHover}
+            selected={selectedFile === folder.id || isFolderSelected}
             role="button"
             onContextMenu={handleMenu}
             onClick={handleFolderClick}

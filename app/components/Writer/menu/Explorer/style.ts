@@ -48,7 +48,7 @@ const getBackground = (active?: boolean, selected?: boolean) => {
 
   if (selected) return "var(--outline-0_5)";
 
-  return "transparent";
+  return "var(--menu)";
 };
 
 const getBorder = (active?: boolean, selected?: boolean, isHover?: boolean) => {

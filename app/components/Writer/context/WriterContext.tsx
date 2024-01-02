@@ -28,6 +28,7 @@ import Component from "../options/Component/Component";
 import { ReadWrite, Selector } from "../options/Component/style";
 import { StyledWriter } from "../style";
 import Toc from "../tocs/TableOfContents";
+import { useIsAShortcut } from "../hooks/crud/useShortcuts";
 
 export const WriterContext = createContext<IWriterContext>({
   content: [],
@@ -614,12 +615,16 @@ const WriterContextProvider = ({
     stateStorage.set("redo", prevState.slice(0, prevState.length - 1));
   }, [content, contextName, setContent]);
 
+  const isShortcut = useIsAShortcut();
+
   const handleKeyDown = useCallback(
-    (e) => {
+    (e: any) => {
+      if (isShortcut(e)) return;
+
       const { dataLineId } = getBlockId({});
       stateStorage.set(`key_down_ev-${dataLineId}`, { e, date: new Date() });
     },
-    [getBlockId]
+    [getBlockId, isShortcut]
   );
 
   const handleBlur = useCallback(

@@ -1,6 +1,7 @@
 import uuid from "../../../../utils/uuid";
 import { db } from "../../../Dexie/Dexie";
 import { IWritterContent } from "../../interface";
+import randomEmoji from "../../utils/randomEmoji";
 import RANDOM_COLOR, { RANDOM_DEGREES } from "../color/RANDOM";
 
 export const initialContent: IWritterContent[] = [
@@ -28,8 +29,8 @@ const CREATE_SCRIBERE = async (name?: string, folderId?: number) => {
       bottom: RANDOM_COLOR(),
       deg: RANDOM_DEGREES(),
     },
-    position: { x: 0, y: 0 },
-    emoji: "📝",
+    position: 0,
+    emoji: randomEmoji(),
     createdAt: new Date(),
     updatedAt: new Date(),
   };
