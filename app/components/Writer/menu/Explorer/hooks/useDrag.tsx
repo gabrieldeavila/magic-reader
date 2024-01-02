@@ -41,6 +41,8 @@ function useDrag({
     setIsDragging(true);
 
     dragStartTimer.current = setTimeout(() => {
+      globalState.set("is_moving_drag", true);
+
       const clone = ref.current?.cloneNode(true) as HTMLElement;
 
       const isSelected = isFile
@@ -117,6 +119,9 @@ function useDrag({
     setIsDragging(false);
     setDragImage(null);
 
+    if (!globalState.get("is_moving_drag")) return;
+    globalState.set("is_moving_drag", false);
+
     let folderId = stateStorage.get("folder_drag_hover");
 
     stateStorage.set("folder_drag_hover", null);
@@ -186,12 +191,21 @@ function useDrag({
       folders[id] = folder;
     }
 
+    foldersToMove = foldersToMove.filter((folder) => {
+      const moveFolder = folders?.[folder];
+
+      //  prevent if is the same folder
+      return moveFolder?.id != folderId;
+    });
+
     foldersToMove.forEach((folder) => {
       const moveFolder = folders?.[folder];
 
       const folderFolderId = moveFolder?.folderParentId?.toString() ?? -1;
 
-      if (folderFolderId == folderId) return;
+      if (folderFolderId == folderId) {
+        return;
+      }
 
       const isInFolderSelected = foldersToMove.includes(folderFolderId);
 
