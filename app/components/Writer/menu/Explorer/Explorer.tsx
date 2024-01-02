@@ -192,7 +192,9 @@ const ExplorerContent = memo(
 
 ExplorerContent.displayName = "ExplorerContent";
 
-const File = memo(({ name, id, emoji, folderId }: Scribere) => {
+const File = memo((scribere: Scribere) => {
+  const { name, id, emoji, folderId } = useMemo(() => scribere, [scribere]);
+
   const [activeTab] = useTriggerState({ name: "active_tab" });
   const [selectedFile, setSelectedFile] = useState(null);
   const isActive = useMemo(() => activeTab === id, [activeTab, id]);
@@ -328,7 +330,7 @@ const File = memo(({ name, id, emoji, folderId }: Scribere) => {
       stateStorage.set("explorer-selected-files", {
         ...files,
         [id]: {
-          folderId,
+          ...scribere,
         },
       });
     } else {
@@ -336,9 +338,14 @@ const File = memo(({ name, id, emoji, folderId }: Scribere) => {
 
       stateStorage.set("explorer-selected-files", { ...files });
     }
-  }, [folderId, id, isFileSelected]);
+  }, [folderId, id, isFileSelected, scribere]);
 
-  const { DragComponent } = useDrag({ ref: fileRef, id, isFile: true });
+  const { DragComponent } = useDrag({
+    ref: fileRef,
+    id,
+    isFile: true,
+    scribere,
+  });
 
   return (
     <>
@@ -549,7 +556,9 @@ const Folder = memo(
       if (isFolderSelected) {
         stateStorage.set("explorer-selected-folders", {
           ...folders,
-          [folder.id]: true,
+          [folder.id]: {
+            ...folder,
+          },
         });
       } else {
         delete folders[folder.id];
@@ -558,9 +567,9 @@ const Folder = memo(
           ...folders,
         });
       }
-    }, [folder.id, isActive, isFolderSelected]);
+    }, [folder, isActive, isFolderSelected]);
 
-    const { DragComponent } = useDrag({ ref: folderRef, id: folder.id });
+    const { DragComponent } = useDrag({ ref: folderRef, id: folder.id, folder });
 
     const [dragginHover] = useTriggerState({
       name: "folder_drag_hover",

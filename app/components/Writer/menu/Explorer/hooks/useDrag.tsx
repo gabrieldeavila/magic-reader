@@ -2,17 +2,22 @@ import html2canvas from "html2canvas";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { globalState, stateStorage } from "react-trigger-state";
-import DragSt from "./Drag";
+import { Folders, Scribere } from "../../../../Dexie/Dexie";
 import DROP from "../../../_commands/DROP";
+import DragSt from "./Drag";
 
 function useDrag({
   ref,
   id,
   isFile,
+  scribere,
+  folder,
 }: {
   ref: React.RefObject<HTMLElement>;
   id: number;
   isFile?: boolean;
+  scribere?: Scribere;
+  folder?: Folders;
 }) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragImage, setDragImage] = useState<string | null>(null);
@@ -120,12 +125,16 @@ function useDrag({
       folderId = -1;
     }
 
+    const files = globalState.get("explorer-selected-files") || {};
+
     let filesToMove = Object.keys(
       globalState.get("explorer-selected-files") || {}
     );
 
     if (isLonely.current && isFile) {
       filesToMove = [id.toString()];
+
+      files[id] = scribere;
     }
 
     let foldersToMove = Object.keys(
@@ -133,24 +142,90 @@ function useDrag({
     );
 
     filesToMove = filesToMove.filter((file) => {
-      const fileFolderId = globalState
-        .get("explorer-selected-files")
-        ?.[file]?.folderId.toString();
+      const moveScribere = files?.[file];
+
+      const fileFolderId = moveScribere?.folderId?.toString() ?? -1;
+
+      if (fileFolderId == folderId) return false;
+
+      const isInFolderSelected = foldersToMove.includes(fileFolderId);
+      if (!isInFolderSelected) {
+        const prevScriberes = globalState.get(
+          `explorer_scribere_${fileFolderId}`
+        );
+
+        // remove the scribere from the previous folder
+        if (prevScriberes) {
+          stateStorage.set(
+            `explorer_scribere_${fileFolderId}`,
+            prevScriberes.filter(
+              (scribere: Scribere) => scribere.id !== parseInt(file)
+            )
+          );
+        }
+
+        // add the scribere to the new folder
+        const scriberes = globalState.get(`explorer_scribere_${folderId}`);
+        if (scriberes) {
+          stateStorage.set(`explorer_scribere_${folderId}`, [
+            ...scriberes,
+            moveScribere,
+          ]);
+        }
+      }
 
       // if the folderId is in the folderToMove array, don't move the file
-      return !foldersToMove.includes(fileFolderId);
+      return !isInFolderSelected;
     });
+
+    const folders = globalState.get("explorer-selected-folders") || {};
 
     if (isLonely.current && !isFile) {
       foldersToMove = [id.toString()];
+
+      folders[id] = folder;
     }
+
+    foldersToMove.forEach((folder) => {
+      const moveFolder = folders?.[folder];
+
+      const folderFolderId = moveFolder?.folderId?.toString() ?? -1;
+
+      if (folderFolderId == folderId) return;
+
+      const isInFolderSelected = foldersToMove.includes(folderFolderId);
+
+      if (!isInFolderSelected) {
+        const prevFolders = globalState.get(
+          `explorer_folder_${folderFolderId}`
+        );
+
+        // remove the folder from the previous folder
+        if (prevFolders) {
+          stateStorage.set(
+            `explorer_folder_${folderFolderId}`,
+            prevFolders.filter((folder: Folders) => folder.id !== id)
+          );
+        }
+
+        // add the folder to the new folder
+        const folders = globalState.get(`explorer_folder_${folderId}`);
+
+        if (folders) {
+          stateStorage.set(`explorer_folder_${folderId}`, [
+            ...folders,
+            moveFolder,
+          ]);
+        }
+      }
+    });
 
     DROP({
       toFolderId: folderId,
       filesId: filesToMove,
       foldersIds: foldersToMove,
     });
-  }, [id, isDragging, isFile]);
+  }, [folder, id, isDragging, isFile, scribere]);
 
   useEffect(() => {
     if (!ref.current) return;
