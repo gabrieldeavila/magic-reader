@@ -91,7 +91,6 @@ const tl = styled.div`
 export const TodoButton = styled.div`
   position: absolute;
   cursor: pointer;
-  user-select: none;
   left: 0.7rem;
   top: 0.6rem;
   user-select: none;

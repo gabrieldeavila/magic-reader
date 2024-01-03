@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { Check } from "react-feather";
 import {
   globalState,
@@ -75,30 +75,33 @@ function useCustomComps({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contextName, id, type, update, customStyle, align]);
 
+  const handleClick = useCallback(() => {
+    const content = globalState.get(contextName);
+
+    const newContent = content.map((item) => {
+      if (item.id === id) {
+        return {
+          ...item,
+          customStyle: {
+            ...item.customStyle,
+            checked: !item.customStyle?.checked,
+          },
+        };
+      }
+
+      return item;
+    });
+
+    stateStorage.set(contextName, newContent);
+  }, [contextName, id]);
+
   const customComp = useMemo(() => {
     if (type === "tl") {
       return (
         <TodoButton
           data-todo
-          onClick={() => {
-            const content = globalState.get(contextName);
-
-            const newContent = content.map((item) => {
-              if (item.id === id) {
-                return {
-                  ...item,
-                  customStyle: {
-                    ...item.customStyle,
-                    checked: !item.customStyle?.checked,
-                  },
-                };
-              }
-
-              return item;
-            });
-
-            stateStorage.set(contextName, newContent);
-          }}
+          contentEditable={false}
+          onClick={handleClick}
         >
           {customStyle && "checked" in customStyle && customStyle.checked && (
             <Check data-todo-checked data-todo size={12} stroke="var(--info)" />
@@ -108,7 +111,7 @@ function useCustomComps({
     }
 
     return null;
-  }, [contextName, customStyle, id, type]);
+  }, [customStyle, handleClick, type]);
 
   return { customProps, customComp };
 }
