@@ -54,7 +54,11 @@ const PopupComp = (
     name: "force_popup_positions_update",
   });
 
-  const [positions, setPositions] = useState({});
+  const [positions, setPositions] = useState({
+    opacity: 0,
+    left: "0px",
+    top: "0px",
+  });
 
   const { getFirstAndLastNode } = usePositions({ text });
 
@@ -170,7 +174,9 @@ const PopupComp = (
       if (blockInfo.block.firstChild.textContent === "") {
         const prevSibling = blockInfo.block.previousSibling;
         // gets the last child with the "data-block-id" attribute
-        const children = (prevSibling as HTMLDivElement).querySelectorAll("[data-block-id]");
+        const children = (prevSibling as HTMLDivElement).querySelectorAll(
+          "[data-block-id]"
+        );
         const lastChild = children[children.length - 1];
 
         rangeOffset.selectNode(lastChild);
@@ -197,8 +203,6 @@ const PopupComp = (
       // sees if the popup is out of the screen
       const isOutOfScreen = window.innerWidth < left;
 
-      let newPositions = {};
-
       let newLeft;
       const newTop =
         infoRange.top +
@@ -214,12 +218,11 @@ const PopupComp = (
 
       if (newLeft < 0) newLeft = infoRange.x;
 
-      newPositions = {
+      setPositions({
         left: `${newLeft}px`,
         top: `${newTop}px`,
-      };
-
-      setPositions(newPositions);
+        opacity: 1,
+      });
     } catch (e) {
       console.log(e?.message, "remember to fix this error");
     }
