@@ -770,7 +770,9 @@ function Component({
 
   const copyEntireBlock = useCallback(() => {
     // copy all the text
-    const lineId = document.querySelector(`[data-line-id="${id}"]`) as HTMLDivElement;
+    const lineId = document.querySelector(
+      `[data-line-id="${id}"]`
+    ) as HTMLDivElement;
 
     // Create a Blob for the HTML content and a Blob for the plain text
     const htmlBlob = new Blob([lineId.outerHTML], { type: "text/html" });
@@ -1310,21 +1312,23 @@ function Component({
           blockId: changedBlockId,
         };
 
-        globalState.set("arrow_move", true);
-
         addToCtrlZ({
           lineId: id,
           action: "up",
         });
 
-        stateStorage.set(
-          `${contextName}_decoration-${changedBlockId}`,
-          new Date()
-        );
+        setTimeout(() => {
+          stateStorage.set(
+            `${contextName}_decoration-${changedBlockId}`,
+            new Date()
+          );
+
+          globalState.set("arrow_move", true);
+        });
+
         return true;
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
-        globalState.set("arrow_move", true);
 
         const content = globalState.get(contextName);
 
@@ -1355,8 +1359,6 @@ function Component({
 
         const { changedBlockId, currSelection } = getBlockId({ textId: id });
 
-        stateStorage.set(contextName, newContent);
-
         info.current = {
           selection: currSelection,
           blockId: changedBlockId,
@@ -1372,6 +1374,8 @@ function Component({
             `${contextName}_decoration-${changedBlockId}`,
             new Date()
           );
+
+          globalState.set("arrow_move", true);
         });
         return true;
       }
@@ -2161,8 +2165,6 @@ function Component({
           newContent = newText;
         }
 
-        globalState.set("arrow_move", true);
-
         handleUpdate(lineId, newContent);
 
         const lastNewBlock = newText[newText.length - 1];
@@ -2177,6 +2179,8 @@ function Component({
           `${contextName}_decoration-${lastNewBlock.id}`,
           new Date()
         );
+
+        globalState.set("arrow_move", true);
       } else {
         // adds the new text after the current line
         const content = globalState.get(contextName);

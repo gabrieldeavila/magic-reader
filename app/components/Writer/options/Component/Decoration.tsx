@@ -76,6 +76,7 @@ const Decoration = memo(
 
       const arrowMove = globalState.get("arrow_move");
       globalState.set("arrow_move", false);
+      console.log("yo", isSameNode, arrowMove);
 
       if (
         // prevent empty selection on img
