@@ -541,6 +541,7 @@ function Component({
         };
       } else if (event.key === "Enter") {
         event.preventDefault();
+
         const textClone = structuredClone(text);
 
         const isCtrlPressed = event.ctrlKey;
@@ -702,6 +703,17 @@ function Component({
 
             return item;
           });
+
+          const block = prevText[0];
+
+          stateStorage.set(`${contextName}_decoration-${block.id}`, new Date());
+
+          globalState.set("arrow_move", true);
+
+          info.current = {
+            selection: 0,
+            blockId: block.id,
+          };
 
           stateStorage.set(`update_${type}`, new Date());
           stateStorage.set(contextName, newContent);
