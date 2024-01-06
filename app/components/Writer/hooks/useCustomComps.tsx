@@ -95,7 +95,7 @@ function useCustomComps({
     stateStorage.set(contextName, newContent);
   }, [contextName, id]);
 
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (type !== "tl") return;
@@ -120,15 +120,25 @@ function useCustomComps({
 
           // add the focus to the closest block
           const closestBlock =
-            e.key === "ArrowLeft"
-              ? ref.current.previousSibling || ref.current.nextSibling
-              : ref.current.nextSibling;
-          console.log(ref.current.previousSibling, ref.current.nextSibling);
+            (e.key === "ArrowLeft"
+              ? (
+                  ref.current.parentElement?.previousSibling as HTMLElement
+                )?.querySelector("[data-block-id]")
+              : (
+                  ref.current.parentElement?.nextSibling as HTMLElement
+                )?.querySelector("[data-block-id]")) || ref.current.nextSibling;
 
           // only to the first letter
-          if (closestBlock) {
+          if (closestBlock?.firstChild) {
             const range = document.createRange();
-            range.setStart(closestBlock.firstChild, 0);
+            if (e.key === "ArrowRight") {
+              range.setStart(closestBlock.firstChild, 0);
+            } else {
+              range.setStart(
+                closestBlock.firstChild,
+                closestBlock.firstChild.textContent.length
+              );
+            }
 
             const selection = window.getSelection();
             selection.removeAllRanges();
