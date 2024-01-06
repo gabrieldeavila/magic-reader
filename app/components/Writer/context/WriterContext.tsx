@@ -946,8 +946,11 @@ const WriterContextProvider = ({
         range.setStart(child, child.textContent.length);
         range.setEnd(child, child.textContent.length);
       } else {
+        const block = focus.querySelector("[data-block-id]");
+        if (!block) return;
         // it`s empty
-        range.selectNodeContents(focus.firstChild);
+        range.setStart(block, 0);
+        range.setEnd(block, 0);
       }
 
       const sel = window.getSelection();
