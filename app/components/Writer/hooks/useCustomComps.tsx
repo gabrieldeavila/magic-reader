@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Check } from "react-feather";
 import {
   globalState,
@@ -95,10 +95,60 @@ function useCustomComps({
     stateStorage.set(contextName, newContent);
   }, [contextName, id]);
 
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (type !== "tl") return;
+    const handler = (e) => {
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        const selection = window.getSelection();
+        if (selection.toString().length > 0) return;
+
+        // if the selection is not of the current block, don't do anything
+        const contains =
+          selection.anchorNode.parentElement.previousSibling?.contains(
+            ref.current
+          );
+
+        if (!contains) return;
+
+        setTimeout(() => {
+          const hasBlock =
+            selection?.focusNode?.parentElement?.hasAttribute("data-block-id");
+
+          if (hasBlock) return;
+
+          // add the focus to the closest block
+          const closestBlock =
+            e.key === "ArrowLeft"
+              ? ref.current.previousSibling || ref.current.nextSibling
+              : ref.current.nextSibling;
+          console.log(ref.current.previousSibling, ref.current.nextSibling);
+
+          // only to the first letter
+          if (closestBlock) {
+            const range = document.createRange();
+            range.setStart(closestBlock.firstChild, 0);
+
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+        });
+      }
+    };
+
+    // prevent from the cursor to be placed inside the todo
+    window.addEventListener("keydown", handler);
+
+    return () => window.removeEventListener("keydown", handler);
+  }, [type]);
+
   const customComp = useMemo(() => {
     if (type === "tl") {
       return (
         <TodoButton
+          ref={ref}
           data-todo
           contentEditable={false}
           onClick={handleClick}

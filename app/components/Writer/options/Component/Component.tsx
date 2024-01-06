@@ -136,6 +136,8 @@ function Component({
           isFirstBlock &&
           event.key === "Backspace"
         ) {
+          console.log("Oh geeZ");
+
           const content = globalState.get(contextName);
 
           const currTextIndex = content.findIndex(
