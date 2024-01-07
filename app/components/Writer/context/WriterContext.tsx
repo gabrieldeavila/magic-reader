@@ -940,17 +940,24 @@ const WriterContextProvider = ({
         `has_focus_ev-${focus.getAttribute("data-line-id")}`,
         true
       );
-
       // if has the length, it will add the focus to the first letter
       if (child != null) {
         range.setStart(child, child.textContent.length);
         range.setEnd(child, child.textContent.length);
       } else {
         const block = focus.querySelector("[data-block-id]");
-        if (!block) return;
+        console.log(block);
+
         // it`s empty
-        range.setStart(block, 0);
-        range.setEnd(block, 0);
+        if (!block) {
+          console.log("oie");
+
+          range.selectNodeContents(focus.firstChild);
+          return;
+        }
+
+        range.setStart(block.firstChild || block, block.textContent.length);
+        range.setEnd(block.firstChild || block, block.textContent.length);
       }
 
       const sel = window.getSelection();

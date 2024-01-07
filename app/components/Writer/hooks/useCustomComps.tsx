@@ -5,7 +5,7 @@ import {
   stateStorage,
   useTriggerState,
 } from "react-trigger-state";
-import { useContextName } from "../context/WriterContext";
+import { useContextName, useWriterContext } from "../context/WriterContext";
 import { IKeys, IWritterContent, scribereActions } from "../interface";
 import { TodoButton } from "../style";
 
@@ -96,6 +96,7 @@ function useCustomComps({
   }, [contextName, id]);
 
   const ref = useRef<HTMLDivElement | null>(null);
+  const { info } = useWriterContext();
 
   useEffect(() => {
     if (type !== "tl") return;
@@ -109,6 +110,93 @@ function useCustomComps({
           selection.anchorNode.parentElement.previousSibling?.contains(
             ref.current
           );
+
+        const empty =
+          selection.anchorNode.parentElement.querySelector(".empty");
+
+        if (empty) {
+          const containsEmpty = empty.parentElement.firstChild?.contains(
+            ref.current
+          );
+
+          if (!containsEmpty) return;
+
+          setTimeout(() => {
+            const range = document.createRange();
+            if (e.key === "ArrowRight") {
+              const next = (
+                empty.parentElement.nextSibling as HTMLDivElement
+              ).querySelector("[data-block-id]");
+
+              if (!next) return;
+
+              range.setStart(next, 0);
+              range.setEnd(next, 0);
+
+              selection.removeAllRanges();
+              selection.addRange(range);
+
+              const blockId = next.getAttribute("data-block-id");
+
+              info.current = {
+                selection: 0,
+                blockId,
+              };
+
+              stateStorage.set(
+                `${contextName}_decoration-${blockId}`,
+                new Date()
+              );
+              return;
+            }
+            const prev = (
+              empty.parentElement.previousSibling as HTMLDivElement
+            )?.querySelector("[data-block-id]");
+
+            if (e.key === "ArrowLeft" && prev?.firstChild) {
+              range.setStart(prev.firstChild, prev.textContent.length);
+              range.setEnd(prev.firstChild, prev.textContent.length);
+
+              selection.removeAllRanges();
+              selection.addRange(range);
+
+              info.current = {
+                selection: prev.firstChild.textContent.length,
+                blockId: prev.getAttribute("data-block-id"),
+              };
+
+              stateStorage.set(
+                `${contextName}_decoration-${prev.getAttribute(
+                  "data-block-id"
+                )}`,
+                new Date()
+              );
+
+              return;
+            }
+
+            // select only
+            range.setStart(empty, 0);
+            range.setEnd(empty, 0);
+
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            info.current = {
+              selection: 0,
+              blockId: empty.parentElement.getAttribute("data-block-id"),
+            };
+
+            stateStorage.set(
+              `${contextName}_decoration-${empty.parentElement.getAttribute(
+                "data-block-id"
+              )}`,
+              new Date()
+            );
+          });
+
+          return;
+        }
 
         if (!contains) return;
 
@@ -129,21 +217,18 @@ function useCustomComps({
                 )?.querySelector("[data-block-id]")) || ref.current.nextSibling;
 
           // only to the first letter
-          if (closestBlock?.firstChild) {
-            const range = document.createRange();
-            if (e.key === "ArrowRight") {
-              range.setStart(closestBlock.firstChild, 0);
-            } else {
-              range.setStart(
-                closestBlock.firstChild,
-                closestBlock.firstChild.textContent.length
-              );
-            }
-
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(range);
+          const range = document.createRange();
+          if (e.key === "ArrowRight") {
+            range.setStart(empty || closestBlock.firstChild || closestBlock, 0);
+          } else {
+            range.setStart(
+              closestBlock.firstChild || closestBlock,
+              closestBlock.firstChild?.textContent?.length || 0
+            );
           }
+          const newSelection = window.getSelection();
+          newSelection.removeAllRanges();
+          newSelection.addRange(range);
         });
       }
     };
@@ -152,7 +237,7 @@ function useCustomComps({
     window.addEventListener("keydown", handler);
 
     return () => window.removeEventListener("keydown", handler);
-  }, [type]);
+  }, [contextName, info, type]);
 
   const customComp = useMemo(() => {
     if (type === "tl") {
