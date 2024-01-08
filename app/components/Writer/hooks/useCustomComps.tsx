@@ -100,14 +100,15 @@ function useCustomComps({
 
   useEffect(() => {
     if (type !== "tl") return;
-    const handler = (e) => {
+
+    const handler = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
         const selection = window.getSelection();
-        if (selection.toString().length > 0) return;
+        if (selection.toString()?.length > 0) return;
 
         // if the selection is not of the current block, don't do anything
         const contains =
-          selection.anchorNode.parentElement.previousSibling?.contains(
+          selection.anchorNode.parentElement?.parentElement?.firstChild?.contains(
             ref.current
           );
 
@@ -153,15 +154,15 @@ function useCustomComps({
               empty.parentElement.previousSibling as HTMLDivElement
             )?.querySelector("[data-block-id]");
 
-            if (e.key === "ArrowLeft" && prev?.firstChild) {
-              range.setStart(prev.firstChild, prev.textContent.length);
-              range.setEnd(prev.firstChild, prev.textContent.length);
+            if (e.key === "ArrowLeft" && prev?.lastChild) {
+              range.setStart(prev.lastChild, prev.textContent.length);
+              range.setEnd(prev.lastChild, prev.textContent.length);
 
               selection.removeAllRanges();
               selection.addRange(range);
 
               info.current = {
-                selection: prev.firstChild.textContent.length,
+                selection: prev.lastChild.textContent.length,
                 blockId: prev.getAttribute("data-block-id"),
               };
 
@@ -198,20 +199,20 @@ function useCustomComps({
           return;
         }
 
-        if (!contains) return;
+        if (!contains) {
+          return;
+        }
 
         setTimeout(() => {
           const hasBlock =
             selection?.focusNode?.parentElement?.hasAttribute("data-block-id");
 
           if (hasBlock) return;
-
           // add the focus to the closest block
           const closestBlock =
             (e.key === "ArrowLeft"
-              ? (
-                  ref.current.parentElement?.previousSibling as HTMLElement
-                )?.querySelector("[data-block-id]")
+              ? (ref.current.parentElement?.previousSibling as HTMLElement)
+                  .lastChild
               : (
                   ref.current.parentElement?.nextSibling as HTMLElement
                 )?.querySelector("[data-block-id]")) || ref.current.nextSibling;
@@ -222,8 +223,8 @@ function useCustomComps({
             range.setStart(empty || closestBlock.firstChild || closestBlock, 0);
           } else {
             range.setStart(
-              closestBlock.firstChild || closestBlock,
-              closestBlock.firstChild?.textContent?.length || 0
+              closestBlock.lastChild || closestBlock,
+              closestBlock?.textContent?.length || 0
             );
           }
           const newSelection = window.getSelection();
@@ -246,6 +247,7 @@ function useCustomComps({
           ref={ref}
           data-todo
           contentEditable={false}
+          aria-hidden
           onClick={handleClick}
         >
           {customStyle && "checked" in customStyle && customStyle.checked && (
