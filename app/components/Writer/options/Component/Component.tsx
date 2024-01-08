@@ -2362,7 +2362,6 @@ function Component({
   return (
     <DisEditable
       ref={ref}
-      contentEditable
       data-line-id={id}
       data-scribere
       onDrop={(e) => e.preventDefault()}

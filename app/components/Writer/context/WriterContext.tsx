@@ -15,6 +15,7 @@ import {
 import { dcs } from "../../../utils/dcs";
 import { dga } from "../../../utils/dga";
 import uuid from "../../../utils/uuid";
+import { useIsAShortcut } from "../hooks/crud/useShortcuts";
 import useGetCurrBlockId from "../hooks/useGetCurrBlockId";
 import useResize from "../hooks/useResize";
 import Image from "../image/image";
@@ -28,7 +29,6 @@ import Component from "../options/Component/Component";
 import { ReadWrite, Selector } from "../options/Component/style";
 import { StyledWriter } from "../style";
 import Toc from "../tocs/TableOfContents";
-import { useIsAShortcut } from "../hooks/crud/useShortcuts";
 
 export const WriterContext = createContext<IWriterContext>({
   content: [],
@@ -618,13 +618,61 @@ const WriterContextProvider = ({
   const isShortcut = useIsAShortcut();
 
   const handleKeyDown = useCallback(
-    (e: any) => {
+    (e) => {
       if (isShortcut(e)) return;
 
-      const { dataLineId } = getBlockId({});
+      const { dataLineId, currSelection, changedBlockId } = getBlockId({});
       stateStorage.set(`key_down_ev-${dataLineId}`, { e, date: new Date() });
+
+      if (e.key !== "ArrowRight") return;
+
+      const line = (e.target as HTMLDivElement).querySelector(
+        `[data-line-id="${dataLineId}"]`
+      );
+      const nextLine = line?.nextSibling as HTMLDivElement;
+      const isNextATodo = nextLine?.getAttribute("data-component") === "tl";
+      const isThisATodo = line?.getAttribute("data-component") === "tl";
+
+      if (!isNextATodo || isThisATodo) return;
+
+      const block = (e.target as HTMLDivElement).querySelector(
+        `[data-block-id="${changedBlockId}"]`
+      );
+
+      const lastBlockOfLine = line?.lastChild;
+
+      const isLastBlockOfLine = block === lastBlockOfLine;
+
+      if (!isLastBlockOfLine) return;
+
+      if (block?.textContent?.length !== currSelection) return;
+
+      const selection = window.getSelection();
+
+      const range = document.createRange();
+      const nextLineBlock = nextLine.querySelector("[data-block-id]");
+
+      range.setStart(nextLineBlock, 0);
+      range.setEnd(nextLineBlock, 0);
+
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+      e.preventDefault();
+
+      info.current = {
+        selection: 0,
+        blockId: nextLineBlock.getAttribute("data-block-id"),
+      };
+
+      stateStorage.set(
+        `${contextName}_decoration-${nextLineBlock.getAttribute(
+          "data-block-id"
+        )}`,
+        new Date()
+      );
     },
-    [getBlockId, isShortcut]
+    [contextName, getBlockId, isShortcut]
   );
 
   const handleBlur = useCallback(
@@ -946,12 +994,9 @@ const WriterContextProvider = ({
         range.setEnd(child, child.textContent.length);
       } else {
         const block = focus.querySelector("[data-block-id]");
-        console.log(block);
 
         // it`s empty
         if (!block) {
-          console.log("oie");
-
           range.selectNodeContents(focus.firstChild);
           return;
         }
