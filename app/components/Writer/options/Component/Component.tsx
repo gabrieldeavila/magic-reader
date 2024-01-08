@@ -136,6 +136,8 @@ function Component({
           isFirstBlock &&
           event.key === "Backspace"
         ) {
+          console.log("Oh geeZ");
+
           const content = globalState.get(contextName);
 
           const currTextIndex = content.findIndex(
@@ -541,6 +543,7 @@ function Component({
         };
       } else if (event.key === "Enter") {
         event.preventDefault();
+
         const textClone = structuredClone(text);
 
         const isCtrlPressed = event.ctrlKey;
@@ -703,6 +706,17 @@ function Component({
             return item;
           });
 
+          const block = prevText[0];
+
+          stateStorage.set(`${contextName}_decoration-${block.id}`, new Date());
+
+          globalState.set("arrow_move", true);
+
+          info.current = {
+            selection: 0,
+            blockId: block.id,
+          };
+
           stateStorage.set(`update_${type}`, new Date());
           stateStorage.set(contextName, newContent);
           return;
@@ -770,7 +784,9 @@ function Component({
 
   const copyEntireBlock = useCallback(() => {
     // copy all the text
-    const lineId = document.querySelector(`[data-line-id="${id}"]`) as HTMLDivElement;
+    const lineId = document.querySelector(
+      `[data-line-id="${id}"]`
+    ) as HTMLDivElement;
 
     // Create a Blob for the HTML content and a Blob for the plain text
     const htmlBlob = new Blob([lineId.outerHTML], { type: "text/html" });
@@ -1310,21 +1326,23 @@ function Component({
           blockId: changedBlockId,
         };
 
-        globalState.set("arrow_move", true);
-
         addToCtrlZ({
           lineId: id,
           action: "up",
         });
 
-        stateStorage.set(
-          `${contextName}_decoration-${changedBlockId}`,
-          new Date()
-        );
+        setTimeout(() => {
+          stateStorage.set(
+            `${contextName}_decoration-${changedBlockId}`,
+            new Date()
+          );
+
+          globalState.set("arrow_move", true);
+        });
+
         return true;
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
-        globalState.set("arrow_move", true);
 
         const content = globalState.get(contextName);
 
@@ -1355,8 +1373,6 @@ function Component({
 
         const { changedBlockId, currSelection } = getBlockId({ textId: id });
 
-        stateStorage.set(contextName, newContent);
-
         info.current = {
           selection: currSelection,
           blockId: changedBlockId,
@@ -1372,6 +1388,8 @@ function Component({
             `${contextName}_decoration-${changedBlockId}`,
             new Date()
           );
+
+          globalState.set("arrow_move", true);
         });
         return true;
       }
@@ -2161,8 +2179,6 @@ function Component({
           newContent = newText;
         }
 
-        globalState.set("arrow_move", true);
-
         handleUpdate(lineId, newContent);
 
         const lastNewBlock = newText[newText.length - 1];
@@ -2177,6 +2193,8 @@ function Component({
           `${contextName}_decoration-${lastNewBlock.id}`,
           new Date()
         );
+
+        globalState.set("arrow_move", true);
       } else {
         // adds the new text after the current line
         const content = globalState.get(contextName);
@@ -2344,7 +2362,6 @@ function Component({
   return (
     <DisEditable
       ref={ref}
-      contentEditable
       data-line-id={id}
       data-scribere
       onDrop={(e) => e.preventDefault()}
